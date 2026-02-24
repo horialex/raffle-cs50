@@ -1,0 +1,9 @@
+flask
+mysql-connector-python
+python-dotenv
+gunicorn
+requests
+Flask-Session
+pytz
+email-validator
+phonenumbers
