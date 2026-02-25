@@ -60,7 +60,6 @@ def register():
             flash("Last name must be at least 3 characters long", "error")
             return render_template("register.html")
 
-        print("USERNAME: ", username)
         if not username:
             flash("Must provide username", "error")
             return render_template("register.html")

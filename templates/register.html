@@ -5,95 +5,107 @@ Register user
 {% endblock %}
 
 {% block main %}
-<div class="container my-5">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h3 class="card-title text-center mb-4">Register a new user</h3>
-            <form id="register-form" action="/register" method="post" enctype="multipart/form-data">
-                <div class="row g-3">
-                    <!-- First Column -->
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="firstName" class="form-label">First Name</label>
-                            <input autocomplete="off" id="firstName" class="form-control" name="firstName" type="text">
-                            <div class="invalid-feedback">Firstname must have at least 3 characters</div>
+<div id="main">
+    <div class="container">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-2">Join us</h2>
+                <p class="card-title text-center mb-4">Create your account and test your luck</p>
+                <form id="register-form" action="/register" method="post" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <!-- First Column -->
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <label for="firstName" class="form-label">First name</label>
+                                <input autocomplete="off" id="firstName" class="form-control rounded shadow-sm"
+                                    name="firstName" type="text">
+                                <div class="invalid-feedback">Firstname must have at least 3 characters</div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="username" class="form-label">Username</label>
+                                <input autocomplete="off" id="username" class="form-control rounded shadow-sm"
+                                    name="username" type="text">
+                                <div class="invalid-feedback">Username must have at least 3 characters</div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="password" class="form-label">Password</label>
+                                <input class="form-control rounded shadow-sm" id="password" name="password"
+                                    type="password">
+                                <div class="invalid-feedback">Password must have at least 6 characters</div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="country" class="form-label">Country</label>
+                                <select id="country" name="country" class="form-select rounded shadow-sm">
+                                    <option value="">Select a country</option>
+                                    <option value="us">United States</option>
+                                    <option value="ca">Canada</option>
+                                    <option value="uk">United Kingdom</option>
+                                    <option value="au">Australia</option>
+                                    <option value="ro">Romania</option>
+                                    <option value="hu">Hungary</option>
+                                    <option value="de">Germany</option>
+                                    <option value="ne">Netherland</option>
+                                    <option value="fr">France</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" id="phone" name="phone" pattern="[0-9]{10}"
+                                    class="form-control rounded shadow-sm" title="Please enter a 10-digit phone number">
+                            </div>
+
                         </div>
 
-                        <div class="mb-2">
-                            <label for="username" class="form-label">Username</label>
-                            <input autocomplete="off" id="username" class="form-control" name="username" type="text">
-                            <div class="invalid-feedback">Username must have at least 3 characters</div>
+                        <!-- Second Column -->
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <label for="lastName" class="form-label">Last name</label>
+                                <input autocomplete="off" id="lastName" class="form-control rounded shadow-sm"
+                                    name="lastName" type="text">
+                                <div class="invalid-feedback">Lastname must have at least 3 characters</div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="email" class="form-control rounded shadow-sm"
+                                    required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="confirmation" class="form-label">Confirm password</label>
+                                <input class="form-control rounded shadow-sm" id="confirmation" name="confirmation"
+                                    type="password">
+                                <div class="invalid-feedback">Passwords do not match</div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="address" class="form-label">Address</label>
+                                <input autocomplete="off" id="address" class="form-control rounded shadow-sm"
+                                    name="address" type="text">
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="profilePicture" class="form-label">Profile picture</label>
+                                <input class="form-control rounded shadow-sm" id="profilePicture" name="profilePicture"
+                                    type="file" accept="image/*">
+                            </div>
+
                         </div>
 
-                        <div class="mb-2">
-                            <label for="country" class="form-label">Country</label>
-                            <select id="country" name="country" class="form-select">
-                                <option value="">Select a country</option>
-                                <option value="us">United States</option>
-                                <option value="ca">Canada</option>
-                                <option value="uk">United Kingdom</option>
-                                <option value="au">Australia</option>
-                                <option value="ro">Romania</option>
-                                <option value="hu">Hungary</option>
-                                <option value="de">Germany</option>
-                                <option value="ne">Netherland</option>
-                                <option value="fr">France</option>
-                            </select>
-                        </div>
 
-                        <div class="mb-2">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" id="email" name="email" class="form-control" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="profilePicture" class="form-label">Profile Picture</label>
-                            <input class="form-control" id="profilePicture" name="profilePicture" type="file"
-                                accept="image/*">
+                        <!-- Submit Button Full Width -->
+                        <div class="col-12 mt-4 text-center ">
+                            <button class=" btn btn-secondary px-5" type="submit">Register user</button>
                         </div>
                     </div>
-
-                    <!-- Second Column -->
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="lastName" class="form-label">Last Name</label>
-                            <input autocomplete="off" id="lastName" class="form-control" name="lastName" type="text">
-                            <div class="invalid-feedback">Lastname must have at least 3 characters</div>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="password" class="form-label">Password</label>
-                            <input class="form-control" id="password" name="password" type="password">
-                            <div class="invalid-feedback">Password must have at least 6 characters</div>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="confirmation" class="form-label">Confirm Password</label>
-                            <input class="form-control" id="confirmation" name="confirmation" type="password">
-                            <div class="invalid-feedback">Passwords do not match</div>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" class="form-control"
-                                title="Please enter a 10-digit phone number">
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="address" class="form-label">Address</label>
-                            <input autocomplete="off" id="address" class="form-control" name="address" type="text">
-                        </div>
-                    </div>
-
-
-
-                    <!-- Submit Button Full Width -->
-                    <div class="col-12 text-center">
-                        <button class="btn btn-secondary px-5" type="submit">Register</button>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
