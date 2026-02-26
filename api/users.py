@@ -162,6 +162,7 @@ def register():
             # Log user in
             session["user_id"] = row["id"]
             session["username"] = row["username"]
+            session["first_name"] = row["first_name"]
 
         except mysql.connector.IntegrityError as err:
             if err.errno == 1062:  # Duplicate entry
@@ -174,7 +175,7 @@ def register():
             conn.close()
 
         flash("Registration successful! You are now logged in.", "success")
-        return redirect("/users")
+        return redirect("/")
 
     return render_template("register.html")
 

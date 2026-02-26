@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from flask_session import Session
 from helpers.helpers import (
+    login_required,
     usd,
 )
 
@@ -76,9 +77,11 @@ def inject_user():
     return {"username": session.get("username")}
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
+@login_required
 def home():
-    return {"message": "Flask + MySQL running"}
+    first_name = session["first_name"]
+    return render_template("index.html", first_name=first_name)
 
 
 @app.route("/health")

@@ -41,10 +41,12 @@ def login():
                 flash("Invalid username or password", "error")
                 return render_template("login.html")
 
+            print(row)
             session["user_id"] = row["id"]
             session["username"] = row["username"]
+            session["first_name"] = row["first_name"]
 
-            return redirect("/users")
+            return redirect("/")
 
         finally:
             cursor.close()
