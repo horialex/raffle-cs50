@@ -1,10 +1,8 @@
+import uuid
 import hashlib
 import os
-import uuid
-
 from flask import (
     Blueprint,
-    app,
     flash,
     redirect,
     render_template,
@@ -12,167 +10,133 @@ from flask import (
     session,
     current_app,
 )
-import mysql
+from werkzeug.utils import secure_filename
+
+from db import db
+from models.user_model import User
 from helpers.helpers import (
     allowed_file,
     is_valid_email,
     is_valid_phone_number,
     login_required,
 )
-from db import get_db_connection
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
 
-users_bp = Blueprint("users", __name__)
+users_bp = Blueprint("users_bp", __name__)
 
 
+# ----------------------------
+# Test route
+# ----------------------------
+@users_bp.route("/count-users")
+def test():
+    users = User.query.all()
+    return {"count": len(users)}
+
+
+# ----------------------------
+# Registration
+# ----------------------------
 @users_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        first_name = request.form.get("firstName")
-        last_name = request.form.get("lastName")
-        country = request.form.get("country")
-        email = request.form.get("email")
-        phone = request.form.get("phone")
-        address = request.form.get("address")
-        username = request.form.get("username")
-        password = request.form.get("password")
-        confirm_password = request.form.get("confirmation")
+        first_name = request.form.get("firstName", "").strip()
+        last_name = request.form.get("lastName", "").strip()
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        country = request.form.get("country", "").strip()
+        address = request.form.get("address", "").strip()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirmation", "")
         profile_picture = request.files.get("profilePicture")
 
-        # Fields validation
-        if not first_name:
-            flash("Must provide first name", "error")
+        # ----------------------------
+        # Validation
+        # ----------------------------
+        if len(first_name) < 3:
+            flash("First name must be at least 3 characters", "error")
             return render_template("register.html")
-
-        if len(first_name.strip()) < 3:
-            flash("First name must be at least 3 characters long", "error")
+        if len(last_name) < 3:
+            flash("Last name must be at least 3 characters", "error")
             return render_template("register.html")
-
-        if not last_name:
-            flash("Must provide last name", "error")
+        if len(username) < 3:
+            flash("Username must be at least 3 characters", "error")
             return render_template("register.html")
-
-        if len(last_name.strip()) < 3:
-            flash("Last name must be at least 3 characters long", "error")
+        if len(password) < 6:
+            flash("Password must be at least 6 characters", "error")
             return render_template("register.html")
-
-        if not username:
-            flash("Must provide username", "error")
-            return render_template("register.html")
-
-        if len(username.strip()) < 3:
-            flash("username must be at least 3 characters long", "error")
-            return render_template("register.html")
-
-        if not password:
-            flash("Must provide password", "error")
-            return render_template("register.html")
-
-        if len(password.strip()) < 6:
-            flash("password must be at least 6 characters", "error")
-            return render_template("register.html")
-
         if password != confirm_password:
-            flash("confirm password must match the password", "error")
+            flash("Passwords do not match", "error")
             return render_template("register.html")
-
         if not country:
             flash("Must provide country", "error")
             return render_template("register.html")
-
-        if not email:
-            flash("Must provide email", "error")
+        if not email or not is_valid_email(email)[0]:
+            flash("Invalid email", "error")
             return render_template("register.html")
-
-        if not address:
-            flash("Must provide address", "error")
+        if not phone or not is_valid_phone_number(phone)[0]:
+            flash("Invalid phone number", "error")
             return render_template("register.html")
-
-        if len(address.strip()) < 6:
+        if len(address) < 6:
             flash("Address must be at least 6 characters", "error")
             return render_template("register.html")
-
-        valid_email, message = is_valid_email(email)
-        if not valid_email:
-            flash(message, "error")
-            return render_template("register.html")
-
-        if not phone:
-            flash("Must provide phone number", "error")
-            return render_template("register.html")
-
-        valid_phone, message = is_valid_phone_number(phone)
-        if not valid_phone:
-            flash(message, "error")
-            return render_template("register.html")
-
         if not profile_picture or profile_picture.filename == "":
             flash("Must provide profile picture", "error")
             return render_template("register.html")
 
+        # ----------------------------
+        # Save profile picture
+        # ----------------------------
         pic_filename = secure_filename(profile_picture.filename)
-
         if not allowed_file(pic_filename):
-            flash(
-                "We only allow the following formats for profile pic: png, jpg, jpeg",
-                "error",
-            )
+            flash("Allowed profile pic formats: png, jpg, jpeg", "error")
             return render_template("register.html")
-        pic_name = str(uuid.uuid1()) + "_" + pic_filename
+
+        pic_name = f"{uuid.uuid1()}_{pic_filename}"
         save_path = os.path.join(current_app.config["PROFILE_PICS_FOLDER"], pic_name)
         profile_picture.save(save_path)
 
+        # ----------------------------
+        # Hash password
+        # ----------------------------
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        # ----------------------------
+        # Create user
+        # ----------------------------
+        user = User(
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
+            password=hashed_password,
+            phone=phone,
+            country=country,
+            address=address,
+            profile_picture=pic_name,
+        )
 
         try:
-            cursor.execute(
-                """
-                INSERT INTO users (first_name, last_name, username, email, password, phone, country, address, role, profile_picture, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW()) 
-                """,
-                (
-                    first_name,
-                    last_name,
-                    username,
-                    email,
-                    hashed_password,
-                    phone,
-                    country,
-                    address,
-                    USER_ROLE,
-                    pic_name,
-                ),
-            )
-            conn.commit()
-
-            cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-            row = cursor.fetchone()
-
-            if not row:
-                flash("Unable to login, user was not properly created.", "error")
-                return render_template("register.html")
-
-            # Log user in
-            session["user_id"] = row["id"]
-            session["username"] = row["username"]
-            session["first_name"] = row["first_name"]
-
-        except mysql.connector.IntegrityError as err:
-            if err.errno == 1062:  # Duplicate entry
-                flash("Username or email already exists. Please use another.", "error")
+            db.session.add(user)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            if "Duplicate entry" in str(e):
+                flash("Username or email already exists", "error")
                 return render_template("register.html")
             else:
-                raise
-        finally:
-            cursor.close()
-            conn.close()
+                flash(f"Error creating user: {str(e)}", "error")
+                return render_template("register.html")
+
+        # ----------------------------
+        # Log user in
+        # ----------------------------
+        session["user_id"] = user.id
+        session["username"] = user.username
+        session["first_name"] = user.first_name
 
         flash("Registration successful! You are now logged in.", "success")
         return redirect("/")
@@ -180,50 +144,41 @@ def register():
     return render_template("register.html")
 
 
-@users_bp.route("/users", methods=["GET"])
+# ----------------------------
+# Get users list
+# ----------------------------
+@users_bp.route("/", methods=["GET"])
 @login_required
 def get_users():
     page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-
-    # Safety validation
-    if page < 1:
-        return {"error": "page must be >= 1"}, 400
-
+    per_page = request.args.get("per_page", 20, type=int)
     per_page = min(per_page, 100)
-    offset = (page - 1) * per_page
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    pagination = (
+        User.query.filter(User.role != "admin")
+        .order_by(User.id)
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
 
-    try:
-        cursor.execute(
-            "SELECT COUNT(*) AS total FROM users WHERE role !=%s", (ADMIN_ROLE,)
-        )
-        total = cursor.fetchone()["total"]
+    users = [
+        {
+            "id": u.id,
+            "firstName": u.first_name,
+            "lastName": u.last_name,
+            "username": u.username,
+            "email": u.email,
+            "phone": u.phone,
+            "country": u.country,
+            "address": u.address,
+            "profilePicture": u.profile_picture,
+        }
+        for u in pagination.items
+    ]
 
-        cursor.execute(
-            "SELECT id, first_name, last_name, username, email, phone, country, address, profile_picture FROM users WHERE role  != %s ORDER BY id LIMIT %s OFFSET %s",
-            (ADMIN_ROLE, per_page, offset),
-        )
-
-        rows = cursor.fetchall()
-
-        users = [
-            {
-                "id": row["id"],
-                "firstName": row["first_name"],
-                "lastName": row["last_name"],
-                "username": row["username"],
-                "email": row["email"],
-                "phone": row["phone"],
-                "country": row["country"],
-                "address": row["address"],
-                "profilePicture": row["profile_picture"],
-            }
-            for row in rows
-        ]
-        return render_template("users.html", users=users)
-    finally:
-        cursor.close()
-        conn.close()
+    return render_template(
+        "users.html",
+        users=users,
+        total=pagination.total,
+        page=page,
+        per_page=per_page,
+    )

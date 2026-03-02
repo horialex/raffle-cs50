@@ -1,5 +1,9 @@
 flask
 mysql-connector-python
+flask-sqlalchemy
+flask-migrate
+pymysql
+cryptography
 python-dotenv
 gunicorn
 requests
@@ -7,3 +11,4 @@ Flask-Session
 pytz
 email-validator
 phonenumbers
+
