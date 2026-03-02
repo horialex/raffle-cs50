@@ -3,6 +3,7 @@ import hashlib
 import os
 from flask import (
     Blueprint,
+    abort,
     flash,
     redirect,
     render_template,
@@ -147,9 +148,13 @@ def register():
 # ----------------------------
 # Get users list
 # ----------------------------
-@users_bp.route("/", methods=["GET"])
+@users_bp.route("/users", methods=["GET"])
 @login_required
 def get_users():
+    user = User.query.get(session["user_id"])
+    if not user.is_admin:
+        abort(403)
+
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     per_page = min(per_page, 100)
@@ -171,6 +176,7 @@ def get_users():
             "country": u.country,
             "address": u.address,
             "profilePicture": u.profile_picture,
+            "createdAt": u.created_at,
         }
         for u in pagination.items
     ]

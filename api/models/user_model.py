@@ -28,6 +28,7 @@ class User(db.Model):
         onupdate=func.now(),
         nullable=False,
     )
+    # last_login_at = db.Column(db.DateTime(timezone=True), nullable=True) # add this with a migration
 
     @property
     def is_admin(self):

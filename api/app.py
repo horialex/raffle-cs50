@@ -6,6 +6,7 @@ from flask_session import Session
 from sqlalchemy import text
 from werkzeug.exceptions import RequestEntityTooLarge
 
+from models.user_model import User
 from db import db
 from users import users_bp
 from auth import auth_bp
@@ -15,9 +16,9 @@ from helpers.helpers import login_required, usd
 # Config
 # ----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")  # must happen first
+load_dotenv(BASE_DIR / ".env")
 
-MAX_FILE_UPLOAD_SIZE = 3 * 1024 * 1024  # 3MB
+MAX_FILE_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_MB", 3)) * 1024 * 1024
 
 app = Flask(
     __name__,
@@ -78,7 +79,13 @@ def after_request(response):
 
 @app.context_processor
 def inject_user():
-    return {"username": session.get("username")}
+    user_id = session.get("user_id")
+    user = None
+
+    if user_id:
+        user = User.query.get(user_id)
+
+    return {"current_user": user}
 
 
 # ----------------------------
@@ -87,16 +94,14 @@ def inject_user():
 @app.route("/", methods=["GET"])
 @login_required
 def home():
-    print("!!!")
-    first_name = session.get("first_name", "")
-    return render_template("index.html", first_name=first_name)
+    return render_template("index.html")
 
 
 @app.route("/health")
 def health():
     try:
         db.session.execute(text("SELECT 1"))
-        return {"status": "database connected Y"}
+        return {"status": "database connected"}
     except Exception as e:
         return {"error": str(e)}, 500
 
@@ -106,6 +111,7 @@ def health():
 # ----------------------------
 @app.errorhandler(404)
 @app.errorhandler(405)
+@app.errorhandler(403)
 def page_not_found(e):
     return render_template("404.html")
 

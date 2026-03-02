@@ -42,8 +42,6 @@ def login():
         # Log user in
         # ----------------------------
         session["user_id"] = user.id
-        session["username"] = user.username
-        session["first_name"] = user.first_name
 
         return redirect("/")
 

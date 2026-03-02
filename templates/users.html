@@ -18,6 +18,7 @@ Home
             <th>Country</th>
             <th>Address</th>
             <th>Profile Picture</th>
+            <th>Created Date</th>
         </tr>
     </thead>
     <tbody>
@@ -31,6 +32,7 @@ Home
             <td>{{ user.phone }}</td>
             <td>{{ user.country }}</td>
             <td>{{ user.address }}</td>
+            <td>{{ user.createdAt }}</td>
             <td>
                 {% if user.profilePicture %}
                 <img src="{{ url_for('static', filename='uploads/images/' ~ user.profilePicture) }}"
