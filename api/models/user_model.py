@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import Enum, func
 
 from db import db
@@ -20,17 +22,17 @@ class User(db.Model):
         Enum("admin", "user", name="user_roles"), nullable=False, default="user"
     )
     created_at = db.Column(
-        db.DateTime(timezone=True), default=func.now(), nullable=False
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
     updated_at = db.Column(
         db.DateTime(timezone=True),
-        default=func.now(),
-        onupdate=func.now(),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    last_login_at = db.Column(
-        db.DateTime(timezone=True), nullable=True
-    )  # add this with a migration
+    last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     @property
     def is_admin(self):
