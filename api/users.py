@@ -12,7 +12,8 @@ from flask import (
     current_app,
 )
 from werkzeug.utils import secure_filename
-
+from werkzeug.security import generate_password_hash
+from datetime import datetime, timezone
 from db import db
 from models.user_model import User
 from helpers.helpers import (
@@ -104,6 +105,7 @@ def register():
         # Hash password
         # ----------------------------
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        # hashed_password = generate_password_hash(password)
 
         # ----------------------------
         # Create user
@@ -118,6 +120,7 @@ def register():
             country=country,
             address=address,
             profile_picture=pic_name,
+            last_login_at=datetime.now(timezone.utc),
         )
 
         try:
@@ -165,7 +168,7 @@ def get_users():
         .paginate(page=page, per_page=per_page, error_out=False)
     )
 
-    users = [
+    users: User = [
         {
             "id": u.id,
             "firstName": u.first_name,
@@ -177,6 +180,7 @@ def get_users():
             "address": u.address,
             "profilePicture": u.profile_picture,
             "createdAt": u.created_at,
+            "lastLogin": u.last_login_at,
         }
         for u in pagination.items
     ]

@@ -20,15 +20,17 @@ class User(db.Model):
         Enum("admin", "user", name="user_roles"), nullable=False, default="user"
     )
     created_at = db.Column(
-        db.DateTime(timezone=True), server_default=func.now(), nullable=False
+        db.DateTime(timezone=True), default=func.now(), nullable=False
     )
     updated_at = db.Column(
         db.DateTime(timezone=True),
-        server_default=func.now(),
+        default=func.now(),
         onupdate=func.now(),
         nullable=False,
     )
-    # last_login_at = db.Column(db.DateTime(timezone=True), nullable=True) # add this with a migration
+    last_login_at = db.Column(
+        db.DateTime(timezone=True), nullable=True
+    )  # add this with a migration
 
     @property
     def is_admin(self):

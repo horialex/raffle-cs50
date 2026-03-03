@@ -2,6 +2,9 @@ import hashlib
 from flask import Blueprint, flash, redirect, render_template, request, session
 from db import db
 from models.user_model import User
+from datetime import datetime, timezone
+
+# from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth_bp", __name__)
 
@@ -27,11 +30,15 @@ def login():
         # ----------------------------
         # Query user
         # ----------------------------
-        user = User.query.filter_by(username=username).first()
+        user: User = User.query.filter_by(username=username).first()
 
         if user is None:
             flash("Invalid username or password", "error")
             return render_template("login.html")
+
+        # if not check_password_hash(user.password, password):
+        #     flash("Invalid username or password", "error")
+        #     return render_template("login.html")
 
         hashed_input = hashlib.sha256(password.encode()).hexdigest()
         if user.password != hashed_input:
@@ -41,7 +48,9 @@ def login():
         # ----------------------------
         # Log user in
         # ----------------------------
+        user.last_login_at = datetime.now(timezone.utc)
         session["user_id"] = user.id
+        db.session.commit()
 
         return redirect("/")
 

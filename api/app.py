@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session
 from flask_session import Session
 from sqlalchemy import text
+from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from models.user_model import User
@@ -27,7 +28,7 @@ app = Flask(
 )
 
 # ----------------------------
-# SQLAlchemy setup
+# SQLAlchemy setup + Migrations
 # ----------------------------
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
@@ -36,6 +37,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # ----------------------------
 # App secret, uploads, session
