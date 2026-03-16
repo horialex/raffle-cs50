@@ -192,3 +192,15 @@ def get_users():
         page=page,
         per_page=per_page,
     )
+
+
+# ----------------------------
+# Edit user
+# ----------------------------
+@users_bp.route("/update/<int:id>", methods=["GET", "POST"])
+def update(id):
+    user: User = User.query.get_or_404(id)  # fetch user or 404 if not found
+    if request.method == "POST":
+        # handle form submission here
+        ...
+    return render_template("update-user.html", user=user)

@@ -83,7 +83,6 @@ def after_request(response):
 def inject_user():
     user_id = session.get("user_id")
     user = None
-
     if user_id:
         user = User.query.get(user_id)
 

@@ -6,7 +6,7 @@ Home
 
 {% block main %}
 <h1>Users List</h1>
-<table>
+<table id="users_table">
     <thead>
         <tr>
             <th>ID</th>
@@ -21,6 +21,7 @@ Home
             <th>Created date</th>
             <th>Last login date</th>
             <th>Profile picture</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -43,6 +44,10 @@ Home
                 {% else %}
                 N/A
                 {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('users_bp.update', id=user.id) }}" class="btn-edit">Edit</a>
+                <a href="#" class="btn-delete">DELETE</a> <!-- TODO: Update when implement delete -->
             </td>
         </tr>
         {% endfor %}
