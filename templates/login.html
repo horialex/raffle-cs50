@@ -18,14 +18,21 @@ Log In
 {% endwith %} -->
 
 
-<form action="/login" method="post">
+<form action="{{ url_for('auth_bp.login') }}" method="post">
+    {{ form.hidden_tag() }}
+
     <div class="mb-3">
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username"
-            type="text">
+        {{ form.username(class="form-control mx-auto w-auto", autocomplete="off", autofocus=True,
+        placeholder="Username") }}
     </div>
+
     <div class="mb-3">
-        <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
+        {{ form.password(class="form-control mx-auto w-auto", placeholder="Password") }}
     </div>
-    <button class="btn btn-primary" type="submit">Log In</button>
+
+    <div>
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+
 </form>
 {% endblock %}

@@ -27,6 +27,8 @@ app = Flask(
     static_folder=str(BASE_DIR / "static"),
 )
 
+app.config["SECRET_KEY"] = os.getenv("APP_SECRET")
+
 # ----------------------------
 # SQLAlchemy setup + Migrations
 # ----------------------------
@@ -42,7 +44,6 @@ migrate = Migrate(app, db)
 # ----------------------------
 # App secret, uploads, session
 # ----------------------------
-app.secret_key = os.getenv("APP_SECRET")
 
 UPLOAD_FOLDER = os.path.join(app.static_folder, "uploads")
 PROFILE_PICS_FOLDER = os.path.join(UPLOAD_FOLDER, "images")
