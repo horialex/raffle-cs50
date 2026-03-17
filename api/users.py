@@ -157,6 +157,11 @@ def update(id):
     if form.validate_on_submit():
         upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
+        # Validate uniqueness
+        # ----------------------------
+        if not validate_updated_user(user, form):
+            return render_template("update_user.html", form=form, user=user)
+
         # ----------------------------
         # Update basic fields
         # ----------------------------
@@ -216,3 +221,29 @@ def update(id):
                 flash(f"{field}: {error}", "error")
 
     return render_template("update_user.html", form=form, user=user)
+
+
+# ---------------
+# HELPER METHDOS
+# ---------------
+
+
+def validate_updated_user(user: User, form: UserForm) -> bool:
+    """
+    Checks if username or email are unique before updating.
+    If a value is not unique, flashes a message and resets the form field.
+    Returns True if validation passed, False if there was a conflict.
+    """
+    if form.username.data != user.username:
+        if User.query.filter_by(username=form.username.data).first():
+            flash("Username already taken.", "error")
+            form.username.data = user.username
+            return False
+
+    if form.email.data != user.email:
+        if User.query.filter_by(email=form.email.data).first():
+            form.email.data = user.email
+            flash("Email already in use.", "error")
+            return False
+
+    return True
