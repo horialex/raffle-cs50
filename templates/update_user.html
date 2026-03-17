@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Edit user
+{% endblock %}
+
+{% block main %}
+<div id="main">
+    <div class="container">
+        <div class="card shadow-sm">
+            <div class="card-body bg-light rounded shadow-sm">
+                <h2 class="text-center mb-2">Edit user</h2>
+                <p class="text-center mb-4">Update account details</p>
+
+                <form method="post" action="{{ url_for('users_bp.update', id=user.id) }}" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row g-3">
+
+                        <!-- First Column -->
+                        <div class="col-md-6">
+
+                            <div class="mb-2">
+                                {{ form.first_name.label(class="form-label") }}
+                                {{ form.first_name(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.country.label(class="form-label") }}
+                                {{ form.country(class="form-select") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control") }}
+                            </div>
+
+                        </div>
+
+                        <!-- Second Column -->
+                        <div class="col-md-6">
+
+                            <div class="mb-2">
+                                {{ form.last_name.label(class="form-label") }}
+                                {{ form.last_name(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.confirm_password.label(class="form-label") }}
+                                {{ form.confirm_password(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.address.label(class="form-label") }}
+                                {{ form.address(class="form-control") }}
+                            </div>
+
+                            <div class="mb-2">
+                                {{ form.profile_picture.label(class="form-label") }}
+
+                                {% if user.profile_picture %}
+                                <div class="mb-4">
+                                    <img src="{{ url_for('static', filename='uploads/images/' + user.profile_picture) }}"
+                                        alt="Profile Picture" class="img-thumbnail" style="max-width: 150px;">
+                                </div>
+
+                                <div class="form-check mb-2 text-start">
+                                    <input class="form-check-input" type="checkbox" name="remove_picture"
+                                        id="remove_picture">
+                                    <label class="form-check-label" for="remove_picture">
+                                        Remove current picture
+                                    </label>
+                                </div>
+                                {% endif %}
+
+                                {{ form.profile_picture(class="form-control") }}
+                            </div>
+
+                        </div>
+
+                        <div class="col-12 mt-4 text-center">
+                            {{ form.submit(class="btn btn-secondary px-5") }}
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

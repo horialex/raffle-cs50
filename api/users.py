@@ -14,15 +14,17 @@ from flask import (
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
+from constants.countries import COUNTRIES
 from forms.user_form import UserForm
 from db import db
 from models.user_model import User
-from helpers.helpers import (
+from utils.helpers import (
     allowed_file,
     is_valid_email,
     is_valid_phone_number,
     login_required,
 )
+from utils.files import delete_profile_picture
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
@@ -78,10 +80,10 @@ def register():
             db.session.rollback()
             if "Duplicate entry" in str(e):
                 flash("Username or email already exists", "error")
-                return render_template("register.html")
+                return render_template("register_user.html")
             else:
                 flash(f"Error creating user: {str(e)}", "error")
-                return render_template("register.html")
+                return render_template("register_user.html")
 
         # ----------------------------
         # Log user in
@@ -93,7 +95,7 @@ def register():
         flash("Registration successful! You are now logged in.", "success")
         return redirect("/")
 
-    return render_template("register.html", form=form)
+    return render_template("register_user.html", form=form)
 
 
 # ----------------------------
@@ -149,7 +151,68 @@ def get_users():
 def update(id):
     user: User = User.query.get_or_404(id)
     form = UserForm(obj=user)
-    if request.method == "POST":
-        # handle form submission here
-        ...
-    return render_template("update-user.html", user=user)
+    form.country.choices = COUNTRIES
+    form.submit.label.text = "Update user"
+
+    if form.validate_on_submit():
+        upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
+
+        # ----------------------------
+        # Update basic fields
+        # ----------------------------
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        user.username = form.username.data
+        user.email = form.email.data
+        user.phone = form.phone.data
+        user.country = form.country.data
+        user.address = form.address.data
+
+        # ----------------------------
+        # Update password (optional)
+        # ----------------------------
+        if form.password.data:
+            user.password = hashlib.sha256(form.password.data.encode()).hexdigest()
+            # recommended:
+            # user.password = generate_password_hash(form.password.data)
+
+        # ----------------------------
+        # Picture handling
+        # ----------------------------
+        remove_requested = request.form.get("remove_picture")
+        new_picture = form.profile_picture.data
+
+        if new_picture:
+            filename = secure_filename(new_picture.filename)
+            pic_name = f"{uuid.uuid1()}_{filename}"
+
+            save_path = os.path.join(upload_folder, pic_name)
+            new_picture.save(save_path)
+
+            delete_profile_picture(user.profile_picture)
+            user.profile_picture = pic_name
+
+        elif remove_requested:
+            delete_profile_picture(user.profile_picture)
+            user.profile_picture = None
+
+        # ----------------------------
+        # Commit changes
+        # ----------------------------
+        try:
+            db.session.commit()
+            flash("User updated successfully", "success")
+            return redirect(f"/update/{user.id}")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating user: {str(e)}", "error")
+
+    # ----------------------------
+    # Validation errors
+    # ----------------------------
+    if form.is_submitted():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", "error")
+
+    return render_template("update_user.html", form=form, user=user)

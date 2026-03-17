@@ -11,7 +11,7 @@ from models.user_model import User
 from db import db
 from users import users_bp
 from auth import auth_bp
-from helpers.helpers import login_required, usd
+from utils.helpers import login_required, usd
 
 # ----------------------------
 # Config

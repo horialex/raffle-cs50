@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FileField, PasswordField, StringField, SubmitField
+from wtforms import FileField, PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional
 from flask_wtf.file import FileAllowed
 
@@ -10,7 +10,7 @@ class UserForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min=3)])
     email = StringField("Email", validators=[DataRequired(), Email()])
     phone = StringField("Phone", validators=[DataRequired(), Length(min=6)])
-    country = StringField("Country", validators=[DataRequired()])
+    country = SelectField("Country", choices=[], validators=[DataRequired()])
     address = StringField("Address", validators=[DataRequired(), Length(min=6)])
 
     # Password is required for registration, optional for update
