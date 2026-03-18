@@ -47,18 +47,20 @@ def test():
 @users_bp.route("/register", methods=["GET", "POST"])
 def register():
     form = UserForm()
+    form.country.choices = COUNTRIES
+    form.submit.label.text = "Create user"
+    upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
+
     if form.validate_on_submit():
+        hashed_password = hashlib.sha256(form.password.data.encode()).hexdigest()
+
         # Handle form data
         pic_name = None
         if form.profile_picture.data:
             pic_file = form.profile_picture.data
             filename = secure_filename(pic_file.filename)
             pic_name = f"{uuid.uuid1()}_{filename}"
-            pic_file.save(
-                os.path.join(current_app.config["PROFILE_PICS_FOLDER"], pic_name)
-            )
-
-        hashed_password = hashlib.sha256(form.password.data.encode()).hexdigest()
+            pic_file.save(os.path.join(upload_folder, pic_name))
 
         user = User(
             first_name=form.first_name.data,
@@ -73,6 +75,9 @@ def register():
             last_login_at=datetime.now(timezone.utc),
         )
 
+        # ----------------------------
+        # Commit changes
+        # ----------------------------
         try:
             db.session.add(user)
             db.session.commit()
@@ -80,10 +85,10 @@ def register():
             db.session.rollback()
             if "Duplicate entry" in str(e):
                 flash("Username or email already exists", "error")
-                return render_template("register_user.html")
+                return render_template("register_user.html", form=form)
             else:
                 flash(f"Error creating user: {str(e)}", "error")
-                return render_template("register_user.html")
+                return render_template("register_user.html", form=form)
 
         # ----------------------------
         # Log user in
@@ -153,9 +158,9 @@ def update(id):
     form = UserForm(obj=user)
     form.country.choices = COUNTRIES
     form.submit.label.text = "Update user"
+    upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
     if form.validate_on_submit():
-        upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
         # Validate uniqueness
         # ----------------------------
