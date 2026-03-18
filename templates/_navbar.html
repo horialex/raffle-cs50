@@ -7,9 +7,11 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbar">
-            {% if session["user_id"] %}
+            {% if current_user %}
             <ul class="navbar-nav me-auto mt-2">
+                {% if current_user.is_admin %}
                 <li class="nav-item"><a class="nav-link" href="/users">Users</a></li>
+                {% endif %}
                 <li class="nav-item"><a class="nav-link" href="/raffles">Raffles</a></li>
                 <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
             </ul>
@@ -17,11 +19,11 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
-                        <strong>{{username}}</strong>
+                        <strong>{{current_user.username}}</strong>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="/change-password">Change Password</a></li>
-                        <li><a class="dropdown-item" href="/add-cash">Add Cash</a></li>
+                        <li><a class="dropdown-item" href="/profile-preferences">Profile preferences</a></li>
+                        <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
                     </ul>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>

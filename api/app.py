@@ -1,36 +1,25 @@
-from flask import (
-    Flask,
-    redirect,
-    request,
-    render_template,
-    session,
-    flash,
-)
-
-from db import get_db_connection
 import os
-from dotenv import load_dotenv
 from pathlib import Path
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, flash, redirect, session
 from flask_session import Session
-from helpers.helpers import (
-    login_required,
-    usd,
-)
-
+from sqlalchemy import text
+from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
-import uuid as uuid
 
-from auth import auth_bp
+from models.user_model import User
+from db import db
 from users import users_bp
+from auth import auth_bp
+from utils.helpers import login_required, usd
 
-MAX_FILE_UPLOAD_SIZE = 3 * 1024 * 1024  # 3MB
-
+# ----------------------------
+# Config
+# ----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
-env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(BASE_DIR / ".env")
 
-
-load_dotenv(dotenv_path=env_path)
-
+MAX_FILE_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_MB", 3)) * 1024 * 1024
 
 app = Flask(
     __name__,
@@ -38,34 +27,53 @@ app = Flask(
     static_folder=str(BASE_DIR / "static"),
 )
 
-app.secret_key = os.getenv("APP_SECRET")
-UPLOAD_FOLDER = "static/uploads/"
+app.config["SECRET_KEY"] = os.getenv("APP_SECRET")
+
+# ----------------------------
+# SQLAlchemy setup + Migrations
+# ----------------------------
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
+    f"@{os.getenv('MYSQL_HOST', '127.0.0.1')}:{os.getenv('MYSQL_PORT', 3306)}"
+    f"/{os.getenv('MYSQL_DATABASE')}"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
+migrate = Migrate(app, db)
+
+# ----------------------------
+# App secret, uploads, session
+# ----------------------------
+
+UPLOAD_FOLDER = os.path.join(app.static_folder, "uploads")
+PROFILE_PICS_FOLDER = os.path.join(UPLOAD_FOLDER, "images")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_UPLOAD_SIZE
-
-
-PROFILE_PICS_FOLDER = os.path.join(app.static_folder, "uploads", "images")
 app.config["PROFILE_PICS_FOLDER"] = PROFILE_PICS_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_UPLOAD_SIZE
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
 
-# Custom filter
+# Custom Jinja filter
 app.jinja_env.filters["usd"] = usd
 
-# Configure session to use filesystem (instead of signed cookies)
+# Flask-Session config
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-
-app.register_blueprint(auth_bp)
+# ----------------------------
+# Blueprints
+# ----------------------------
 app.register_blueprint(users_bp)
+app.register_blueprint(auth_bp)  # Uncomment if auth blueprint exists
 
 
+# ----------------------------
+# Request / context hooks
+# ----------------------------
 @app.after_request
 def after_request(response):
-    """Ensure responses aren't cached"""
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
@@ -74,28 +82,38 @@ def after_request(response):
 
 @app.context_processor
 def inject_user():
-    return {"username": session.get("username")}
+    user_id = session.get("user_id")
+    user = None
+    if user_id:
+        user = User.query.get(user_id)
+
+    return {"current_user": user}
 
 
+# ----------------------------
+# Routes
+# ----------------------------
 @app.route("/", methods=["GET"])
 @login_required
 def home():
-    first_name = session["first_name"]
-    return render_template("index.html", first_name=first_name)
+    return render_template("index.html")
 
 
 @app.route("/health")
 def health():
     try:
-        conn = get_db_connection()
-        conn.close()
+        db.session.execute(text("SELECT 1"))
         return {"status": "database connected"}
     except Exception as e:
         return {"error": str(e)}, 500
 
 
+# ----------------------------
+# Error handlers
+# ----------------------------
 @app.errorhandler(404)
 @app.errorhandler(405)
+@app.errorhandler(403)
 def page_not_found(e):
     return render_template("404.html")
 
@@ -112,5 +130,8 @@ def handle_large_file(e):
     return redirect(request.url)
 
 
+# ----------------------------
+# Run
+# ----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
