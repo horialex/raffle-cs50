@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-
-from sqlalchemy import Enum, func
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import Enum
 
 from db import db
 

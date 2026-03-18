@@ -14,14 +14,17 @@ from flask import (
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
+from constants.countries import COUNTRIES
+from forms.user_form import UserForm
 from db import db
 from models.user_model import User
-from helpers.helpers import (
+from utils.helpers import (
     allowed_file,
     is_valid_email,
     is_valid_phone_number,
     login_required,
 )
+from utils.files import delete_profile_picture
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
@@ -43,86 +46,38 @@ def test():
 # ----------------------------
 @users_bp.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        first_name = request.form.get("firstName", "").strip()
-        last_name = request.form.get("lastName", "").strip()
-        username = request.form.get("username", "").strip()
-        email = request.form.get("email", "").strip()
-        phone = request.form.get("phone", "").strip()
-        country = request.form.get("country", "").strip()
-        address = request.form.get("address", "").strip()
-        password = request.form.get("password", "")
-        confirm_password = request.form.get("confirmation", "")
-        profile_picture = request.files.get("profilePicture")
+    form = UserForm()
+    form.country.choices = COUNTRIES
+    form.submit.label.text = "Create user"
+    upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
-        # ----------------------------
-        # Validation
-        # ----------------------------
-        if len(first_name) < 3:
-            flash("First name must be at least 3 characters", "error")
-            return render_template("register.html")
-        if len(last_name) < 3:
-            flash("Last name must be at least 3 characters", "error")
-            return render_template("register.html")
-        if len(username) < 3:
-            flash("Username must be at least 3 characters", "error")
-            return render_template("register.html")
-        if len(password) < 6:
-            flash("Password must be at least 6 characters", "error")
-            return render_template("register.html")
-        if password != confirm_password:
-            flash("Passwords do not match", "error")
-            return render_template("register.html")
-        if not country:
-            flash("Must provide country", "error")
-            return render_template("register.html")
-        if not email or not is_valid_email(email)[0]:
-            flash("Invalid email", "error")
-            return render_template("register.html")
-        if not phone or not is_valid_phone_number(phone)[0]:
-            flash("Invalid phone number", "error")
-            return render_template("register.html")
-        if len(address) < 6:
-            flash("Address must be at least 6 characters", "error")
-            return render_template("register.html")
-        if not profile_picture or profile_picture.filename == "":
-            flash("Must provide profile picture", "error")
-            return render_template("register.html")
+    if form.validate_on_submit():
+        hashed_password = hashlib.sha256(form.password.data.encode()).hexdigest()
 
-        # ----------------------------
-        # Save profile picture
-        # ----------------------------
-        pic_filename = secure_filename(profile_picture.filename)
-        if not allowed_file(pic_filename):
-            flash("Allowed profile pic formats: png, jpg, jpeg", "error")
-            return render_template("register.html")
+        # Handle form data
+        pic_name = None
+        if form.profile_picture.data:
+            pic_file = form.profile_picture.data
+            filename = secure_filename(pic_file.filename)
+            pic_name = f"{uuid.uuid1()}_{filename}"
+            pic_file.save(os.path.join(upload_folder, pic_name))
 
-        pic_name = f"{uuid.uuid1()}_{pic_filename}"
-        save_path = os.path.join(current_app.config["PROFILE_PICS_FOLDER"], pic_name)
-        profile_picture.save(save_path)
-
-        # ----------------------------
-        # Hash password
-        # ----------------------------
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        # hashed_password = generate_password_hash(password)
-
-        # ----------------------------
-        # Create user
-        # ----------------------------
         user = User(
-            first_name=first_name,
-            last_name=last_name,
-            username=username,
-            email=email,
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            username=form.username.data,
+            email=form.email.data,
             password=hashed_password,
-            phone=phone,
-            country=country,
-            address=address,
+            phone=form.phone.data,
+            country=form.country.data,
+            address=form.address.data,
             profile_picture=pic_name,
             last_login_at=datetime.now(timezone.utc),
         )
 
+        # ----------------------------
+        # Commit changes
+        # ----------------------------
         try:
             db.session.add(user)
             db.session.commit()
@@ -130,10 +85,10 @@ def register():
             db.session.rollback()
             if "Duplicate entry" in str(e):
                 flash("Username or email already exists", "error")
-                return render_template("register.html")
+                return render_template("register_user.html", form=form)
             else:
                 flash(f"Error creating user: {str(e)}", "error")
-                return render_template("register.html")
+                return render_template("register_user.html", form=form)
 
         # ----------------------------
         # Log user in
@@ -145,7 +100,7 @@ def register():
         flash("Registration successful! You are now logged in.", "success")
         return redirect("/")
 
-    return render_template("register.html")
+    return render_template("register_user.html", form=form)
 
 
 # ----------------------------
@@ -199,8 +154,89 @@ def get_users():
 # ----------------------------
 @users_bp.route("/update/<int:id>", methods=["GET", "POST"])
 def update(id):
-    user: User = User.query.get_or_404(id)  # fetch user or 404 if not found
-    if request.method == "POST":
-        # handle form submission here
-        ...
-    return render_template("update-user.html", user=user)
+    user: User = User.query.get_or_404(id)
+    form = UserForm(obj=user)
+    form.country.choices = COUNTRIES
+    form.submit.label.text = "Update user"
+    upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
+
+    if form.validate_on_submit():
+
+        # Validate uniqueness
+        # ----------------------------
+        if not validate_updated_user(user, form):
+            return render_template("update_user.html", form=form, user=user)
+
+        # ----------------------------
+        # Update basic fields
+        # ----------------------------
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        user.username = form.username.data
+        user.email = form.email.data
+        user.phone = form.phone.data
+        user.country = form.country.data
+        user.address = form.address.data
+
+        if form.password.data:
+            user.password = hashlib.sha256(form.password.data.encode()).hexdigest()
+            # recommended:
+            # user.password = generate_password_hash(form.password.data)
+
+        remove_requested = request.form.get("remove_picture")
+        new_picture = form.profile_picture.data
+
+        if new_picture:
+            filename = secure_filename(new_picture.filename)
+            pic_name = f"{uuid.uuid1()}_{filename}"
+
+            save_path = os.path.join(upload_folder, pic_name)
+            new_picture.save(save_path)
+
+            delete_profile_picture(user.profile_picture)
+            user.profile_picture = pic_name
+
+        elif remove_requested:
+            delete_profile_picture(user.profile_picture)
+            user.profile_picture = None
+
+        try:
+            db.session.commit()
+            flash("User updated successfully", "success")
+            return redirect(f"/update/{user.id}")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating user: {str(e)}", "error")
+
+    if form.is_submitted():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", "error")
+
+    return render_template("update_user.html", form=form, user=user)
+
+
+# ---------------
+# HELPER METHDOS
+# ---------------
+
+
+def validate_updated_user(user: User, form: UserForm) -> bool:
+    """
+    Checks if username or email are unique before updating.
+    If a value is not unique, flashes a message and resets the form field.
+    Returns True if validation passed, False if there was a conflict.
+    """
+    if form.username.data != user.username:
+        if User.query.filter_by(username=form.username.data).first():
+            flash("Username already taken.", "error")
+            form.username.data = user.username
+            return False
+
+    if form.email.data != user.email:
+        if User.query.filter_by(email=form.email.data).first():
+            form.email.data = user.email
+            flash("Email already in use.", "error")
+            return False
+
+    return True
