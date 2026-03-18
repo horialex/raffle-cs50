@@ -178,17 +178,11 @@ def update(id):
         user.country = form.country.data
         user.address = form.address.data
 
-        # ----------------------------
-        # Update password (optional)
-        # ----------------------------
         if form.password.data:
             user.password = hashlib.sha256(form.password.data.encode()).hexdigest()
             # recommended:
             # user.password = generate_password_hash(form.password.data)
 
-        # ----------------------------
-        # Picture handling
-        # ----------------------------
         remove_requested = request.form.get("remove_picture")
         new_picture = form.profile_picture.data
 
@@ -206,9 +200,6 @@ def update(id):
             delete_profile_picture(user.profile_picture)
             user.profile_picture = None
 
-        # ----------------------------
-        # Commit changes
-        # ----------------------------
         try:
             db.session.commit()
             flash("User updated successfully", "success")
@@ -217,9 +208,6 @@ def update(id):
             db.session.rollback()
             flash(f"Error updating user: {str(e)}", "error")
 
-    # ----------------------------
-    # Validation errors
-    # ----------------------------
     if form.is_submitted():
         for field, errors in form.errors.items():
             for error in errors:
