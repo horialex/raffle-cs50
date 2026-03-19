@@ -46,8 +46,20 @@ Home
                 {% endif %}
             </td>
             <td>
-                <a href="{{ url_for('users_bp.update', id=user.id) }}" class="btn-edit">Edit</a>
-                <a href="#" class="btn-delete">DELETE</a> <!-- TODO: Update when implement delete -->
+                <div class="btn-group">
+                    <button type="button" class="btn dropdown-toggle p-0 border-0 bg-transparent shadow-none"
+                        data-bs-toggle="dropdown">
+                        Action
+                    </button>
+                    <ul class="dropdown-menu" style="min-width: auto;">
+                        <li><a class="dropdown-item text-secondary"
+                                href="{{ url_for('users_bp.update', id=user.id) }}">Edit</a></li>
+                        <li>
+                            <hr class="dropdown-divider mx-1">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
+                    </ul>
+                </div>
             </td>
         </tr>
         {% endfor %}
