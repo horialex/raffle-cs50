@@ -53,11 +53,19 @@ Home
                     </button>
                     <ul class="dropdown-menu" style="min-width: auto;">
                         <li><a class="dropdown-item text-secondary"
-                                href="{{ url_for('users_bp.update', id=user.id) }}">Edit</a></li>
+                                href="{{ url_for('users_bp.update', id=user.id) }}">Edit</a>
+                        </li>
                         <li>
                             <hr class="dropdown-divider mx-1">
                         </li>
-                        <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
+                        <li>
+                            <form action="{{ url_for('users_bp.delete', id=user.id) }}" method="POST"
+                                style="margin: 0;">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    Delete
+                                </button>
+                            </form>
+                        </li>
                     </ul>
                 </div>
             </td>
