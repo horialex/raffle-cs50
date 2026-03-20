@@ -53,16 +53,55 @@ Home
                     </button>
                     <ul class="dropdown-menu" style="min-width: auto;">
                         <li><a class="dropdown-item text-secondary"
-                                href="{{ url_for('users_bp.update', id=user.id) }}">Edit</a></li>
+                                href="{{ url_for('users_bp.update', id=user.id) }}">Edit</a>
+                        </li>
                         <li>
                             <hr class="dropdown-divider mx-1">
                         </li>
-                        <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
+                        <li>
+                            <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteUserModal" data-user-id="{{ user.id }}"
+                                data-username="{{ user.username }}">
+                                Delete
+                            </button>
+                        </li>
                     </ul>
                 </div>
+
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<!--Confirm delete user modal-->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm delete user</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Are you sure you want to delete user <strong id="modalUsername"></strong>?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <form id="deleteUserForm" method="POST">
+                    <button type="submit" class="btn btn-danger">
+                        Confirm delete
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 {% endblock %}

@@ -153,6 +153,7 @@ def get_users():
 # Edit user
 # ----------------------------
 @users_bp.route("/update/<int:id>", methods=["GET", "POST"])
+@login_required
 def update(id):
     user: User = User.query.get_or_404(id)
     form = UserForm(obj=user)
@@ -216,11 +217,26 @@ def update(id):
     return render_template("update_user.html", form=form, user=user)
 
 
+@users_bp.route("/delete/<int:id>", methods=["POST"])
+@login_required
+def delete(id):
+    user_to_delete: User = User.query.get_or_404(id)
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        delete_profile_picture(user_to_delete.profile_picture)
+
+        flash("User deleted successfully", "success")
+        return redirect(f"/users")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating user: {str(e)}", "error")
+
+
 # ---------------
 # HELPER METHDOS
 # ---------------
-
-
 def validate_updated_user(user: User, form: UserForm) -> bool:
     """
     Checks if username or email are unique before updating.
