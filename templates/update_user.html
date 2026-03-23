@@ -17,6 +17,7 @@
                     <form method="post" action="{{ url_for('users_bp.update', id=user.id) }}"
                         enctype="multipart/form-data">
                         {{ form.hidden_tag() }}
+                        <input type="hidden" name="next" value="{{ next }}">
 
                         <div class="row mb-5 justify-content-center">
                             <div class="col-md-6 text-center">
@@ -85,8 +86,9 @@
                             <div class="col-12 mt-5 text-center">
                                 {{ form.submit(class="btn btn-secondary btn-lg px-5 shadow-sm") }}
                                 <div class="mt-3">
-                                    <a href="{{ url_for('users_bp.get_users') }}"
-                                        class="btn btn-link text-muted">Cancel</a>
+                                    <!-- <a href="{{ url_for('users_bp.get_users') }}"
+                                        class="btn btn-link text-muted">Cancel</a> -->
+                                    <a href="{{ next }}" class="btn btn-link text-muted">Cancel</a>
                                 </div>
                             </div>
                         </div>
