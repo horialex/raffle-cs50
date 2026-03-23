@@ -53,7 +53,7 @@ Home
                     </button>
                     <ul class="dropdown-menu" style="min-width: auto;">
                         <li><a class="dropdown-item text-secondary"
-                                href="{{ url_for('users_bp.update', id=user.id) }}">Edit</a>
+                                href="{{ url_for('users_bp.update', id=user.id, next=url_for('users_bp.get_users')) }}">Edit</a>
                         </li>
                         <li>
                             <hr class="dropdown-divider mx-1">

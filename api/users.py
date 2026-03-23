@@ -10,6 +10,7 @@ from flask import (
     request,
     session,
     current_app,
+    url_for,
 )
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
@@ -20,6 +21,7 @@ from db import db
 from models.user_model import User
 from utils.helpers import (
     allowed_file,
+    is_safe_url,
     is_valid_email,
     is_valid_phone_number,
     login_required,
@@ -161,12 +163,22 @@ def update(id):
     form.submit.label.text = "Update user"
     upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
+    # Get next URL
+    # ✅ get next from GET or POST
+    next_url = request.args.get("next") or request.form.get("next")
+
+    # ✅ fallback if missing or unsafe
+    if not next_url or not is_safe_url(next_url):
+        next_url = url_for("index")
+
     if form.validate_on_submit():
 
         # Validate uniqueness
         # ----------------------------
         if not validate_updated_user(user, form):
-            return render_template("update_user.html", form=form, user=user)
+            return render_template(
+                "update_user.html", form=form, user=user, next=next_url
+            )
 
         # ----------------------------
         # Update basic fields
@@ -204,7 +216,10 @@ def update(id):
         try:
             db.session.commit()
             flash("User updated successfully", "success")
-            return redirect(f"/update/{user.id}")
+            # return redirect(f"/update/{user.id}")
+
+            # ✅ THIS is the important redirect
+            return redirect(next_url)
         except Exception as e:
             db.session.rollback()
             flash(f"Error updating user: {str(e)}", "error")
@@ -214,7 +229,7 @@ def update(id):
             for error in errors:
                 flash(f"{field}: {error}", "error")
 
-    return render_template("update_user.html", form=form, user=user)
+    return render_template("update_user.html", form=form, user=user, next=next_url)
 
 
 @users_bp.route("/delete/<int:id>", methods=["POST"])

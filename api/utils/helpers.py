@@ -1,6 +1,6 @@
 import requests
 
-from flask import redirect, render_template, session
+from flask import redirect, render_template, request, session
 from functools import wraps
 from email_validator import validate_email, EmailNotValidError
 import phonenumbers
@@ -10,6 +10,7 @@ from phonenumbers.phonenumberutil import (
     NumberParseException,
     PhoneNumberType,
 )
+from requests.compat import urljoin, urlparse
 
 ALLOWED_PROFILE_PIC_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -129,3 +130,9 @@ def lookup(symbol):
 def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
+
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc
