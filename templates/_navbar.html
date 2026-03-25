@@ -15,25 +15,58 @@
                 <li class="nav-item"><a class="nav-link" href="/raffles">Raffles</a></li>
                 <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
             </ul>
+
+            <!-- Mobile menu (added) -->
+            <ul class="navbar-nav me-auto d-md-none d-flex align-items-center"> <!-- ADDED: mobile-only menu -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('home')) }}">
+                        Profile preferences
+                    </a>
+                </li>
+
+                {% if not current_user.is_admin %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/wallet">Wallet</a>
+                </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Log Out</a>
+                </li>
+            </ul>
+            <!-- End mobile menu (added) -->
+
             <ul class="navbar-nav ms-auto d-flex align-items-center">
                 <!-- <li class="nav-item dropdown"> -->
-                <li class="nav-item dropdown d-none d-md-block"></li>
-                <a class="nav-link d-flex align-items-center p-0 px-2" href="#" id="userDropdown" role="button"
-                    data-bs-toggle="dropdown">
+                <li class="nav-item dropdown d-none d-md-block">
+                    <a class="nav-link d-flex align-items-center p-0 px-2" href="#" id="userDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
 
-                    <img class="rounded-circle img-fluid shadow-lg avatar"
-                        src="{{ url_for('static', filename='uploads/images/' + current_user.profile_picture) if current_user.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
-                        alt="user avatar">
+                        <img class="rounded-circle img-fluid shadow-lg avatar"
+                            src="{{ url_for('static', filename='uploads/images/' + current_user.profile_picture) if current_user.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
+                            alt="user avatar">
 
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item"
-                            href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('home')) }}">Profile
-                            preferences</a></li>
-                    <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
-                    <li><a class="dropdown-item" href="/logout">Log Out</a></li>
-                </ul>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="ms-1"
+                            viewBox="0 0 16 16">
+                            <path d="M3.204 5h9.592L8 10.481 3.204 5z" />
+                        </svg>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item"
+                                href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('home')) }}">
+                                Profile preferences
+                            </a></li>
+
+                        {% if not current_user.is_admin %}
+                        <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
+                        {% endif %}
+
+                        <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                    </ul>
                 </li>
+                <!-- </li> -->
                 <!-- <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li> -->
             </ul>
             {% else %}
