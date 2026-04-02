@@ -27,3 +27,7 @@ class UserForm(FlaskForm):
     )
 
     submit = SubmitField("Submit")
+
+
+class UserSelfUpdateForm(UserForm):
+    old_password = PasswordField("Old Password", validators=[DataRequired()])

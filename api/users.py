@@ -16,7 +16,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
 from constants.countries import COUNTRIES
-from forms.user_form import UserForm
+from forms.user_form import UserForm, UserSelfUpdateForm
 from db import db
 from models.user_model import User
 from utils.helpers import (
@@ -157,8 +157,14 @@ def get_users():
 @users_bp.route("/update/<int:id>", methods=["GET", "POST"])
 @login_required
 def update(id):
-    user: User = User.query.get_or_404(id)
-    form = UserForm(obj=user)
+    target_user: User = User.query.get_or_404(id)
+
+    # Choose the right form
+    if target_user.is_admin:
+        form = UserForm(obj=target_user)
+    else:
+        form = UserSelfUpdateForm(obj=target_user)
+
     form.country.choices = COUNTRIES
     form.submit.label.text = "Update user"
     upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
@@ -175,24 +181,24 @@ def update(id):
 
         # Validate uniqueness
         # ----------------------------
-        if not validate_updated_user(user, form):
+        if not validate_updated_user(target_user, form):
             return render_template(
-                "update_user.html", form=form, user=user, next=next_url
+                "update_user.html", form=form, user=target_user, next=next_url
             )
 
         # ----------------------------
         # Update basic fields
         # ----------------------------
-        user.first_name = form.first_name.data
-        user.last_name = form.last_name.data
-        user.username = form.username.data
-        user.email = form.email.data
-        user.phone = form.phone.data
-        user.country = form.country.data
-        user.address = form.address.data
+        target_user.first_name = form.first_name.data
+        target_user.last_name = form.last_name.data
+        target_user.username = form.username.data
+        target_user.email = form.email.data
+        target_user.phone = form.phone.data
+        target_user.country = form.country.data
+        target_user.address = form.address.data
 
         if form.password.data:
-            user.password = hashlib.sha256(form.password.data.encode()).hexdigest()
+            target_user.password = hashlib.sha256(form.password.data.encode()).hexdigest()
             # recommended:
             # user.password = generate_password_hash(form.password.data)
 
@@ -206,12 +212,12 @@ def update(id):
             save_path = os.path.join(upload_folder, pic_name)
             new_picture.save(save_path)
 
-            delete_profile_picture(user.profile_picture)
-            user.profile_picture = pic_name
+            delete_profile_picture(target_user.profile_picture)
+            target_user.profile_picture = pic_name
 
         elif remove_requested:
-            delete_profile_picture(user.profile_picture)
-            user.profile_picture = None
+            delete_profile_picture(target_user.profile_picture)
+            target_user.profile_picture = None
 
         try:
             db.session.commit()
@@ -229,7 +235,7 @@ def update(id):
             for error in errors:
                 flash(f"{field}: {error}", "error")
 
-    return render_template("update_user.html", form=form, user=user, next=next_url)
+    return render_template("update_user.html", form=form, user=target_user, next=next_url)
 
 
 @users_bp.route("/delete/<int:id>", methods=["POST"])
