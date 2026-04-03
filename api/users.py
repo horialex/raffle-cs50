@@ -12,6 +12,7 @@ from flask import (
     current_app,
     url_for,
 )
+
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
@@ -27,6 +28,7 @@ from utils.helpers import (
     login_required,
 )
 from utils.files import delete_profile_picture
+from werkzeug.security import check_password_hash
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
@@ -54,7 +56,7 @@ def register():
     upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
     if form.validate_on_submit():
-        hashed_password = hashlib.sha256(form.password.data.encode()).hexdigest()
+        hashed_password = generate_password_hash(form.password.data)
 
         # Handle form data
         pic_name = None
@@ -157,23 +159,32 @@ def get_users():
 @users_bp.route("/update/<int:id>", methods=["GET", "POST"])
 @login_required
 def update(id):
+    current_user_id = session.get("user_id")
+
+    actor: User = User.query.get_or_404(current_user_id)
     target_user: User = User.query.get_or_404(id)
 
+    is_self = actor.id == target_user.id
+    is_admin = actor.is_admin
+
+    if not is_self and not is_admin:
+        abort(403)
+
     # Choose the right form
-    if target_user.is_admin:
-        form = UserForm(obj=target_user)
-    else:
+    if is_self:
         form = UserSelfUpdateForm(obj=target_user)
+    else:
+        form = UserForm(obj=target_user)
 
     form.country.choices = COUNTRIES
     form.submit.label.text = "Update user"
     upload_folder = current_app.config["PROFILE_PICS_FOLDER"]
 
     # Get next URL
-    # ✅ get next from GET or POST
+    # Get next from GET or POST
     next_url = request.args.get("next") or request.form.get("next")
 
-    # ✅ fallback if missing or unsafe
+    # Fallback if missing or unsafe
     if not next_url or not is_safe_url(next_url):
         next_url = url_for("index")
 
@@ -198,11 +209,35 @@ def update(id):
         target_user.address = form.address.data
 
         if form.password.data:
-            target_user.password = hashlib.sha256(form.password.data.encode()).hexdigest()
-            # recommended:
-            # user.password = generate_password_hash(form.password.data)
+            # TODO: Update from here onward
+            old_password = (
+                form.old_password.data if hasattr(form, "old_password") else None
+            )
 
-        remove_requested = request.form.get("remove_picture")
+            if is_self:
+                if not old_password:
+                    flash("Old password is required", "error")
+                    return render_template(
+                        "update_user.html", form=form, user=target_user, next=next_url
+                    )
+                if not check_password_hash(target_user.password, old_password):
+                    flash("Old password is not correct", "error")
+                    return render_template(
+                        "update_user.html", form=form, user=target_user, next=next_url
+                    )
+
+            elif not is_admin:
+                abort(403)
+
+            if not form.password.data == form.confirm_password.data:
+                flash("Password and Confirm Password must match", "error")
+                return render_template(
+                    "update_user.html", form=form, user=target_user, next=next_url
+                )
+
+            target_user.password = generate_password_hash(form.password.data)
+
+        remove_photo_requested = request.form.get("remove_picture")
         new_picture = form.profile_picture.data
 
         if new_picture:
@@ -215,15 +250,13 @@ def update(id):
             delete_profile_picture(target_user.profile_picture)
             target_user.profile_picture = pic_name
 
-        elif remove_requested:
+        elif remove_photo_requested:
             delete_profile_picture(target_user.profile_picture)
             target_user.profile_picture = None
 
         try:
             db.session.commit()
             flash("User updated successfully", "success")
-            # return redirect(f"/update/{user.id}")
-
             # ✅ THIS is the important redirect
             return redirect(next_url)
         except Exception as e:
@@ -235,7 +268,9 @@ def update(id):
             for error in errors:
                 flash(f"{field}: {error}", "error")
 
-    return render_template("update_user.html", form=form, user=target_user, next=next_url)
+    return render_template(
+        "update_user.html", form=form, user=target_user, next=next_url
+    )
 
 
 @users_bp.route("/delete/<int:id>", methods=["POST"])
@@ -277,3 +312,23 @@ def validate_updated_user(user: User, form: UserForm) -> bool:
             return False
 
     return True
+
+
+# TODO: Implement this
+def update_password(
+    actor: User, target_user: User, new_password: str, old_password: str | None = None
+):
+    # if is_self:
+    if actor.id == target_user.id:
+        if not old_password:
+            flash("Old password is required", "error")
+            return render_template(
+                "update_user.html", form=form, user=target_user, next=next_url
+            )
+        if not check_password_hash(target_user.password, old_password):
+            flash("Old password is not correct", "error")
+            return render_template(
+                "update_user.html", form=form, user=target_user, next=next_url
+            )
+    elif not actor.is_admin:
+        abort(403)

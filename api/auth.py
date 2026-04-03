@@ -4,9 +4,7 @@ from forms.login_form import LoginForm
 from db import db
 from models.user_model import User
 from datetime import datetime, timezone
-
-
-# from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth_bp", __name__)
 
@@ -31,12 +29,7 @@ def login():
             flash("Invalid username or password", "error")
             return render_template("login.html", form=form)
 
-        # if not check_password_hash(user.password, password):
-        #     flash("Invalid username or password", "error")
-        #     return render_template("login.html")
-
-        hashed_input = hashlib.sha256(password.encode()).hexdigest()
-        if user.password != hashed_input:
+        if not check_password_hash(user.password, password):
             flash("Invalid username or password", "error")
             return render_template("login.html", form=form)
 
