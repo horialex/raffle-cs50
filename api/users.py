@@ -16,6 +16,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
+from exceptions.user_exceptions import OldPasswordIncorrect, OldPasswordRequired
 from constants.countries import COUNTRIES
 from forms.user_form import UserForm, UserSelfUpdateForm
 from db import db
@@ -29,6 +30,7 @@ from utils.helpers import (
 )
 from utils.files import delete_profile_picture
 from werkzeug.security import check_password_hash
+from werkzeug.exceptions import Forbidden
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
@@ -209,33 +211,25 @@ def update(id):
         target_user.address = form.address.data
 
         if form.password.data:
-            # TODO: Update from here onward
-            old_password = (
-                form.old_password.data if hasattr(form, "old_password") else None
-            )
-
-            if is_self:
-                if not old_password:
-                    flash("Old password is required", "error")
-                    return render_template(
-                        "update_user.html", form=form, user=target_user, next=next_url
-                    )
-                if not check_password_hash(target_user.password, old_password):
-                    flash("Old password is not correct", "error")
-                    return render_template(
-                        "update_user.html", form=form, user=target_user, next=next_url
-                    )
-
-            elif not is_admin:
+            old_password = form.old_password.data if is_self else None
+            try:
+                update_password(
+                    actor=actor,
+                    target_user=target_user,
+                    new_password=form.password.data,
+                    old_password=old_password,
+                )
+            except OldPasswordRequired:
+                form.old_password.errors.append("Old password is required")
+            except OldPasswordIncorrect:
+                form.old_password.errors.append("Old password is not correct")
+            except Forbidden:
                 abort(403)
 
-            if not form.password.data == form.confirm_password.data:
-                flash("Password and Confirm Password must match", "error")
+            if form.errors:
                 return render_template(
                     "update_user.html", form=form, user=target_user, next=next_url
                 )
-
-            target_user.password = generate_password_hash(form.password.data)
 
         remove_photo_requested = request.form.get("remove_picture")
         new_picture = form.profile_picture.data
@@ -314,21 +308,16 @@ def validate_updated_user(user: User, form: UserForm) -> bool:
     return True
 
 
-# TODO: Implement this
+# Update password helper
 def update_password(
     actor: User, target_user: User, new_password: str, old_password: str | None = None
 ):
-    # if is_self:
     if actor.id == target_user.id:
         if not old_password:
-            flash("Old password is required", "error")
-            return render_template(
-                "update_user.html", form=form, user=target_user, next=next_url
-            )
+            raise OldPasswordRequired()
         if not check_password_hash(target_user.password, old_password):
-            flash("Old password is not correct", "error")
-            return render_template(
-                "update_user.html", form=form, user=target_user, next=next_url
-            )
+            raise OldPasswordIncorrect()
     elif not actor.is_admin:
-        abort(403)
+        raise Forbidden()
+
+    target_user.password = generate_password_hash(new_password)
