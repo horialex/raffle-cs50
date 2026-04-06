@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // Hide flash messages
-    // setTimeout(function () {
-    //     let alerts = document.querySelectorAll(".alert");
-    //     alerts.forEach(function (alert) {
-    //         let bsAlert = new bootstrap.Alert(alert);
-    //         bsAlert.close();
-    //     });
-    // }, 2000); // 2000 ms = 2 seconds
+    setTimeout(function () {
+        let alerts = document.querySelectorAll(".alert");
+        alerts.forEach(function (alert) {
+            let bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 2500); // 2500 ms = 2.5 seconds
 
     const deleteModal = document.getElementById('deleteUserModal');
 
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const username = button.getAttribute('data-username');
 
         const form = document.getElementById('deleteUserForm');
-        form.action = `/delete/${userId}`;
+        form.action = `/users/delete/${userId}`;
 
         document.getElementById('modalUsername').textContent = username;
     });

@@ -54,6 +54,11 @@
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <p class="dropdown-item">
+                                <strong>{{current_user.first_name}} {{current_user.last_name}}</strong>
+                            </p>
+                        </li>
                         <li><a class="dropdown-item"
                                 href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('home')) }}">
                                 Profile preferences

@@ -18,7 +18,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
 from exceptions.user_exceptions import OldPasswordIncorrect, OldPasswordRequired
 from constants.countries import COUNTRIES
-from forms.user_form import UserForm, UserSelfUpdateForm
+from forms.user_form import DeleteAccountForm, UserForm, UserSelfUpdateForm
 from db import db
 from models.user_model import User
 from utils.helpers import (
@@ -188,7 +188,7 @@ def update(id):
 
     # Fallback if missing or unsafe
     if not next_url or not is_safe_url(next_url):
-        next_url = url_for("index")
+        next_url = url_for("home")
 
     if form.validate_on_submit():
 
@@ -267,21 +267,71 @@ def update(id):
     )
 
 
-@users_bp.route("/delete/<int:id>", methods=["POST"])
+# ------------------------
+# DELETE ACCOUNT AS ADMIN
+# ------------------------
+@users_bp.route("/users/delete/<int:id>", methods=["POST"])
 @login_required
 def delete(id):
+    current_user_id = session.get("user_id")
+    actor: User = User.query.get_or_404(current_user_id)
+    if not actor.is_admin:
+        abort(403)
+
     user_to_delete: User = User.query.get_or_404(id)
+    profile_picture = user_to_delete.profile_picture
+
     try:
         db.session.delete(user_to_delete)
         db.session.commit()
-        delete_profile_picture(user_to_delete.profile_picture)
+
+        if profile_picture:
+            delete_profile_picture(profile_picture)
 
         flash("User deleted successfully", "success")
-        return redirect(f"/users")
+        return redirect(url_for("users_bp.get_users"))
 
     except Exception as e:
         db.session.rollback()
-        flash(f"Error updating user: {str(e)}", "error")
+        flash(f"Error deleting user: {str(e)}", "danger")
+        return redirect(url_for("users_bp.get_users"))
+
+
+# -----------------------
+# DELETE ACCOUNT AS SELF
+# -----------------------
+@users_bp.route("/account/delete", methods=["POST"])
+@login_required
+def delete_account():
+    current_user_id = session.get("user_id")
+    form = DeleteAccountForm()
+
+    if not form.validate_on_submit():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(error, "danger")
+        return redirect(url_for("users_bp.update", id=current_user_id))
+
+    user_to_delete: User = User.query.get_or_404(current_user_id)
+    picture_to_delete = user_to_delete.profile_picture
+
+    if not check_password_hash(user_to_delete.password, form.password.data):
+        flash("Incorrect password,", "danger")
+        return redirect(url_for("users_bp.update", id=current_user_id))
+
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+
+        if picture_to_delete:
+            delete_profile_picture(picture_to_delete)
+
+        flash("User deleted succesfully,", "success")
+        return redirect(url_for("auth_bp.login"))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting account: {str(e)}", "danger")
+        return redirect(url_for("users_bp.update", id=current_user_id))
 
 
 # ---------------
