@@ -11,7 +11,9 @@ from models.user_model import User
 from db import db
 from users import users_bp
 from auth import auth_bp
-from utils.helpers import login_required, usd
+from utils.helpers import login_required
+from flask_wtf.csrf import CSRFProtect
+
 
 # ----------------------------
 # Config
@@ -28,6 +30,7 @@ app = Flask(
 )
 
 app.config["SECRET_KEY"] = os.getenv("APP_SECRET")
+csrf = CSRFProtect(app)
 
 # ----------------------------
 # SQLAlchemy setup + Migrations
@@ -54,12 +57,11 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_UPLOAD_SIZE
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
 
-# Custom Jinja filter
-app.jinja_env.filters["usd"] = usd
 
 # Flask-Session config
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+
 Session(app)
 
 # ----------------------------

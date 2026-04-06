@@ -42,3 +42,13 @@ class UserForm(FlaskForm):
 
 class UserSelfUpdateForm(UserForm):
     old_password = PasswordField("Old Password", validators=[Optional()])
+
+
+class DeleteAccountForm(FlaskForm):
+    confirm_text = StringField("Type DELETE to confirm", validators=[DataRequired()])
+    password = PasswordField("Current password", validators=[DataRequired()])
+    submit = SubmitField("Delete Account")
+
+    def validate_confirm_text(self, field):
+        if field.data != "DELETE":
+            raise ValidationError("Please type DELETE to confirm.")
