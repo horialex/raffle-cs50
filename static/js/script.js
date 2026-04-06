@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Hide flash messages
+    // setTimeout(function () {
+    //     let alerts = document.querySelectorAll(".alert");
+    //     alerts.forEach(function (alert) {
+    //         let bsAlert = new bootstrap.Alert(alert);
+    //         bsAlert.close();
+    //     });
+    // }, 2000); // 2000 ms = 2 seconds
+
     const deleteModal = document.getElementById('deleteUserModal');
 
     deleteModal.addEventListener('show.bs.modal', function (event) {
@@ -12,4 +22,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('modalUsername').textContent = username;
     });
+
 });
