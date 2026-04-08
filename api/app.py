@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from models.user_model import User
+from models.raffle_model import Raffle
 from db import db
 from users import users_bp
 from auth import auth_bp
