@@ -18,7 +18,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
 from exceptions.user_exceptions import OldPasswordIncorrect, OldPasswordRequired
 from constants.countries import COUNTRIES
-from forms.user_form import DeleteAccountForm, UserForm, UserSelfUpdateForm
+from forms.user_form import DeleteSelfAccountForm, UserForm, UserSelfUpdateForm
 from db import db
 from models.user_model import User
 from utils.helpers import (
@@ -304,7 +304,7 @@ def delete(id):
 @login_required
 def delete_account():
     current_user_id = session.get("user_id")
-    form = DeleteAccountForm()
+    form = DeleteSelfAccountForm()
 
     if not form.validate_on_submit():
         for field, errors in form.errors.items():
