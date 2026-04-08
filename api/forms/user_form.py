@@ -44,7 +44,7 @@ class UserSelfUpdateForm(UserForm):
     old_password = PasswordField("Old Password", validators=[Optional()])
 
 
-class DeleteAccountForm(FlaskForm):
+class DeleteSelfAccountForm(FlaskForm):
     confirm_text = StringField("Type DELETE to confirm", validators=[DataRequired()])
     password = PasswordField("Current password", validators=[DataRequired()])
     submit = SubmitField("Delete Account")
