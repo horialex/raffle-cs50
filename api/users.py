@@ -110,7 +110,7 @@ def register():
 
 
 # ----------------------------
-# Get users list
+# List users
 # ----------------------------
 @users_bp.route("/users", methods=["GET"])
 @login_required
@@ -316,7 +316,7 @@ def delete_account():
     picture_to_delete = user_to_delete.profile_picture
 
     if not check_password_hash(user_to_delete.password, form.password.data):
-        flash("Incorrect password,", "danger")
+        flash("Incorrect password.", "danger")
         return redirect(url_for("users_bp.update", id=current_user_id))
 
     try:
@@ -326,7 +326,8 @@ def delete_account():
         if picture_to_delete:
             delete_profile_picture(picture_to_delete)
 
-        flash("User deleted succesfully,", "success")
+        session.clear()
+        flash("Account deleted successfully.", "success")
         return redirect(url_for("auth_bp.login"))
     except Exception as e:
         db.session.rollback()

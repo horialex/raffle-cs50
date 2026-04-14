@@ -1,51 +1,49 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Users
+Raffles
 {% endblock %}
 
 {% block main %}
-<h1 class="mb-4">Users List</h1>
-<table id="users_table">
+<!-- <form method="GET" class="mb-3">
+    <label for="status">Status:</label>
+    <select name="status" id="status" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for status in visible_statuses %}
+        <option value="{{ status }}" {% if selected_status==status %}selected{% endif %}>
+            {{ status|capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+</form> -->
+
+<h1 class="mb-4">Raffles List</h1>
+<table id="raffles_table">
     <thead>
         <tr>
             <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Country</th>
-            <th>Address</th>
-
-            <th>Created date</th>
-            <th>Last login date</th>
-            <th>Profile picture</th>
+            <th>Creator</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Ticket Price</th>
+            <th>Created Date</th>
+            <th>Due Date</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for user in users %}
+        {% for raffle in raffles %}
         <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.firstName }}</td>
-            <td>{{ user.lastName }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.phone }}</td>
-            <td>{{ user.country }}</td>
-            <td>{{ user.address }}</td>
-            <td>{{ user.createdAt }}</td>
-            <td>{{ user.lastLogin }}</td>
-            <td>
-                {% if user.profilePicture %}
-                <img src="{{ url_for('static', filename='uploads/images/' ~ user.profilePicture) }}"
-                    alt="Profile Picture" style="max-width: 65px; height: auto;">
-                {% else %}
-                N/A
-                {% endif %}
-            </td>
-            <td>
+            <td>{{ raffle.id }}</td>
+            <td>{{ raffle.creator_id }}</td>
+            <td>{{ raffle.title }}</td>
+            <td>{{ raffle.description }}</td>
+            <td>{{ raffle.status }}</td>
+            <td>{{ raffle.ticket_price }}</td>
+            <td>{{ raffle.created_date }}</td>
+            <td>{{ raffle.due_date }}</td>
+            <!-- <td>
                 <div class="btn-group">
                     <button type="button" class="btn dropdown-toggle p-0 border-0 bg-transparent shadow-none"
                         data-bs-toggle="dropdown">
@@ -67,15 +65,14 @@ Users
                         </li>
                     </ul>
                 </div>
-
-            </td>
+            </td> -->
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<!--Confirm delete user modal-->
-<div class="modal fade" id="deleteUserModal" tabindex="-1">
+<!--Confirm delete raffle modal-->
+<!-- <div class="modal fade" id="deleteUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
 
@@ -104,6 +101,6 @@ Users
 
         </div>
     </div>
-</div>
+</div> -->
 
 {% endblock %}
