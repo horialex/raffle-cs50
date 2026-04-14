@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Create raffle
+{% endblock %}
+
+{% block main %}
+<div id="main" class="py-2">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+
+                <div class="card shadow border-0">
+                    <div class="card-body bg-light rounded shadow-sm p-3 p-md-4">
+
+                        <h2 class="text-center mb-2 fw-bold">Create Raffle</h2>
+                        <p class="text-center text-muted mb-4">
+                            Set up your raffle and let users join
+                        </p>
+
+                        <form action="{{ url_for('raffle_bp.create_raffle') }}" method="POST" novalidate>
+                            {{ form.hidden_tag() }}
+
+                            <div class="mb-3">
+                                {{ form.title.label(class="form-label fw-semibold") }}
+                                {{ form.title(
+                                class="form-control" + (" is-invalid" if form.title.errors else ""),
+                                placeholder="e.g. iPhone 15 Giveaway"
+                                ) }}
+                                {% for error in form.title.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.description.label(class="form-label fw-semibold") }}
+                                {{ form.description(
+                                class="form-control" + (" is-invalid" if form.description.errors else ""),
+                                placeholder="Describe the raffle item..."
+                                ) }}
+                                {% for error in form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    {{ form.ticket_price.label(class="form-label fw-semibold") }}
+                                    {{ form.ticket_price(
+                                    class="form-control" + (" is-invalid" if form.ticket_price.errors else ""),
+                                    placeholder="e.g. 10"
+                                    ) }}
+                                    {% for error in form.ticket_price.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    {{ form.minimum_required_tickets.label(class="form-label fw-semibold") }}
+                                    {{ form.minimum_required_tickets(
+                                    class="form-control" + (" is-invalid" if form.minimum_required_tickets.errors else
+                                    ""),
+                                    placeholder="e.g. 5"
+                                    ) }}
+                                    {% for error in form.minimum_required_tickets.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-1">
+                                <div class="col-12 col-md-6">
+                                    {{ form.maximum_tickets_per_user.label(class="form-label fw-semibold") }}
+                                    {{ form.maximum_tickets_per_user(
+                                    class="form-control" + (" is-invalid" if form.maximum_tickets_per_user.errors else
+                                    ""),
+                                    placeholder="e.g. 2"
+                                    ) }}
+                                    {% for error in form.maximum_tickets_per_user.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-12 col-md-3">
+                                    {{ form.due_date_date.label(class="form-label fw-semibold") }}
+                                    {{ form.due_date_date(
+                                    class="form-control" + (" is-invalid" if form.due_date_date.errors else "")
+                                    ) }}
+                                    {% for error in form.due_date_date.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-12 col-md-3">
+                                    {{ form.due_date_hour.label(class="form-label fw-semibold") }}
+                                    {{ form.due_date_hour(
+                                    class="form-select" + (" is-invalid" if form.due_date_hour.errors else "")
+                                    ) }}
+                                    {% for error in form.due_date_hour.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="mt-4 text-center">
+                                {{ form.submit(class="btn btn-lg btn-secondary px-4 shadow-sm") }}
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

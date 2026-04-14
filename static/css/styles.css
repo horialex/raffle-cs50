@@ -48,3 +48,7 @@ a:hover {
 .nav-link:hover .avatar {
     opacity: 0.85;
 }
+
+.card {
+    border-radius: 12px;
+}
