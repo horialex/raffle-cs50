@@ -18,8 +18,16 @@ Create raffle
                             Set up your raffle and let users join
                         </p>
 
-                        <form action="{{ url_for('raffle_bp.create_raffle') }}" method="POST" novalidate>
+                        <form action="{{ url_for('raffle_bp.create_raffle') }}" method="POST"
+                            enctype="multipart/form-data" novalidate>
                             {{ form.hidden_tag() }}
+
+                            <!-- raffle fields -->
+
+                            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                                <i class="bi bi-ticket-perforated me-2 text-secondary"></i>
+                                <h5 class="mb-0 fw-semibold">Raffle details</h5>
+                            </div>
 
                             <div class="mb-3">
                                 {{ form.title.label(class="form-label fw-semibold") }}
@@ -102,6 +110,38 @@ Create raffle
                                 </div>
                             </div>
 
+                            <!-- prize details section -->
+                            <hr>
+
+                            <div class="accordion mt-4" id="prizeAccordion">
+                                <div class="accordion-item border-0 shadow-sm rounded-3 overflow-hidden">
+
+                                    <h2 class="accordion-header" id="headingPrize">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapsePrize" aria-expanded="true"
+                                            aria-controls="collapsePrize">
+
+                                            <i class="bi bi-gift me-2 text-secondary"></i>
+                                            <span class="fw-semibold">Prize details</span>
+                                        </button>
+                                    </h2>
+
+                                    <div id="collapsePrize" class="accordion-collapse collapse show"
+                                        aria-labelledby="headingPrize" data-bs-parent="#prizeAccordion">
+
+                                        <div class="accordion-body bg-white">
+                                            <p class="text-muted mb-0">
+                                                Add the item that the raffle winner will receive.
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- submit button -->
+                            <hr>
                             <div class="mt-4 text-center">
                                 {{ form.submit(class="btn btn-lg btn-secondary px-4 shadow-sm") }}
                             </div>

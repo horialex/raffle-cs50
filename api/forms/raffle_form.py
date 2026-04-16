@@ -2,6 +2,8 @@ from datetime import date, datetime, time, timezone
 
 from flask_wtf import FlaskForm
 from wtforms import (
+    FieldList,
+    FormField,
     StringField,
     IntegerField,
     SubmitField,
@@ -10,6 +12,8 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import InputRequired, Length, NumberRange, ValidationError
+
+from forms.prize_form import PrizeForm
 
 
 class CreateRaffleForm(FlaskForm):
@@ -49,6 +53,8 @@ class CreateRaffleForm(FlaskForm):
         validators=[InputRequired()],
         choices=[(str(hour), f"{hour:02d}:00") for hour in range(24)],
     )
+
+    prizes = FieldList(FormField(PrizeForm), min_entries=1)
 
     submit = SubmitField("Submit")
 
