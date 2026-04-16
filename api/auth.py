@@ -38,6 +38,9 @@ def login():
         # Log user in
         # ----------------------------
         user.last_login_at = datetime.now(timezone.utc)
+        session["user"] = (
+            user  # TODO: Update this - since I inject the user directly - I might remove the others and use the object itself
+        )
         session["user_id"] = user.id
         session["username"] = user.username
         session["first_name"] = user.first_name

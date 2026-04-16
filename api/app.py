@@ -7,11 +7,13 @@ from sqlalchemy import text
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
 
+from forms.user_form import DeleteSelfAccountForm
 from models.user_model import User
 from models.raffle_model import Raffle
 from db import db
 from users import users_bp
 from auth import auth_bp
+from raffles import raffle_bp
 from utils.helpers import login_required
 from flask_wtf.csrf import CSRFProtect
 
@@ -70,6 +72,7 @@ Session(app)
 # ----------------------------
 app.register_blueprint(users_bp)
 app.register_blueprint(auth_bp)  # Uncomment if auth blueprint exists
+app.register_blueprint(raffle_bp)
 
 
 # ----------------------------
@@ -91,6 +94,12 @@ def inject_user():
         user = User.query.get(user_id)
 
     return {"current_user": user}
+
+
+@app.context_processor
+def inject_forms():
+    delete_self_account_form = DeleteSelfAccountForm()
+    return dict(delete_self_account_form=delete_self_account_form)
 
 
 # ----------------------------

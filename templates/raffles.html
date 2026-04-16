@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Raffles
+{% endblock %}
+
+{% block main %}
+<!-- <form method="GET" class="mb-3">
+    <label for="status">Status:</label>
+    <select name="status" id="status" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for status in visible_statuses %}
+        <option value="{{ status }}" {% if selected_status==status %}selected{% endif %}>
+            {{ status|capitalize }}
+        </option>
+        {% endfor %}
+    </select>
+</form> -->
+
+<h1 class="mb-4">Raffles List</h1>
+<table id="raffles_table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Creator</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Ticket Price</th>
+            <th>Created Date</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for raffle in raffles %}
+        <tr>
+            <td>{{ raffle.id }}</td>
+            <td>{{ raffle.creator_id }}</td>
+            <td>{{ raffle.title }}</td>
+            <td>{{ raffle.description }}</td>
+            <td>{{ raffle.status }}</td>
+            <td>{{ raffle.ticket_price }}</td>
+            <td>{{ raffle.created_date }}</td>
+            <td>{{ raffle.due_date }}</td>
+            <td>
+                <div class="btn-group">
+                    <button type="button" class="btn dropdown-toggle p-0 border-0 bg-transparent shadow-none"
+                        data-bs-toggle="dropdown">
+                        Action
+                    </button>
+                    <ul class="dropdown-menu" style="min-width: auto;">
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!--Confirm delete raffle modal-->
+<!-- <div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm delete user</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Are you sure you want to delete user <strong id="modalUsername"></strong>?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <form id="deleteUserForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <button type="submit" class="btn btn-danger">
+                        Confirm delete
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div> -->
+
+{% endblock %}
