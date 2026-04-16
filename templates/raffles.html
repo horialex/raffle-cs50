@@ -43,29 +43,16 @@ Raffles
             <td>{{ raffle.ticket_price }}</td>
             <td>{{ raffle.created_date }}</td>
             <td>{{ raffle.due_date }}</td>
-            <!-- <td>
+            <td>
                 <div class="btn-group">
                     <button type="button" class="btn dropdown-toggle p-0 border-0 bg-transparent shadow-none"
                         data-bs-toggle="dropdown">
                         Action
                     </button>
                     <ul class="dropdown-menu" style="min-width: auto;">
-                        <li><a class="dropdown-item text-secondary"
-                                href="{{ url_for('users_bp.update', id=user.id, next=url_for('users_bp.get_users')) }}">Edit</a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider mx-1">
-                        </li>
-                        <li>
-                            <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
-                                data-bs-target="#deleteUserModal" data-user-id="{{ user.id }}"
-                                data-username="{{ user.username }}">
-                                Delete
-                            </button>
-                        </li>
                     </ul>
                 </div>
-            </td> -->
+            </td>
         </tr>
         {% endfor %}
     </tbody>

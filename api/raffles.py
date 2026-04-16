@@ -6,8 +6,11 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
 )
 
+from constants.raffle_status import RaffleStatus
+from utils.helpers import login_required
 from forms.raffle_form import CreateRaffleForm
 from models.raffle_model import Raffle
 from db import db
@@ -33,6 +36,7 @@ def test():
 # GET /raffles
 # ----------------------------
 @raffle_bp.route("/", methods=["GET"])
+@login_required
 def list_raffles():
     # TODO: Finish this
     page = request.args.get("page", 1, type=int)
@@ -48,7 +52,7 @@ def list_raffles():
             "id": r.id,
             "creator_id": r.creator_id,
             "title": r.title,
-            "description": r.last_name,
+            "description": r.description,
             "status": r.status,
             "ticket_price": r.ticket_price,
             "created_date": r.created_at,
@@ -70,58 +74,55 @@ def list_raffles():
 # Create Raffle
 # ----------------------------
 @raffle_bp.route("/create", methods=["GET", "POST"])
+@login_required
 def create_raffle():
+    current_user_id = session.get("user_id")
+    # current_user_id = get_current_user().id
     form = CreateRaffleForm()
     # min_due_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:00")
     # min_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     if form.validate_on_submit():
-        # hashed_password = generate_password_hash(form.password.data)
+        due_date = datetime.combine(
+            form.due_date_date.data, datetime.min.time()
+        ).replace(
+            hour=int(form.due_date_hour.data),
+            tzinfo=timezone.utc,  # adjust if you use another timezone
+        )
 
-        # # Handle form data
-        # pic_name = None
-        # if form.profile_picture.data:
-        #     pic_file = form.profile_picture.data
-        #     filename = secure_filename(pic_file.filename)
-        #     pic_name = f"{uuid.uuid1()}_{filename}"
-        #     pic_file.save(os.path.join(upload_folder, pic_name))
+        if due_date <= datetime.now(timezone.utc):
+            flash("Due date must be in the future.", "error")
+            return render_template("create_raffle.html", form=form)
 
-        # user = User(
-        #     first_name=form.first_name.data,
-        #     last_name=form.last_name.data,
-        #     username=form.username.data,
-        #     email=form.email.data,
-        #     password=hashed_password,
-        #     phone=form.phone.data,
-        #     country=form.country.data,
-        #     address=form.address.data,
-        #     profile_picture=pic_name,
-        #     last_login_at=datetime.now(timezone.utc),
-        # )
+        # Raffle part
+        raffle = Raffle(
+            creator_id=current_user_id,
+            title=form.title.data,
+            description=form.description.data,
+            status=RaffleStatus.DRAFT,  # not needed necesarley
+            minimum_required_tickets=form.minimum_required_tickets.data,
+            maximum_tickets_per_user=form.maximum_tickets_per_user.data,
+            ticket_price=form.ticket_price.data,
+            due_date=due_date,
+        )
 
-        # # ----------------------------
-        # # Commit changes
-        # # ----------------------------
-        # try:
-        #     db.session.add(user)
-        #     db.session.commit()
-        # except Exception as e:
-        #     db.session.rollback()
-        #     if "Duplicate entry" in str(e):
-        #         flash("Username or email already exists", "error")
-        #         return render_template("register_user.html", form=form)
-        #     else:
-        #         flash(f"Error creating user: {str(e)}", "error")
-        #         return render_template("register_user.html", form=form)
+        # Prize part
 
-        # # ----------------------------
-        # # Log user in
-        # # ----------------------------
-        # session["user_id"] = user.id
-        # session["username"] = user.username
-        # session["first_name"] = user.first_name
+        # Save raffle in the db
+        try:
+            db.session.add(raffle)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating raffle: {str(e)}", "error")
+            return render_template("create_raffle.html", form=form)
 
         flash("Raffle created.", "success")
         return redirect("/")
+
+    if form.is_submitted():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", "error")
 
     return render_template("create_raffle.html", form=form)
