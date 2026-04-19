@@ -1,4 +1,5 @@
 import os
+from config import Config
 from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session
@@ -33,7 +34,13 @@ app = Flask(
 )
 
 app.config["SECRET_KEY"] = os.getenv("APP_SECRET")
+
+# CSRF
 csrf = CSRFProtect(app)
+
+# Inject business configurations
+app.config.from_object(Config)
+
 
 # ----------------------------
 # SQLAlchemy setup + Migrations

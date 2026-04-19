@@ -29,8 +29,6 @@ class Raffle(db.Model):
     minimum_required_tickets = db.Column(db.Integer, nullable=False, default=5)  # TBD
     maximum_tickets_per_user = db.Column(db.Integer, nullable=False, default=1)
     due_date = db.Column(db.DateTime(timezone=True), nullable=False)
-    # winner_ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id"), nullable=True) fk to tickets.id
-    # winner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True) # fk to users.id #  TBD
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -42,6 +40,17 @@ class Raffle(db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
+    products = db.relationship(
+        "Product",
+        backref="raffle",
+        cascade="all, delete-orphan",
+        lazy=True,
+    )
+
+    # user = db.relationship("User", back_populates="users")
+    # winner_ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id"), nullable=True) fk to tickets.id
+    # winner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True) # fk to users.id #  TBD
 
     def __repr__(self):
         return (
