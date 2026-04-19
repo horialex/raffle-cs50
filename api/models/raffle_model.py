@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
-from sqlalchemy import Enum
+from sqlalchemy import Enum as SqlEnum
 
+from constants.raffle_status import RaffleStatus
 from db import db
 
 
@@ -13,17 +14,21 @@ class Raffle(db.Model):
     )  # fk to users.id
     title = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(100), nullable=False)
+
     status = db.Column(
-        Enum("draft", "active", "completed", "cancelled", name="raffle_status"),
+        SqlEnum(
+            RaffleStatus,
+            name="raffle_status",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
         nullable=False,
-        default="draft",
+        default=RaffleStatus.DRAFT,
     )
+
     ticket_price = db.Column(db.Integer, nullable=False)
     minimum_required_tickets = db.Column(db.Integer, nullable=False, default=5)  # TBD
     maximum_tickets_per_user = db.Column(db.Integer, nullable=False, default=1)
     due_date = db.Column(db.DateTime(timezone=True), nullable=False)
-    # winner_ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id"), nullable=True) fk to tickets.id
-    # winner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True) # fk to users.id #  TBD
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -36,17 +41,34 @@ class Raffle(db.Model):
         nullable=False,
     )
 
+    products = db.relationship(
+        "Product",
+        backref="raffle",
+        cascade="all, delete-orphan",
+        lazy=True,
+    )
+
+    # user = db.relationship("User", back_populates="users")
+    # winner_ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id"), nullable=True) fk to tickets.id
+    # winner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True) # fk to users.id #  TBD
+
     def __repr__(self):
-        return f'<Raffle title: "{self.title}">'
+        return (
+            f'<Raffle id={self.id} title="{self.title}" status="{self.status.value}">'
+        )
+
+    @property
+    def is_draft(self):
+        return self.status == RaffleStatus.DRAFT
 
     @property
     def is_active(self):
-        return self.status == "active"
+        return self.status == RaffleStatus.ACTIVE
 
     @property
     def is_completed(self):
-        return self.status == "completed"
+        return self.status == RaffleStatus.COMPLETED
 
     @property
     def is_cancelled(self):
-        return self.status == "cancelled"
+        return self.status == RaffleStatus.CANCELLED

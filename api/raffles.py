@@ -14,6 +14,7 @@ from utils.helpers import login_required
 from forms.raffle_form import CreateRaffleForm
 from models.raffle_model import Raffle
 from db import db
+from models.product_model import Product
 
 
 USER_ROLE = "user"

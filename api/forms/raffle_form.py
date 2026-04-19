@@ -1,5 +1,5 @@
+from flask import current_app
 from datetime import date, datetime, time, timezone
-
 from flask_wtf import FlaskForm
 from wtforms import (
     FieldList,
@@ -12,8 +12,7 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import InputRequired, Length, NumberRange, ValidationError
-
-from forms.prize_form import PrizeForm
+from forms.product_form import ProductForm
 
 
 class CreateRaffleForm(FlaskForm):
@@ -54,7 +53,7 @@ class CreateRaffleForm(FlaskForm):
         choices=[(str(hour), f"{hour:02d}:00") for hour in range(24)],
     )
 
-    prizes = FieldList(FormField(PrizeForm), min_entries=1)
+    products = FieldList(FormField(ProductForm), min_entries=1)
 
     submit = SubmitField("Submit")
 
@@ -85,3 +84,15 @@ class CreateRaffleForm(FlaskForm):
 
         if due_datetime <= datetime.now(timezone.utc):
             raise ValidationError("Due date must be in the future.")
+
+    def validate_products(self, field):
+        min_count = current_app.config["MIN_PRODUCTS_PER_RAFFLE"]
+        max_count = current_app.config["MAX_PRODUCTS_PER_RAFFLE"]
+
+        count = len(field.entries)
+
+        if count < min_count:
+            raise ValidationError(f"At least {min_count} product is required.")
+
+        if count > max_count:
+            raise ValidationError(f"You can add at most {max_count} products.")
