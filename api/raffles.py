@@ -54,7 +54,7 @@ def list_raffles():
             "creator_id": r.creator_id,
             "title": r.title,
             "description": r.description,
-            "status": r.status,
+            "status": r.status.value,
             "ticket_price": r.ticket_price,
             "created_date": r.created_at,
             "due_date": r.due_date,

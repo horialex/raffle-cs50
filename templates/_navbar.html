@@ -45,7 +45,7 @@
                         data-bs-toggle="dropdown" aria-expanded="false">
 
                         <img class="rounded-circle img-fluid shadow-lg avatar"
-                            src="{{ url_for('static', filename='uploads/images/' + current_user.profile_picture) if current_user.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
+                            src="{{ url_for('static', filename='uploads/images/profile_pictures/' + current_user.profile_picture) if current_user.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
                             alt="user avatar">
 
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="ms-1"
