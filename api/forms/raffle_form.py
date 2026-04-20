@@ -11,7 +11,13 @@ from wtforms import (
     DateField,
     TextAreaField,
 )
-from wtforms.validators import InputRequired, Length, NumberRange, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    InputRequired,
+    Length,
+    NumberRange,
+    ValidationError,
+)
 from forms.product_form import ProductForm
 
 
@@ -53,7 +59,15 @@ class CreateRaffleForm(FlaskForm):
         choices=[(str(hour), f"{hour:02d}:00") for hour in range(24)],
     )
 
-    products = FieldList(FormField(ProductForm), min_entries=1)
+    product_count = SelectField(
+        "Number of products",
+        choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5")],
+        default="1",
+        validators=[DataRequired()],
+    )
+
+    # be careful here
+    products = FieldList(FormField(ProductForm), min_entries=5, max_entries=5)
 
     submit = SubmitField("Submit")
 

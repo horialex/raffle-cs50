@@ -1,4 +1,4 @@
-from flask_wtf import FlaskForm
+from flask_wtf import Form
 from wtforms.validators import InputRequired, Length
 from wtforms import (
     FileField,
@@ -13,7 +13,7 @@ from flask_wtf.file import FileAllowed
 from constants.product_condition import ProductCondition
 
 
-class ProductForm(FlaskForm):
+class ProductForm(Form):
     name = StringField(
         "Product name",
         # validators=[DataRequired(), Length(min=2, max=100)],

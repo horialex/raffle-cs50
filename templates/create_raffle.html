@@ -129,9 +129,80 @@ Create raffle
                                         aria-labelledby="headingPrize" data-bs-parent="#prizeAccordion">
 
                                         <div class="accordion-body bg-white">
-                                            <p class="text-muted mb-0">
-                                                !! Add the item that the raffle winner will receive. !!
+                                            <p class="text-muted mb-3">
+                                                Add between 1 and 5 products that the winner will receive.
                                             </p>
+
+                                            <div id="products-container">
+                                                {% for product_form in form.products %}
+                                                <div class="card border-0 shadow-sm mb-4 product-card"
+                                                    data-index="{{ loop.index }}" {% if loop.index> 1 %}style="display:
+                                                    none;"{% endif %}>
+
+                                                    <div class="card-body">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                                            <h6 class="mb-0 fw-semibold">
+                                                                <i class="bi bi-box-seam me-2 text-secondary"></i>
+                                                                Product {{ loop.index }}
+                                                            </h6>
+
+                                                            {% if loop.index == 1 %}
+                                                            <span class="badge text-bg-secondary">Required</span>
+                                                            {% else %}
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-outline-danger remove-product">
+                                                                Remove
+                                                            </button>
+                                                            {% endif %}
+                                                        </div>
+
+                                                        <div class="row g-3">
+                                                            <div class="col-12 col-md-8">
+                                                                {{ product_form.form.name.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.name(class="form-control") }}
+                                                            </div>
+
+                                                            <div class="col-12 col-md-4">
+                                                                {{ product_form.form.quantity.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.quantity(class="form-control") }}
+                                                            </div>
+
+                                                            <div class="col-12 col-md-6">
+                                                                {{
+                                                                product_form.form.estimated_value.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{
+                                                                product_form.form.estimated_value(class="form-control")
+                                                                }}
+                                                            </div>
+
+                                                            <div class="col-12 col-md-6">
+                                                                {{ product_form.form.image.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.image(class="form-control") }}
+                                                            </div>
+
+                                                            <div class="col-12">
+                                                                {{ product_form.form.description.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.description(class="form-control",
+                                                                rows="3") }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <div class="text-center">
+                                                <button type="button" id="add-product-btn"
+                                                    class="btn btn-outline-secondary">
+                                                    + Add another product
+                                                </button>
+                                            </div>
                                         </div>
 
                                     </div>

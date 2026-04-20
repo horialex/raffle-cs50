@@ -108,6 +108,7 @@ def create_raffle():
         )
 
         # Prize part
+        products_to_save = []
 
         # Save raffle in the db
         try:
