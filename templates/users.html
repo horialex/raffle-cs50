@@ -39,7 +39,7 @@ Users
             <td>{{ user.lastLogin }}</td>
             <td>
                 {% if user.profilePicture %}
-                <img src="{{ url_for('static', filename='uploads/images/' ~ user.profilePicture) }}"
+                <img src="{{ url_for('static', filename='uploads/images/profile_pictures/' ~ user.profilePicture) }}"
                     alt="Profile Picture" style="max-width: 65px; height: auto;">
                 {% else %}
                 N/A

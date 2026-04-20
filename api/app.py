@@ -33,13 +33,11 @@ app = Flask(
     static_folder=str(BASE_DIR / "static"),
 )
 
-app.config["SECRET_KEY"] = os.getenv("APP_SECRET")
+# Load all config from config.py
+app.config.from_object(Config)
 
 # CSRF
 csrf = CSRFProtect(app)
-
-# Inject business configurations
-app.config.from_object(Config)
 
 
 # ----------------------------
@@ -50,35 +48,27 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"@{os.getenv('MYSQL_HOST', '127.0.0.1')}:{os.getenv('MYSQL_PORT', 3306)}"
     f"/{os.getenv('MYSQL_DATABASE')}"
 )
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
 # ----------------------------
-# App secret, uploads, session
+# Upload folders
 # ----------------------------
-
-UPLOAD_FOLDER = os.path.join(app.static_folder, "uploads")
-PROFILE_PICS_FOLDER = os.path.join(UPLOAD_FOLDER, "images")
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["PROFILE_PICS_FOLDER"] = PROFILE_PICS_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_UPLOAD_SIZE
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(PROFILE_PICS_FOLDER, exist_ok=True)
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+os.makedirs(app.config["PROFILE_PICS_FOLDER"], exist_ok=True)
+os.makedirs(app.config["PRODUCT_IMAGES_FOLDER"], exist_ok=True)
 
 
+# ----------------------------
 # Flask-Session config
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-
+# ----------------------------
 Session(app)
 
 # ----------------------------
 # Blueprints
 # ----------------------------
 app.register_blueprint(users_bp)
-app.register_blueprint(auth_bp)  # Uncomment if auth blueprint exists
+app.register_blueprint(auth_bp)
 app.register_blueprint(raffle_bp)
 
 
