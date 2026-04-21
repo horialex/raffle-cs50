@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const maxProducts = 5;
 
     // Hide flash messages
     setTimeout(function () {
@@ -11,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const deleteModal = document.getElementById('deleteUserModal');
 
-    deleteModal.addEventListener('show.bs.modal', function (event) {
+    deleteModal?.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
 
         const userId = button.getAttribute('data-user-id');
@@ -22,5 +23,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('modalUsername').textContent = username;
     });
+
+    const addProductBtn = document.getElementById('add-product-btn');
+    const removeProductBtn = document.querySelectorAll('.remove-product');
+    const cards = document.querySelectorAll(".product-card");
+
+    addProductBtn?.addEventListener('click', function () {
+        for (const card of cards) {
+            if (card.style.display === "none") {
+                card.style.display = "block";
+                break;
+            }
+        }
+
+        updateAddButton();
+
+    });
+
+    removeProductBtn.forEach(button => {
+        button.addEventListener('click', function () {
+            const card = this.closest('.product-card');
+
+            // clear fields
+            card.querySelectorAll("input, textarea, select").forEach(field => {
+                if (field.type === "file") {
+                    field.value = "";
+                }
+                else if (field.tagName === "SELECT") {
+                    field.selectedIndex = 0;
+                }
+                else {
+                    field.value = "";
+                }
+            });
+
+            card.style.display = "none";
+            updateAddButton();
+        });
+    });
+
+    function getVisibleProductCards() {
+        return Array.from(cards).filter(card => card.style.display !== "none").length;
+    }
+
+    function updateAddButton() {
+        const displayedCards = getVisibleProductCards();
+        if (displayedCards >= maxProducts) {
+            addProductBtn.style.display = "none";
+            return;
+        }
+        addProductBtn.style.display = "inline-block";
+    }
 
 });

@@ -135,7 +135,8 @@ Create raffle
 
                                             <div id="products-container">
                                                 {% for product_form in form.products %}
-                                                <div class="card border-0 shadow-sm mb-4 product-card"
+
+                                                <div class="card border-0 shadow mb-4 product-card"
                                                     data-index="{{ loop.index }}" {% if loop.index> 1 %}style="display:
                                                     none;"{% endif %}>
 
@@ -144,11 +145,11 @@ Create raffle
                                                             class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                                                             <h6 class="mb-0 fw-semibold">
                                                                 <i class="bi bi-box-seam me-2 text-secondary"></i>
-                                                                Product {{ loop.index }}
+                                                                Product
                                                             </h6>
 
                                                             {% if loop.index == 1 %}
-                                                            <span class="badge text-bg-secondary">Required</span>
+                                                            <span class="badge text-bg-danger">Required</span>
                                                             {% else %}
                                                             <button type="button"
                                                                 class="btn btn-sm btn-outline-danger remove-product">
@@ -158,19 +159,23 @@ Create raffle
                                                         </div>
 
                                                         <div class="row g-3">
-                                                            <div class="col-12 col-md-8">
+                                                            <div class="col-12 col-md-12">
                                                                 {{ product_form.form.name.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.name(class="form-control") }}
                                                             </div>
-
+                                                            <div class="col-12">
+                                                                {{ product_form.form.description.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.description(class="form-control",
+                                                                rows="3") }}
+                                                            </div>
                                                             <div class="col-12 col-md-4">
                                                                 {{ product_form.form.quantity.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.quantity(class="form-control") }}
                                                             </div>
-
-                                                            <div class="col-12 col-md-6">
+                                                            <div class="col-12 col-md-4">
                                                                 {{
                                                                 product_form.form.estimated_value.label(class="form-label
                                                                 fw-semibold") }}
@@ -178,18 +183,15 @@ Create raffle
                                                                 product_form.form.estimated_value(class="form-control")
                                                                 }}
                                                             </div>
-
+                                                            <div class="col-6 col-md-4">
+                                                                {{ product_form.form.condition.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.condition(class="form-select") }}
+                                                            </div>
                                                             <div class="col-12 col-md-6">
                                                                 {{ product_form.form.image.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.image(class="form-control") }}
-                                                            </div>
-
-                                                            <div class="col-12">
-                                                                {{ product_form.form.description.label(class="form-label
-                                                                fw-semibold") }}
-                                                                {{ product_form.form.description(class="form-control",
-                                                                rows="3") }}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -203,6 +205,7 @@ Create raffle
                                                     + Add another product
                                                 </button>
                                             </div>
+
                                         </div>
 
                                     </div>

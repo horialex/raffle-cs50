@@ -68,6 +68,7 @@ class CreateRaffleForm(FlaskForm):
 
     # be careful here
     products = FieldList(FormField(ProductForm), min_entries=5, max_entries=5)
+    # products = FieldList(FormField(ProductForm), min_entries=1)
 
     submit = SubmitField("Submit")
 

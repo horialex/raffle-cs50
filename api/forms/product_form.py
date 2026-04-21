@@ -36,6 +36,15 @@ class ProductForm(Form):
         # default=1,
     )
 
+    condition = SelectField(
+        "Condition",
+        choices=[
+            (cond.name, cond.name.replace("_", " ").title())
+            for cond in ProductCondition
+        ],
+        validators=[DataRequired()],
+    )
+
     image = FileField(
         "Product image",
         # validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Images only!")],
