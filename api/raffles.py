@@ -122,9 +122,9 @@ def create_raffle():
         flash("Raffle created.", "success")
         return redirect("/")
 
-    if form.is_submitted():
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f"{field}: {error}", "error")
+    # if form.is_submitted():
+    #     for field, errors in form.errors.items():
+    #         for error in errors:
+    #             flash(f"{field}: {error}", "error")
 
     return render_template("create_raffle.html", form=form)

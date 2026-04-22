@@ -163,17 +163,29 @@ Create raffle
                                                                 {{ product_form.form.name.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.name(class="form-control") }}
+
+                                                                {% for error in product_form.form.name.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
                                                             </div>
                                                             <div class="col-12">
                                                                 {{ product_form.form.description.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.description(class="form-control",
                                                                 rows="3") }}
+
+                                                                {% for error in product_form.form.description.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
                                                             </div>
                                                             <div class="col-12 col-md-4">
                                                                 {{ product_form.form.quantity.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.quantity(class="form-control") }}
+
+                                                                {% for error in product_form.form.quantity.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
                                                             </div>
                                                             <div class="col-12 col-md-4">
                                                                 {{
@@ -182,16 +194,30 @@ Create raffle
                                                                 {{
                                                                 product_form.form.estimated_value(class="form-control")
                                                                 }}
+
+                                                                {% for error in product_form.form.estimated_value.errors
+                                                                %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
                                                             </div>
                                                             <div class="col-6 col-md-4">
                                                                 {{ product_form.form.condition.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.condition(class="form-select") }}
+
+                                                                {% for error in product_form.form.condition.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
+
                                                             </div>
                                                             <div class="col-12 col-md-6">
                                                                 {{ product_form.form.image.label(class="form-label
                                                                 fw-semibold") }}
                                                                 {{ product_form.form.image(class="form-control") }}
+
+                                                                {% for error in product_form.form.image.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
                                                             </div>
                                                         </div>
                                                     </div>
