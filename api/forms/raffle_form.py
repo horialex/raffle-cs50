@@ -39,7 +39,8 @@ class CreateRaffleForm(FlaskForm):
 
     minimum_required_tickets = IntegerField(
         "Minimum required tickets",
-        validators=[InputRequired(), NumberRange(min=2)],
+        validators=[InputRequired(), NumberRange(min=5)],
+        default=5,
     )
 
     maximum_tickets_per_user = IntegerField(
