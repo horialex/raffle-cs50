@@ -9,6 +9,7 @@ from flask import (
     session,
 )
 
+from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
 from utils.helpers import login_required
 from forms.raffle_form import CreateRaffleForm
@@ -78,7 +79,6 @@ def list_raffles():
 @login_required
 def create_raffle():
     current_user_id = session.get("user_id")
-    # current_user_id = get_current_user().id
     form = CreateRaffleForm()
     # min_due_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:00")
     # min_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -107,17 +107,49 @@ def create_raffle():
             due_date=due_date,
         )
 
-        # Prize part
+        # Prize part TODO:
         products_to_save = []
+        for index, product_entry in enumerate(form.products.entries, start=1):
+            product_data = product_entry.form
+
+            # Skip empty products
+            if not has_product_data(product_data):
+                continue
+
+            # Product form validation
+            error = validate_product_form(product_data, index)
+            if error:
+                flash(error, "error")
+                return render_template("create_raffle.html", form=form)
+
+            product: Product = Product(
+                raffle=raffle,
+                name=product_data.name.data,
+                description=product_data.description.data,
+                estimated_value=product_data.estimated_value.data,
+                quantity=product_data.quantity.data,
+                condition=ProductCondition[product_data.condition.data],
+            )
+
+            # Handle images - keep in mind what you did for profile image
+
+            # Compose the product object
+            products_to_save.append(product_data)
+
+        if not products_to_save:
+            flash("Please add at least one product.", "error")
+            return render_template("create_raffle.html", form=form)
+
+        # TODO: Add the proper products to the raffle object
 
         # Save raffle in the db
-        try:
-            db.session.add(raffle)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error creating raffle: {str(e)}", "error")
-            return render_template("create_raffle.html", form=form)
+        # try:
+        # db.session.add(raffle)
+        # db.session.commit()
+        # except Exception as e:
+        # db.session.rollback()
+        # flash(f"Error creating raffle: {str(e)}", "error")
+        # return render_template("create_raffle.html", form=form)
 
         flash("Raffle created.", "success")
         return redirect("/")
@@ -128,3 +160,34 @@ def create_raffle():
     #             flash(f"{field}: {error}", "error")
 
     return render_template("create_raffle.html", form=form)
+
+
+# ----------------------------
+# Helpers
+# ----------------------------
+def has_product_data(product_form) -> bool:
+    return bool((product_form.name.data or "").strip())
+
+
+def validate_product_form(product_form, index) -> str | None:
+    name = (product_form.name.data or "").strip()
+    description = (product_form.description.data or "").strip()
+    value = product_form.estimated_value.data
+    quantity = product_form.quantity.data
+    condition = product_form.condition.data
+    images = product_form.image.data
+
+    # Validate name
+    if not name:
+        return f"Product {index}: Name is required."
+
+    # Validate descr
+    if not description:
+        return f"Product {index}: Description is required."
+
+    # Validate estimated_value
+    # Validate quantity
+    # Validate condition
+    # Validate photos
+
+    return None

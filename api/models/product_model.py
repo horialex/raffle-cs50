@@ -11,11 +11,15 @@ class Product(db.Model):
 
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
-    image_url = db.Column(db.String(255))
+
     condition = db.Column(
         SqlEnum(ProductCondition), nullable=False, default=ProductCondition.NEW
     )
     estimated_value = db.Column(db.Numeric(10, 2), nullable=True)
     quantity = db.Column(db.Integer, nullable=False, default=1)
-
-    # raffle = db.relationship("Raffle", back_populates="products")
+    images = db.relationship(
+        "ProductImage",
+        cascade="all, delete-orphan",
+        lazy=True,
+    )
+    raffle = db.relationship("Raffle", back_populates="products")

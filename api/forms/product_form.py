@@ -1,5 +1,5 @@
 from flask_wtf import Form
-from wtforms.validators import Length
+from wtforms.validators import Length, Optional
 from wtforms import (
     MultipleFileField,
     StringField,
@@ -16,23 +16,23 @@ from constants.product_condition import ProductCondition
 class ProductForm(Form):
     name = StringField(
         "Product name",
-        validators=[DataRequired(), Length(min=3, max=100)],
+        validators=[Optional(), Length(min=3, max=100)],
     )
 
     description = TextAreaField(
         "Description",
-        validators=[DataRequired(), Length(min=8, max=255)],
+        validators=[Optional(), Length(min=8, max=255)],
     )
 
     estimated_value = DecimalField(
         "Estimated value",
-        validators=[DataRequired(), NumberRange(min=1)],
+        validators=[Optional(), NumberRange(min=1)],
         places=2,
     )
 
     quantity = IntegerField(
         "Quantity",
-        validators=[DataRequired(), NumberRange(min=1, max=999)],
+        validators=[Optional(), NumberRange(min=1, max=999)],
         default=1,
     )
 
@@ -42,14 +42,14 @@ class ProductForm(Form):
             (cond.name, cond.name.replace("_", " ").title())
             for cond in ProductCondition
         ],
-        validators=[DataRequired()],
+        validators=[Optional()],
     )
 
     image = MultipleFileField(
         "Product image",
         render_kw={"multiple": True},
         validators=[
-            FileRequired(),
+            Optional(),
             FileAllowed(["jpg", "jpeg", "png"], "Images only!"),
         ],
     )
