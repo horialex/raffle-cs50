@@ -28,6 +28,7 @@ class ProductForm(Form):
         "Estimated value",
         validators=[Optional(), NumberRange(min=1)],
         places=2,
+        default=1,
     )
 
     quantity = IntegerField(
@@ -45,7 +46,7 @@ class ProductForm(Form):
         validators=[Optional()],
     )
 
-    image = MultipleFileField(
+    images = MultipleFileField(
         "Product image",
         render_kw={"multiple": True},
         validators=[

@@ -28,7 +28,7 @@ from utils.helpers import (
     is_valid_phone_number,
     login_required,
 )
-from utils.files import delete_profile_picture
+from utils.file_helpers import delete_profile_picture
 from werkzeug.security import check_password_hash
 from werkzeug.exceptions import Forbidden
 

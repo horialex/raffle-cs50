@@ -211,11 +211,11 @@ Create raffle
 
                                                             </div>
                                                             <div class="col-12 col-md-6">
-                                                                {{ product_form.form.image.label(class="form-label
+                                                                {{ product_form.form.images.label(class="form-label
                                                                 fw-semibold") }}
-                                                                {{ product_form.form.image(class="form-control") }}
+                                                                {{ product_form.form.images(class="form-control") }}
 
-                                                                {% for error in product_form.form.image.errors %}
+                                                                {% for error in product_form.form.images.errors %}
                                                                 <div class="invalid-feedback d-block">{{ error }}</div>
                                                                 {% endfor %}
                                                             </div>

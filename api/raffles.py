@@ -1,14 +1,20 @@
 from datetime import datetime, timezone
+import os
+import uuid
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     redirect,
     render_template,
     request,
     session,
 )
+from flask_wtf import form
 
+from utils.file_helpers import save_product_image
+from forms.product_form import ProductForm
 from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
 from utils.helpers import login_required
@@ -132,33 +138,38 @@ def create_raffle():
                 condition=ProductCondition[product_data.condition.data],
             )
 
-            # Handle images - keep in mind what you did for profile image
+            # Handle images -
+            for image_file in product_data.images.data:
+                if not image_file or image_file.filename == "":
+                    continue
+
+                image_url = save_product_image(image_file)
+                product.images.append(ProductImage(image_url=image_url))
 
             # Compose the product object
-            products_to_save.append(product_data)
+            products_to_save.append(product)
 
         if not products_to_save:
             flash("Please add at least one product.", "error")
             return render_template("create_raffle.html", form=form)
 
         # TODO: Add the proper products to the raffle object
-
         # Save raffle in the db
-        # try:
-        # db.session.add(raffle)
-        # db.session.commit()
-        # except Exception as e:
-        # db.session.rollback()
-        # flash(f"Error creating raffle: {str(e)}", "error")
-        # return render_template("create_raffle.html", form=form)
+        try:
+            db.session.add(raffle)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating raffle: {str(e)}", "error")
+            return render_template("create_raffle.html", form=form)
 
         flash("Raffle created.", "success")
         return redirect("/")
 
-    # if form.is_submitted():
-    #     for field, errors in form.errors.items():
-    #         for error in errors:
-    #             flash(f"{field}: {error}", "error")
+    if form.is_submitted():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", "error")
 
     return render_template("create_raffle.html", form=form)
 
@@ -170,13 +181,14 @@ def has_product_data(product_form) -> bool:
     return bool((product_form.name.data or "").strip())
 
 
-def validate_product_form(product_form, index) -> str | None:
+def validate_product_form(product_form: ProductForm, index) -> str | None:
+    max_allowed_images = current_app.config["MAX_IMAGES_PER_PRODUCT"]
     name = (product_form.name.data or "").strip()
     description = (product_form.description.data or "").strip()
-    value = product_form.estimated_value.data
+    estimated_value = product_form.estimated_value.data
     quantity = product_form.quantity.data
     condition = product_form.condition.data
-    images = product_form.image.data
+    images = product_form.images.data
 
     # Validate name
     if not name:
@@ -187,8 +199,24 @@ def validate_product_form(product_form, index) -> str | None:
         return f"Product {index}: Description is required."
 
     # Validate estimated_value
+    if not estimated_value:
+        return f"Product {index}: Estimated value is required."
+
     # Validate quantity
+    if not quantity:
+        return f"Product {index}: Quantity is required."
+
     # Validate condition
+    if not condition:
+        return f"Product {index}: Condition is required."
+
     # Validate photos
+    if not images:
+        return f"Product {index}: Images are required."
+
+    if len(images) > max_allowed_images:
+        return (
+            f"Product {index}: Maximum {max_allowed_images} images per product allowed"
+        )
 
     return None

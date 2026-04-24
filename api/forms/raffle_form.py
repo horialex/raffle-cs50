@@ -1,5 +1,5 @@
 from flask import current_app
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from flask_wtf import FlaskForm
 from wtforms import (
     FieldList,
@@ -35,6 +35,7 @@ class CreateRaffleForm(FlaskForm):
     ticket_price = IntegerField(
         "Ticket price",
         validators=[InputRequired(), NumberRange(min=1)],
+        default=1,
     )
 
     minimum_required_tickets = IntegerField(
@@ -46,12 +47,14 @@ class CreateRaffleForm(FlaskForm):
     maximum_tickets_per_user = IntegerField(
         "Maximum tickets per user",
         validators=[InputRequired(), NumberRange(min=1)],
+        default=1,
     )
 
     due_date_date = DateField(
         "Due date",
         validators=[InputRequired()],
         format="%Y-%m-%d",
+        default=lambda: date.today() + timedelta(days=1),
     )
 
     due_date_hour = SelectField(
@@ -60,10 +63,11 @@ class CreateRaffleForm(FlaskForm):
         choices=[(str(hour), f"{hour:02d}:00") for hour in range(24)],
     )
 
+    # TODO: Check if you can remove this field
     product_count = SelectField(
         "Number of products",
         choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5")],
-        default="1",
+        default=1,
         validators=[DataRequired()],
     )
 

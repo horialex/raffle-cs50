@@ -28,3 +28,4 @@ class Config:
     # Business rules
     MIN_PRODUCTS_PER_RAFFLE = 1
     MAX_PRODUCTS_PER_RAFFLE = 5
+    MAX_IMAGES_PER_PRODUCT = 3

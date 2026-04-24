@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
         });
-    }, 2500); // 2500 ms = 2.5 seconds
+    }, 3500); // 2500 ms = 2.5 seconds
 
     const deleteModal = document.getElementById('deleteUserModal');
 
