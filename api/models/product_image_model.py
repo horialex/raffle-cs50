@@ -1,4 +1,4 @@
-from api import db
+from db import db
 
 
 class ProductImage(db.Model):
@@ -13,3 +13,4 @@ class ProductImage(db.Model):
     )
 
     image_url = db.Column(db.String(255), nullable=False)
+    # product = db.relationship("Product", back_populates="images")

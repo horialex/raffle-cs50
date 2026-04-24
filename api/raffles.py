@@ -14,6 +14,7 @@ from constants.raffle_status import RaffleStatus
 from utils.helpers import login_required
 from forms.raffle_form import CreateRaffleForm
 from models.raffle_model import Raffle
+from models.product_image_model import ProductImage
 from db import db
 from models.product_model import Product
 

@@ -22,4 +22,4 @@ class Product(db.Model):
         cascade="all, delete-orphan",
         lazy=True,
     )
-    raffle = db.relationship("Raffle", back_populates="products")
+    # raffle = db.relationship("Raffle", back_populates="products")
