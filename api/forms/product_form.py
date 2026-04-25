@@ -1,19 +1,20 @@
 from flask_wtf import Form
 from wtforms.validators import Length, Optional
 from wtforms import (
+    HiddenField,
     MultipleFileField,
     StringField,
     SelectField,
-    DecimalField,
     IntegerField,
     TextAreaField,
 )
-from wtforms.validators import DataRequired, Length, NumberRange
-from flask_wtf.file import FileAllowed, FileRequired
+from wtforms.validators import Length, NumberRange
 from constants.product_condition import ProductCondition
 
 
 class ProductForm(Form):
+    active = HiddenField(default="0")
+
     name = StringField(
         "Product name",
         validators=[Optional(), Length(min=3, max=100)],
@@ -24,16 +25,15 @@ class ProductForm(Form):
         validators=[Optional(), Length(min=8, max=255)],
     )
 
-    estimated_value = DecimalField(
+    estimated_value = IntegerField(
         "Estimated value",
-        validators=[Optional(), NumberRange(min=1)],
-        places=2,
+        validators=[Optional(), NumberRange(min=1, max=100_000)],
         default=1,
     )
 
     quantity = IntegerField(
         "Quantity",
-        validators=[Optional(), NumberRange(min=1, max=999)],
+        validators=[Optional(), NumberRange(min=1, max=99)],
         default=1,
     )
 
@@ -48,9 +48,9 @@ class ProductForm(Form):
 
     images = MultipleFileField(
         "Product image",
-        render_kw={"multiple": True},
-        validators=[
-            Optional(),
-            FileAllowed(["jpg", "jpeg", "png"], "Images only!"),
-        ],
+        render_kw={
+            "multiple": True,
+            "accept": "image/jpeg,image/png",
+        },
+        validators=[Optional()],
     )

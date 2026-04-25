@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const maxProducts = 5;
+    const maxProducts = 3;
+
 
     // Hide flash messages
     setTimeout(function () {
@@ -32,12 +33,12 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const card of cards) {
             if (card.style.display === "none") {
                 card.style.display = "block";
+                card.querySelector('input[name$="-active"]').value = "1";
                 break;
             }
         }
 
         updateAddButton();
-
     });
 
     removeProductBtn.forEach(button => {
@@ -57,6 +58,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
+            card.querySelector('input[name$="-active"]').value = "0";
+
             card.style.display = "none";
             updateAddButton();
         });
@@ -75,4 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
         addProductBtn.style.display = "inline-block";
     }
 
+    // initial call to set add products button state
+    updateAddButton();
 });

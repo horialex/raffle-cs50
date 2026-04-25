@@ -12,15 +12,6 @@ from phonenumbers.phonenumberutil import (
 )
 from requests.compat import urljoin, urlparse
 
-ALLOWED_PROFILE_PIC_EXTENSIONS = {"png", "jpg", "jpeg"}
-
-
-def allowed_file(filename: str) -> bool:
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_PROFILE_PIC_EXTENSIONS
-    )
-
 
 def is_valid_phone_number(phone: str, country_code: str = "RO") -> tuple[bool, str]:
     if not phone:

@@ -15,7 +15,7 @@ class Product(db.Model):
     condition = db.Column(
         SqlEnum(ProductCondition), nullable=False, default=ProductCondition.NEW
     )
-    estimated_value = db.Column(db.Numeric(10, 2), nullable=True)
+    estimated_value = db.Column(db.Integer, nullable=False, default=1)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     images = db.relationship(
         "ProductImage",

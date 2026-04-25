@@ -25,8 +25,6 @@ from flask_wtf.csrf import CSRFProtect
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-MAX_FILE_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_MB", 3)) * 1024 * 1024
-
 app = Flask(
     __name__,
     template_folder=str(BASE_DIR / "templates"),
@@ -137,9 +135,9 @@ def server_error(e):
 
 
 @app.errorhandler(RequestEntityTooLarge)
-def handle_large_file(e):
-    max_mb = MAX_FILE_UPLOAD_SIZE // (1024 * 1024)
-    flash(f"File is too large. Maximum size is {max_mb}MB.", "error")
+def handle_large_request(e):
+    max_mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
+    flash(f"Upload too large. Maximum total size is {max_mb}MB.", "error")
     return redirect(request.url)
 
 

@@ -19,13 +19,26 @@ def delete_profile_picture(filename):
         os.remove(file_path)
 
 
-# TODO: implement this - move this from here to a helper file
 def save_product_image(product_image_form_data) -> str:
     product_images_folder = current_app.config["PRODUCT_IMAGES_FOLDER"]
 
-    # pic_file = form.product_data.data
     filename = secure_filename(product_image_form_data.filename)
     pic_name = f"product_image_{uuid.uuid1()}_{filename}"
     product_image_form_data.save(os.path.join(product_images_folder, pic_name))
 
     return pic_name
+
+
+def get_file_size(file):
+    file.stream.seek(0, 2)
+    size = file.stream.tell()
+    file.stream.seek(0)
+    return size
+
+
+def allowed_file(filename: str) -> bool:
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower()
+        in current_app.config["ALLOWED_IMAGE_EXTENSIONS"]
+    )

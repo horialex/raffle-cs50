@@ -22,10 +22,7 @@ from forms.user_form import DeleteSelfAccountForm, UserForm, UserSelfUpdateForm
 from db import db
 from models.user_model import User
 from utils.helpers import (
-    allowed_file,
     is_safe_url,
-    is_valid_email,
-    is_valid_phone_number,
     login_required,
 )
 from utils.file_helpers import delete_profile_picture

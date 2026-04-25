@@ -137,10 +137,18 @@ Create raffle
                                                 {% for product_form in form.products %}
 
                                                 <div class="card border-0 shadow mb-4 product-card"
-                                                    data-index="{{ loop.index }}" {% if loop.index> 1 %}style="display:
-                                                    none;"{% endif %}>
+                                                    data-index="{{ loop.index }}" {% if loop.index> 1 and
+                                                    product_form.form.active.data != "1" %}
+                                                    style="display: none;"
+                                                    {% endif %}>
 
                                                     <div class="card-body">
+                                                        {% if loop.index == 1 %}
+                                                        {{ product_form.form.active(value="1") }}
+                                                        {% else %}
+                                                        {{ product_form.form.active() }}
+                                                        {% endif %}
+
                                                         <div
                                                             class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                                                             <h6 class="mb-0 fw-semibold">
@@ -200,24 +208,41 @@ Create raffle
                                                                 <div class="invalid-feedback d-block">{{ error }}</div>
                                                                 {% endfor %}
                                                             </div>
-                                                            <div class="col-6 col-md-4">
-                                                                {{ product_form.form.condition.label(class="form-label
-                                                                fw-semibold") }}
-                                                                {{ product_form.form.condition(class="form-select") }}
 
-                                                                {% for error in product_form.form.condition.errors %}
-                                                                <div class="invalid-feedback d-block">{{ error }}</div>
-                                                                {% endfor %}
-
+                                                            <div class="col-12 col-md-4">
+                                                                <div class="text-center">
+                                                                    {{
+                                                                    product_form.form.condition.label(class="form-label
+                                                                    fw-semibold d-block") }}
+                                                                    <div class="d-flex justify-content-center">
+                                                                        {{ product_form.form.condition(
+                                                                        class="form-select w-100",
+                                                                        style="max-width: 220px;"
+                                                                        ) }}
+                                                                    </div>
+                                                                    {% for error in product_form.form.condition.errors
+                                                                    %}
+                                                                    <div class="invalid-feedback d-block text-center">{{
+                                                                        error }}</div>
+                                                                    {% endfor %}
+                                                                </div>
                                                             </div>
-                                                            <div class="col-12 col-md-6">
-                                                                {{ product_form.form.images.label(class="form-label
-                                                                fw-semibold") }}
-                                                                {{ product_form.form.images(class="form-control") }}
 
-                                                                {% for error in product_form.form.images.errors %}
-                                                                <div class="invalid-feedback d-block">{{ error }}</div>
-                                                                {% endfor %}
+                                                            <div class="col-12">
+                                                                <div class="text-center">
+                                                                    {{ product_form.form.images.label(class="form-label
+                                                                    fw-semibold d-block") }}
+                                                                    <div class="d-flex justify-content-center">
+                                                                        {{ product_form.form.images(
+                                                                        class="form-control w-100",
+                                                                        style="max-width: 400px;"
+                                                                        ) }}
+                                                                    </div>
+                                                                    {% for error in product_form.form.images.errors %}
+                                                                    <div class="invalid-feedback d-block text-center">{{
+                                                                        error }}</div>
+                                                                    {% endfor %}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>

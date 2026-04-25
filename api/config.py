@@ -13,8 +13,13 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Uploads
-    MAX_FILE_UPLOAD_SIZE = int(os.getenv("MAX_UPLOAD_MB", 3)) * 1024 * 1024
-    MAX_CONTENT_LENGTH = MAX_FILE_UPLOAD_SIZE
+    MAX_IMAGE_SIZE = int(os.getenv("MAX_IMAGE_MB", 3)) * 1024 * 1024
+    MAX_REQUEST_SIZE = int(os.getenv("MAX_REQUEST_MB", 15)) * 1024 * 1024
+    MAX_CONTENT_LENGTH = MAX_REQUEST_SIZE
+
+    # Allowed image types
+    ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
+
     UPLOAD_FOLDER = str(BASE_DIR / "static" / "uploads")
     PROFILE_PICS_FOLDER = str(
         BASE_DIR / "static" / "uploads" / "images" / "profile_pictures"
@@ -27,5 +32,5 @@ class Config:
 
     # Business rules
     MIN_PRODUCTS_PER_RAFFLE = 1
-    MAX_PRODUCTS_PER_RAFFLE = 5
+    MAX_PRODUCTS_PER_RAFFLE = 3
     MAX_IMAGES_PER_PRODUCT = 3
