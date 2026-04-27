@@ -1,5 +1,5 @@
 from flask import current_app
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from flask_wtf import FlaskForm
 from wtforms import (
     FieldList,
@@ -11,49 +11,68 @@ from wtforms import (
     DateField,
     TextAreaField,
 )
-from wtforms.validators import InputRequired, Length, NumberRange, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    Length,
+    NumberRange,
+    ValidationError,
+)
 from forms.product_form import ProductForm
 
 
 class CreateRaffleForm(FlaskForm):
     title = StringField(
         "Title",
-        validators=[InputRequired(), Length(min=3, max=50)],
+        validators=[DataRequired(), Length(min=3, max=50)],
     )
 
     description = TextAreaField(
         "Description",
-        validators=[InputRequired(), Length(min=8, max=100)],
+        validators=[DataRequired(), Length(min=8, max=100)],
     )
 
     ticket_price = IntegerField(
         "Ticket price",
-        validators=[InputRequired(), NumberRange(min=1)],
+        validators=[DataRequired(), NumberRange(min=1)],
+        default=1,
     )
 
     minimum_required_tickets = IntegerField(
         "Minimum required tickets",
-        validators=[InputRequired(), NumberRange(min=2)],
+        validators=[DataRequired(), NumberRange(min=5)],
+        default=5,
     )
 
     maximum_tickets_per_user = IntegerField(
         "Maximum tickets per user",
-        validators=[InputRequired(), NumberRange(min=1)],
+        validators=[DataRequired(), NumberRange(min=1)],
+        default=1,
     )
 
     due_date_date = DateField(
         "Due date",
-        validators=[InputRequired()],
+        validators=[DataRequired()],
         format="%Y-%m-%d",
+        default=lambda: date.today() + timedelta(days=1),
     )
 
     due_date_hour = SelectField(
         "Due hour",
-        validators=[InputRequired()],
+        validators=[DataRequired()],
         choices=[(str(hour), f"{hour:02d}:00") for hour in range(24)],
     )
 
-    products = FieldList(FormField(ProductForm), min_entries=1)
+    # TODO: Check if you can remove this field
+    product_count = SelectField(
+        "Number of products",
+        choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5")],
+        default=1,
+        validators=[DataRequired()],
+    )
+
+    # be careful here
+    products = FieldList(FormField(ProductForm), min_entries=1, max_entries=3)
+    # products = FieldList(FormField(ProductForm), min_entries=1)
 
     submit = SubmitField("Submit")
 

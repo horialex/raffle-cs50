@@ -1,7 +1,10 @@
 from datetime import datetime, timezone
+import os
+import uuid
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     redirect,
     render_template,
@@ -9,10 +12,19 @@ from flask import (
     session,
 )
 
+from utils.file_helpers import (
+    allowed_file,
+    get_file_size,
+    get_valid_images,
+    save_product_image,
+)
+from forms.product_form import ProductForm
+from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
 from utils.helpers import login_required
 from forms.raffle_form import CreateRaffleForm
 from models.raffle_model import Raffle
+from models.product_image_model import ProductImage
 from db import db
 from models.product_model import Product
 
@@ -78,10 +90,7 @@ def list_raffles():
 @login_required
 def create_raffle():
     current_user_id = session.get("user_id")
-    # current_user_id = get_current_user().id
     form = CreateRaffleForm()
-    # min_due_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:00")
-    # min_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     if form.validate_on_submit():
         due_date = datetime.combine(
@@ -100,14 +109,41 @@ def create_raffle():
             creator_id=current_user_id,
             title=form.title.data,
             description=form.description.data,
-            status=RaffleStatus.DRAFT,  # not needed necesarley
+            status=RaffleStatus.DRAFT,
             minimum_required_tickets=form.minimum_required_tickets.data,
             maximum_tickets_per_user=form.maximum_tickets_per_user.data,
             ticket_price=form.ticket_price.data,
             due_date=due_date,
         )
 
-        # Prize part
+        # Prize part TODO:
+        products_to_save = []
+        for product_entry in form.products.entries:
+            product_data = product_entry.form
+
+            # Create Product entity
+            product: Product = Product(
+                raffle=raffle,
+                name=product_data.name.data,
+                description=product_data.description.data,
+                estimated_value=product_data.estimated_value.data,
+                quantity=product_data.quantity.data,
+                condition=ProductCondition[product_data.condition.data],
+            )
+
+            # Handle images
+            valid_images = get_valid_images(product_data.images.data)
+
+            for image_file in valid_images:
+                image_url = save_product_image(image_file)
+                product.images.append(ProductImage(image_url=image_url))
+
+            # Append the products
+            products_to_save.append(product)
+
+        if not products_to_save:
+            flash("Please add at least one product.", "error")
+            return render_template("create_raffle.html", form=form)
 
         # Save raffle in the db
         try:
@@ -122,8 +158,83 @@ def create_raffle():
         return redirect("/")
 
     if form.is_submitted():
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f"{field}: {error}", "error")
+        if form.errors:
+            flash(
+                f"Unable to create raffle - please check the error in the field",
+                "error",
+            )
 
     return render_template("create_raffle.html", form=form)
+
+
+# ----------------------------
+# Helpers
+# ----------------------------
+def validate_product_form(product_form: ProductForm, index) -> str | None:
+    max_image_size = current_app.config["MAX_IMAGE_SIZE"]  # bytes
+
+    max_allowed_images = current_app.config["MAX_IMAGES_PER_PRODUCT"]
+    name = (product_form.name.data or "").strip()
+    description = (product_form.description.data or "").strip()
+    estimated_value = product_form.estimated_value.data
+    quantity = product_form.quantity.data
+    condition = product_form.condition.data
+    images = product_form.images.data
+
+    # Validate name
+    if not name:
+        return f"Product {index}: Name is required."
+
+    if len(name) < 3 or len(name) > 100:
+        return f"Product {index}: Name must be between 3 and 100 characters"
+
+    # Validate descr
+    if not description:
+        return f"Product {index}: Description is required."
+
+    if len(description) < 8 or len(description) > 255:
+        return f"Product {index}: Description must be between 8 and 255 characters"
+
+    # Validate estimated_value
+    if not estimated_value:
+        return f"Product {index}: Estimated value is required."
+
+    if estimated_value < 1 or estimated_value > 100_000:
+        return f"Product {index}: Estimated value must be at least 1."
+
+    # Validate quantity
+    if not quantity:
+        return f"Product {index}: Quantity is required."
+
+    if quantity < 1 or quantity > 99:
+        return f"Product {index}: Quantity must be between 1 and 99"
+
+    # Validate condition
+    if not condition:
+        return f"Product {index}: Condition is required."
+
+    # Validate images
+    valid_images = get_valid_images(images)
+
+    if not valid_images:
+        return f"Product {index}: At least one image is required."
+
+    if len(valid_images) > max_allowed_images:
+        return (
+            f"Product {index}: Maximum {max_allowed_images} images per product allowed"
+        )
+
+    # Validate image extensions
+    for img in valid_images:
+        if not allowed_file(img.filename):
+            return f"Product {index}: Only JPG, JPEG and PNG images are allowed."
+
+    # Validate image size
+    for img in valid_images:
+        size = get_file_size(img)
+
+        if size > max_image_size:
+            max_mb = max_image_size // (1024 * 1024)
+            return f"Product {index}: Each image must be under {max_mb}MB"
+
+    return None

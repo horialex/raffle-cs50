@@ -129,9 +129,124 @@ Create raffle
                                         aria-labelledby="headingPrize" data-bs-parent="#prizeAccordion">
 
                                         <div class="accordion-body bg-white">
-                                            <p class="text-muted mb-0">
-                                                !! Add the item that the raffle winner will receive. !!
+                                            <p class="text-muted mb-3">
+                                                Add between 1 and 5 products that the winner will receive.
                                             </p>
+
+                                            <div id="products-container">
+                                                {% for product_form in form.products %}
+                                                <div class="card border-0 shadow mb-4 product-card"
+                                                    data-index="{{ loop.index0 }}">
+
+                                                    <div class="card-body">
+                                                        <div class="d-flex align-items-center justify-content-between
+                                                            mb-3 pb-2 border-bottom">
+                                                            <h6 class="mb-0 fw-semibold">
+                                                                <i class="bi bi-box-seam me-2 text-secondary"></i>
+                                                                Product
+                                                            </h6>
+
+                                                            {% if loop.first %}
+                                                            <span class="badge text-bg-danger">Required</span>
+                                                            {% else %}
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-outline-danger remove-product">
+                                                                Remove
+                                                            </button>
+                                                            {% endif %}
+                                                        </div>
+
+                                                        <div class="row g-3">
+                                                            <div class="col-12 col-md-12">
+                                                                {{ product_form.form.name.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.name(class="form-control") }}
+
+                                                                {% for error in product_form.form.name.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
+                                                            </div>
+                                                            <div class="col-12">
+                                                                {{ product_form.form.description.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.description(class="form-control",
+                                                                rows="3") }}
+
+                                                                {% for error in product_form.form.description.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
+                                                            </div>
+                                                            <div class="col-12 col-md-4">
+                                                                {{ product_form.form.quantity.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{ product_form.form.quantity(class="form-control") }}
+
+                                                                {% for error in product_form.form.quantity.errors %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
+                                                            </div>
+                                                            <div class="col-12 col-md-4">
+                                                                {{
+                                                                product_form.form.estimated_value.label(class="form-label
+                                                                fw-semibold") }}
+                                                                {{
+                                                                product_form.form.estimated_value(class="form-control")
+                                                                }}
+
+                                                                {% for error in product_form.form.estimated_value.errors
+                                                                %}
+                                                                <div class="invalid-feedback d-block">{{ error }}</div>
+                                                                {% endfor %}
+                                                            </div>
+
+                                                            <div class="col-12 col-md-4">
+                                                                <div class="text-center">
+                                                                    {{
+                                                                    product_form.form.condition.label(class="form-label
+                                                                    fw-semibold d-block") }}
+                                                                    <div class="d-flex justify-content-center">
+                                                                        {{ product_form.form.condition(
+                                                                        class="form-select w-100",
+                                                                        style="max-width: 220px;"
+                                                                        ) }}
+                                                                    </div>
+                                                                    {% for error in product_form.form.condition.errors
+                                                                    %}
+                                                                    <div class="invalid-feedback d-block text-center">{{
+                                                                        error }}</div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-12">
+                                                                <div class="text-center">
+                                                                    {{ product_form.form.images.label(class="form-label
+                                                                    fw-semibold d-block") }}
+                                                                    <div class="d-flex justify-content-center">
+                                                                        {{ product_form.form.images(
+                                                                        class="form-control w-100",
+                                                                        style="max-width: 400px;"
+                                                                        ) }}
+                                                                    </div>
+                                                                    {% for error in product_form.form.images.errors %}
+                                                                    <div class="invalid-feedback d-block text-center">{{
+                                                                        error }}</div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <div class="text-center">
+                                                <button type="button" id="add-product-btn"
+                                                    class="btn btn-outline-secondary">
+                                                    + Add another product
+                                                </button>
+                                            </div>
+
                                         </div>
 
                                     </div>
@@ -153,4 +268,85 @@ Create raffle
         </div>
     </div>
 </div>
+
+<!-- PRODUCT TEMPLATE -->
+<template id="product-template">
+    <div class="card border-0 shadow mb-4 product-card" data-index="__index__">
+
+        <div class="card-body">
+
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="bi bi-box-seam me-2 text-secondary"></i>
+                    Product
+                </h6>
+
+                <button type="button" class="btn btn-sm btn-outline-danger remove-product">
+                    Remove
+                </button>
+            </div>
+
+            <div class="row g-3">
+
+                <!-- Name -->
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Product name</label>
+                    <input type="text" class="form-control" name="products-__index__-name" data-field="name">
+                </div>
+
+                <!-- Description -->
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea class="form-control" rows="3" name="products-__index__-description"
+                        data-field="description"></textarea>
+                </div>
+
+                <!-- Quantity -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">Quantity</label>
+                    <input type="number" class="form-control" name="products-__index__-quantity" data-field="quantity"
+                        value="1">
+                </div>
+
+                <!-- Estimated value -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">Estimated value</label>
+                    <input type="number" class="form-control" name="products-__index__-estimated_value"
+                        data-field="estimated_value" value="1">
+                </div>
+
+                <!-- Condition -->
+                <div class="col-12 col-md-4">
+                    <div class="text-center">
+                        <label class="form-label fw-semibold d-block">Condition</label>
+                        <div class="d-flex justify-content-center">
+                            <select class="form-select w-100" style="max-width: 220px;"
+                                name="products-__index__-condition" data-field="condition">
+
+                                {% for value, label in form.products[0].form.condition.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Images -->
+                <div class="col-12">
+                    <div class="text-center">
+                        <label class="form-label fw-semibold d-block">Product image</label>
+                        <div class="d-flex justify-content-center">
+                            <input type="file" class="form-control w-100" style="max-width: 400px;"
+                                name="products-__index__-images" data-field="images" multiple
+                                accept="image/jpeg,image/png">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</template>
+
 {% endblock %}
