@@ -12,7 +12,12 @@ from flask import (
     session,
 )
 
-from utils.file_helpers import allowed_file, get_file_size, save_product_image
+from utils.file_helpers import (
+    allowed_file,
+    get_file_size,
+    get_valid_images,
+    save_product_image,
+)
 from forms.product_form import ProductForm
 from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
@@ -158,12 +163,6 @@ def create_raffle():
                 f"Unable to create raffle - please check the error in the field",
                 "error",
             )
-        # for field, errors in form.errors.items():
-        #     for error in errors:
-        #         flash(
-        #             f"Unable to create raffle - please check the error in the field",
-        #             "error",
-        #         )
 
     return render_template("create_raffle.html", form=form)
 
@@ -239,12 +238,3 @@ def validate_product_form(product_form: ProductForm, index) -> str | None:
             return f"Product {index}: Each image must be under {max_mb}MB"
 
     return None
-
-
-def get_valid_images(images):
-    valid_images = []
-    for img in images:
-        if img and img.filename:
-            valid_images.append(img)
-
-    return valid_images
