@@ -2,6 +2,7 @@ import os
 import uuid
 from flask import current_app
 from werkzeug.utils import secure_filename
+from wtforms import ValidationError
 
 
 def delete_profile_picture(filename):
@@ -29,11 +30,31 @@ def save_product_image(product_image_form_data) -> str:
     return pic_name
 
 
+def get_valid_images(images):
+    valid_images = []
+    for img in images:
+        if img and img.filename:
+            valid_images.append(img)
+
+    return valid_images
+
+
 def get_file_size(file):
     file.stream.seek(0, 2)
     size = file.stream.tell()
     file.stream.seek(0)
     return size
+
+
+def validate_file_size(file, max_bytes):
+    size = get_file_size(file)
+    if size > max_bytes:
+        size_mb = size / (1024 * 1024)
+        max_mb = max_bytes / (1024 * 1024)
+
+        raise ValidationError(
+            f"File too large ({size_mb:.2f} MB). Max allowed is {max_mb:.2f} MB."
+        )
 
 
 def allowed_file(filename: str) -> bool:

@@ -113,18 +113,8 @@ def create_raffle():
 
         # Prize part TODO:
         products_to_save = []
-        for index, product_entry in enumerate(form.products.entries, start=1):
+        for product_entry in form.products.entries:
             product_data = product_entry.form
-
-            # Skip empty products
-            if product_data.active.data != "1":
-                continue
-
-            # Product form validation
-            error = validate_product_form(product_data, index)
-            if error:
-                flash(error, "error")
-                return render_template("create_raffle.html", form=form)
 
             # Create Product entity
             product: Product = Product(
@@ -162,10 +152,18 @@ def create_raffle():
         flash("Raffle created.", "success")
         return redirect("/")
 
-    # if form.is_submitted():
-    #     for field, errors in form.errors.items():
-    #         for error in errors:
-    #             flash(f"{field}: {error}", "error")
+    if form.is_submitted():
+        if form.errors:
+            flash(
+                f"Unable to create raffle - please check the error in the field",
+                "error",
+            )
+        # for field, errors in form.errors.items():
+        #     for error in errors:
+        #         flash(
+        #             f"Unable to create raffle - please check the error in the field",
+        #             "error",
+        #         )
 
     return render_template("create_raffle.html", form=form)
 

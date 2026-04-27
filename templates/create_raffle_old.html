@@ -135,18 +135,28 @@ Create raffle
 
                                             <div id="products-container">
                                                 {% for product_form in form.products %}
+
                                                 <div class="card border-0 shadow mb-4 product-card"
-                                                    data-index="{{ loop.index0 }}">
+                                                    data-index="{{ loop.index }}" {% if loop.index> 1 and
+                                                    product_form.form.active.data != "1" %}
+                                                    style="display: none;"
+                                                    {% endif %}>
 
                                                     <div class="card-body">
-                                                        <div class="d-flex align-items-center justify-content-between
-                                                            mb-3 pb-2 border-bottom">
+                                                        {% if loop.index == 1 %}
+                                                        {{ product_form.form.active(value="1") }}
+                                                        {% else %}
+                                                        {{ product_form.form.active() }}
+                                                        {% endif %}
+
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                                                             <h6 class="mb-0 fw-semibold">
                                                                 <i class="bi bi-box-seam me-2 text-secondary"></i>
                                                                 Product
                                                             </h6>
 
-                                                            {% if loop.first %}
+                                                            {% if loop.index == 1 %}
                                                             <span class="badge text-bg-danger">Required</span>
                                                             {% else %}
                                                             <button type="button"
@@ -268,85 +278,4 @@ Create raffle
         </div>
     </div>
 </div>
-
-<!-- PRODUCT TEMPLATE -->
-<template id="product-template">
-    <div class="card border-0 shadow mb-4 product-card" data-index="__index__">
-
-        <div class="card-body">
-
-            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                <h6 class="mb-0 fw-semibold">
-                    <i class="bi bi-box-seam me-2 text-secondary"></i>
-                    Product
-                </h6>
-
-                <button type="button" class="btn btn-sm btn-outline-danger remove-product">
-                    Remove
-                </button>
-            </div>
-
-            <div class="row g-3">
-
-                <!-- Name -->
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Product name</label>
-                    <input type="text" class="form-control" name="products-__index__-name" data-field="name">
-                </div>
-
-                <!-- Description -->
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Description</label>
-                    <textarea class="form-control" rows="3" name="products-__index__-description"
-                        data-field="description"></textarea>
-                </div>
-
-                <!-- Quantity -->
-                <div class="col-12 col-md-4">
-                    <label class="form-label fw-semibold">Quantity</label>
-                    <input type="number" class="form-control" name="products-__index__-quantity" data-field="quantity"
-                        value="1">
-                </div>
-
-                <!-- Estimated value -->
-                <div class="col-12 col-md-4">
-                    <label class="form-label fw-semibold">Estimated value</label>
-                    <input type="number" class="form-control" name="products-__index__-estimated_value"
-                        data-field="estimated_value" value="1">
-                </div>
-
-                <!-- Condition -->
-                <div class="col-12 col-md-4">
-                    <div class="text-center">
-                        <label class="form-label fw-semibold d-block">Condition</label>
-                        <div class="d-flex justify-content-center">
-                            <select class="form-select w-100" style="max-width: 220px;"
-                                name="products-__index__-condition" data-field="condition">
-
-                                {% for value, label in form.products[0].form.condition.choices %}
-                                <option value="{{ value }}">{{ label }}</option>
-                                {% endfor %}
-
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Images -->
-                <div class="col-12">
-                    <div class="text-center">
-                        <label class="form-label fw-semibold d-block">Product image</label>
-                        <div class="d-flex justify-content-center">
-                            <input type="file" class="form-control w-100" style="max-width: 400px;"
-                                name="products-__index__-images" data-field="images" multiple
-                                accept="image/jpeg,image/png">
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</template>
-
 {% endblock %}

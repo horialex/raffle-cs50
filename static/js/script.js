@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const maxProducts = 3;
-
+    const MAX_PRODUCTS = 3;
 
     // Hide flash messages
     setTimeout(function () {
@@ -25,59 +24,67 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modalUsername').textContent = username;
     });
 
+
     const addProductBtn = document.getElementById('add-product-btn');
-    const removeProductBtn = document.querySelectorAll('.remove-product');
+    const container = document.getElementById("products-container");
     const cards = document.querySelectorAll(".product-card");
+    const template = document.getElementById("product-template");
 
     addProductBtn?.addEventListener('click', function () {
-        for (const card of cards) {
-            if (card.style.display === "none") {
-                card.style.display = "block";
-                card.querySelector('input[name$="-active"]').value = "1";
-                break;
-            }
-        }
+        const count = container.children.length;
 
-        updateAddButton();
+        if (count >= MAX_PRODUCTS) return;
+
+        // Clone template content
+        const html = template.innerHTML.replace(/__index__/g, count);
+
+
+        // Insert the new template
+        container.insertAdjacentHTML("beforeend", html);
+
+        toggleAddButton();
     });
 
-    removeProductBtn.forEach(button => {
-        button.addEventListener('click', function () {
-            const card = this.closest('.product-card');
+    container.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-product")) {
+            e.target.closest(".product-card").remove();
 
-            // clear fields
-            card.querySelectorAll("input, textarea, select").forEach(field => {
-                if (field.type === "file") {
-                    field.value = "";
-                }
-                else if (field.tagName === "SELECT") {
-                    field.selectedIndex = 0;
-                }
-                else {
-                    field.value = "";
-                }
+            reindex();
+            toggleAddButton();
+        }
+    });
+
+    function reindex() {
+        const cards = container.querySelectorAll(".product-card");
+
+        cards.forEach((card, index) => {
+            // update card index
+            card.dataset.index = index;
+
+            // Grab all fields
+            const fields = card.querySelectorAll("[data-field]");
+
+            // Set the proper field name
+            fields.forEach(field => {
+                const fieldName = field.dataset.field;
+                field.name = `products-${index}-${fieldName}`;
             });
 
-            card.querySelector('input[name$="-active"]').value = "0";
-
-            card.style.display = "none";
-            updateAddButton();
         });
-    });
-
-    function getVisibleProductCards() {
-        return Array.from(cards).filter(card => card.style.display !== "none").length;
     }
 
-    function updateAddButton() {
-        const displayedCards = getVisibleProductCards();
-        if (displayedCards >= maxProducts) {
+    function toggleAddButton() {
+        const count = container.children.length;
+
+        if (count >= MAX_PRODUCTS) {
             addProductBtn.style.display = "none";
-            return;
         }
-        addProductBtn.style.display = "inline-block";
+        else {
+            addProductBtn.style.display = "inline-block";
+        }
     }
 
     // initial call to set add products button state
-    updateAddButton();
+    toggleAddButton();
+
 });
