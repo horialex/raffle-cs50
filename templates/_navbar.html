@@ -11,10 +11,13 @@
             <ul class="navbar-nav me-auto d-flex align-items-center">
                 {% if current_user.is_admin %}
                 <li class="nav-item"><a class="nav-link" href="/users">Users</a></li>
-                {% endif %}
-                <li class="nav-item"><a class="nav-link" href="/raffles">Raffles</a></li>
+                <li class="nav-item"><a class="nav-link" href="/raffles">All Raffles</a></li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link" href="/raffles">My Raffles</a></li>
                 <li class="nav-item"><a class="nav-link" href="/raffles/create">Add Raffle</a></li>
                 <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
+                {% endif %}
+
             </ul>
 
             <!-- Mobile menu (added) -->

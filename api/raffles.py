@@ -12,6 +12,7 @@ from flask import (
     session,
 )
 
+from models.user_model import User
 from utils.file_helpers import (
     allowed_file,
     get_file_size,
@@ -51,12 +52,21 @@ def test():
 @raffle_bp.route("/", methods=["GET"])
 @login_required
 def list_raffles():
-    # TODO: Finish this
+    current_user_id = session.get("user_id")
+    user: User = User.query.get_or_404(current_user_id)
+
+    is_admin = user.is_admin
+
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     per_page = min(per_page, 100)
 
-    paginated_raffles = Raffle.query.order_by(Raffle.id).paginate(
+    # Return only raffles of current user
+    query = Raffle.query
+    if not is_admin:
+        query = query.filter(Raffle.creator_id == current_user_id)
+
+    paginated_raffles = query.order_by(Raffle.id).paginate(
         page=page, per_page=per_page, error_out=False
     )
 
@@ -64,12 +74,14 @@ def list_raffles():
         {
             "id": r.id,
             "creator_id": r.creator_id,
+            "creator_full_name": f"{r.creator.first_name} {r.creator.last_name}",
             "title": r.title,
             "description": r.description,
             "status": r.status.value,
             "ticket_price": r.ticket_price,
             "created_date": r.created_at,
             "due_date": r.due_date,
+            "products_count": len(r.products),
         }
         for r in paginated_raffles.items
     ]
@@ -116,7 +128,6 @@ def create_raffle():
             due_date=due_date,
         )
 
-        # Prize part TODO:
         products_to_save = []
         for product_entry in form.products.entries:
             product_data = product_entry.form
