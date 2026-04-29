@@ -48,7 +48,7 @@ def minimum_images():
 
 
 class ProductForm(Form):
-    active = HiddenField(default="0")
+    id = HiddenField()
 
     name = StringField(
         "Product name",

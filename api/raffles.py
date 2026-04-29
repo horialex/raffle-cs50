@@ -4,12 +4,14 @@ import uuid
 
 from flask import (
     Blueprint,
+    abort,
     current_app,
     flash,
     redirect,
     render_template,
     request,
     session,
+    url_for,
 )
 
 from models.user_model import User
@@ -22,13 +24,12 @@ from utils.file_helpers import (
 from forms.product_form import ProductForm
 from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
-from utils.helpers import login_required
+from utils.helpers import is_safe_url, login_required
 from forms.raffle_form import CreateRaffleForm
 from models.raffle_model import Raffle
 from models.product_image_model import ProductImage
 from db import db
 from models.product_model import Product
-
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
@@ -105,15 +106,9 @@ def create_raffle():
     form = CreateRaffleForm()
 
     if form.validate_on_submit():
-        due_date = datetime.combine(
-            form.due_date_date.data, datetime.min.time()
-        ).replace(
-            hour=int(form.due_date_hour.data),
-            tzinfo=timezone.utc,  # adjust if you use another timezone
-        )
-
-        if due_date <= datetime.now(timezone.utc):
-            flash("Due date must be in the future.", "error")
+        due_date, error = build_due_date(form)
+        if error:
+            flash(error, "error")
             return render_template("create_raffle.html", form=form)
 
         # Raffle part
@@ -127,6 +122,119 @@ def create_raffle():
             ticket_price=form.ticket_price.data,
             due_date=due_date,
         )
+
+        products_to_save = []
+        for product_entry in form.products.entries:
+            product_data = product_entry.form
+
+            # Create Product entity
+            product: Product = Product(
+                raffle=raffle,
+                name=product_data.name.data,
+                description=product_data.description.data,
+                estimated_value=product_data.estimated_value.data,
+                quantity=product_data.quantity.data,
+                condition=ProductCondition[product_data.condition.data],
+            )
+
+            # Handle images
+            valid_images = get_valid_images(product_data.images.data)
+
+            for image_file in valid_images:
+                image_url = save_product_image(image_file)
+                product.images.append(ProductImage(image_url=image_url))
+
+            # Append the products
+            products_to_save.append(product)
+
+        if not products_to_save:
+            flash("Please add at least one product.", "error")
+            return render_template("create_raffle.html", form=form)
+
+        # Save raffle in the db
+        try:
+            db.session.add(raffle)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating raffle: {str(e)}", "error")
+            return render_template("create_raffle.html", form=form)
+
+        flash("Raffle created.", "success")
+        return redirect("/")
+
+    if form.is_submitted():
+        if form.errors:
+            flash(
+                f"Unable to create raffle - please check the error in the field",
+                "error",
+            )
+
+    return render_template("create_raffle.html", form=form)
+
+
+# ----------------------------
+# Edit Raffle
+# ----------------------------
+@raffle_bp.route("/update/<int:id>", methods=["GET", "POST"])
+@login_required
+def update_raffle(id):
+    current_user_id = session.get("user_id")
+    target_raffle: Raffle = Raffle.query.get_or_404(id)
+
+    if not target_raffle.creator_id == current_user_id:
+        abort(403)
+
+    if not target_raffle.status == RaffleStatus.DRAFT:
+        flash("The raffle has already started")
+        abort(403)
+
+    form = CreateRaffleForm(obj=target_raffle)
+    form.submit.label.text = "Update raffle"
+
+    # Get next URL
+    # Get next from GET or POST
+    # next_url = request.args.get("next") or request.form.get("next")
+
+    # Fallback if missing or unsafe
+    # if not next_url or not is_safe_url(next_url):
+    # next_url = url_for("home")
+
+    if form.validate_on_submit():
+        due_date, error = build_due_date(form)
+        if error:
+            flash(error, "error")
+            return render_template("create_raffle.html", form=form)
+
+        # ----------------------------
+        # Update raffle
+        # ----------------------------
+        target_raffle.title = form.title.data
+        target_raffle.description = form.description.data
+        target_raffle.ticket_price = form.ticket_price.data
+        target_raffle.minimum_required_tickets = form.minimum_required_tickets.data
+        target_raffle.maximum_tickets_per_user = form.maximum_tickets_per_user.data
+        target_raffle.due_date = due_date
+
+        # ----------------------------
+        # Update products
+        # ----------------------------
+        for product_form in form.products:
+            product_id = product_form.id.data
+
+            product = next(
+                (p for p in target_raffle.products if p.id == product_id), None
+            )
+            if not product:
+                abort(404)
+
+            product.name = product_form.name.data
+            product.description = product_form.description.data
+            product.estimated_value = product_form.estimated_value.data
+            product.quantity = product_form.quantity.data
+            product.condition = ProductCondition[product_form.condition.data]
+
+            # TODO: Update images - perhaps you should remove current product images if the form fields are set and replace
 
         products_to_save = []
         for product_entry in form.products.entries:
@@ -249,3 +357,15 @@ def validate_product_form(product_form: ProductForm, index) -> str | None:
             return f"Product {index}: Each image must be under {max_mb}MB"
 
     return None
+
+
+def build_due_date(form):
+    due_date = datetime.combine(form.due_date_date.data, datetime.min.time()).replace(
+        hour=int(form.due_date_hour.data),
+        tzinfo=timezone.utc,  # adjust if needed
+    )
+
+    if due_date <= datetime.now(timezone.utc):
+        return None, "Due date must be set in the future."
+
+    return due_date, None
