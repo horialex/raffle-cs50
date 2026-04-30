@@ -194,11 +194,11 @@ def update_raffle(id):
 
     # Get next URL
     # Get next from GET or POST
-    # next_url = request.args.get("next") or request.form.get("next")
+    next_url = request.args.get("next") or request.form.get("next")
 
     # Fallback if missing or unsafe
-    # if not next_url or not is_safe_url(next_url):
-    # next_url = url_for("home")
+    if not next_url or not is_safe_url(next_url):
+        next_url = url_for("home")
 
     if form.validate_on_submit():
         due_date, error = build_due_date(form)
@@ -235,43 +235,50 @@ def update_raffle(id):
             product.condition = ProductCondition[product_form.condition.data]
 
             # TODO: Update images - perhaps you should remove current product images if the form fields are set and replace
+            # TODO: Handle deletion of products form the edit raffle form
+            # TODO: Handle adding a new product form the edit
 
-        products_to_save = []
-        for product_entry in form.products.entries:
-            product_data = product_entry.form
+        # products_to_save = []
+        # for product_entry in form.products.entries:
+        #     product_data = product_entry.form
 
-            # Create Product entity
-            product: Product = Product(
-                raffle=raffle,
-                name=product_data.name.data,
-                description=product_data.description.data,
-                estimated_value=product_data.estimated_value.data,
-                quantity=product_data.quantity.data,
-                condition=ProductCondition[product_data.condition.data],
-            )
+        #     # Create Product entity
+        #     product: Product = Product(
+        #         raffle=raffle,
+        #         name=product_data.name.data,
+        #         description=product_data.description.data,
+        #         estimated_value=product_data.estimated_value.data,
+        #         quantity=product_data.quantity.data,
+        #         condition=ProductCondition[product_data.condition.data],
+        #     )
 
-            # Handle images
-            valid_images = get_valid_images(product_data.images.data)
+        #     # Handle images
+        #     valid_images = get_valid_images(product_data.images.data)
 
-            for image_file in valid_images:
-                image_url = save_product_image(image_file)
-                product.images.append(ProductImage(image_url=image_url))
+        #     for image_file in valid_images:
+        #         image_url = save_product_image(image_file)
+        #         product.images.append(ProductImage(image_url=image_url))
 
-            # Append the products
-            products_to_save.append(product)
+        #     # Append the products
+        #     products_to_save.append(product)
 
-        if not products_to_save:
-            flash("Please add at least one product.", "error")
-            return render_template("create_raffle.html", form=form)
+        # if not products_to_save:
+        #     flash("Please add at least one product.", "error")
+        #     return render_template("create_raffle.html", form=form)
 
         # Save raffle in the db
         try:
-            db.session.add(raffle)
+            db.session.add(target_raffle)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
             flash(f"Error creating raffle: {str(e)}", "error")
-            return render_template("create_raffle.html", form=form)
+            return render_template(
+                "/raffle/update_raffle.html",
+                form=form,
+                raffle=target_raffle,
+                next=next_url,
+            )
 
         flash("Raffle created.", "success")
         return redirect("/")
@@ -283,7 +290,9 @@ def update_raffle(id):
                 "error",
             )
 
-    return render_template("create_raffle.html", form=form)
+    return render_template(
+        "/raffle/update_raffle.html", form=form, raffle=target_raffle, next=next_url
+    )
 
 
 # ----------------------------

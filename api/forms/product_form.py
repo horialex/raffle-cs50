@@ -2,6 +2,7 @@ from flask import current_app
 from flask_wtf import Form
 from wtforms.validators import DataRequired, Length
 from wtforms import (
+    BooleanField,
     HiddenField,
     MultipleFileField,
     StringField,
@@ -49,6 +50,7 @@ def minimum_images():
 
 class ProductForm(Form):
     id = HiddenField()
+    delete = BooleanField()
 
     name = StringField(
         "Product name",
@@ -94,3 +96,6 @@ class ProductForm(Form):
             file_size_limit(5),  # e.g. 5 MB per file
         ],
     )
+
+
+# class UpdateProductForm(ProductForm):
