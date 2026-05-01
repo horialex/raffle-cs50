@@ -17,7 +17,7 @@ from wtforms.validators import (
     NumberRange,
     ValidationError,
 )
-from forms.product_form import ProductForm
+from forms.product_form import EditProductForm, ProductForm
 
 
 class CreateRaffleForm(FlaskForm):
@@ -105,3 +105,7 @@ class CreateRaffleForm(FlaskForm):
 
         if count > max_count:
             raise ValidationError(f"You can add at most {max_count} products.")
+
+
+class EditRaffleForm(CreateRaffleForm):
+    products = FieldList(FormField(EditProductForm), min_entries=1, max_entries=3)

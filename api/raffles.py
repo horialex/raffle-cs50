@@ -17,6 +17,7 @@ from flask import (
 from models.user_model import User
 from utils.file_helpers import (
     allowed_file,
+    delete_product_image,
     get_file_size,
     get_valid_images,
     save_product_image,
@@ -25,7 +26,7 @@ from forms.product_form import ProductForm
 from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
 from utils.helpers import is_safe_url, login_required
-from forms.raffle_form import CreateRaffleForm
+from forms.raffle_form import CreateRaffleForm, EditRaffleForm
 from models.raffle_model import Raffle
 from models.product_image_model import ProductImage
 from db import db
@@ -189,7 +190,7 @@ def update_raffle(id):
         flash("The raffle has already started")
         abort(403)
 
-    form = CreateRaffleForm(obj=target_raffle)
+    form = EditRaffleForm(obj=target_raffle)
     form.submit.label.text = "Update raffle"
 
     # Get next URL
@@ -219,52 +220,57 @@ def update_raffle(id):
         # ----------------------------
         # Update products
         # ----------------------------
+
+        # --- DELETE PRODUCT ---
+        submitted_ids = set()
+
         for product_form in form.products:
-            product_id = product_form.id.data
+            product_id = product_form.form.id.data
+            if product_id:
+                submitted_ids.add(int(product_id))
 
-            product = next(
-                (p for p in target_raffle.products if p.id == product_id), None
-            )
-            if not product:
-                abort(404)
+        # work on a copy of target_raffle.products by using [:]
+        for product in target_raffle.products[:]:
+            if product.id not in submitted_ids:
+                print("We are DELETING the product!")
+                db.session.delete(product)
 
-            product.name = product_form.name.data
-            product.description = product_form.description.data
-            product.estimated_value = product_form.estimated_value.data
-            product.quantity = product_form.quantity.data
-            product.condition = ProductCondition[product_form.condition.data]
+        # --- UPDATE AND CREATE PRODUCT ---
+        for product_form in form.products:
+            product_id = product_form.form.id.data
 
-            # TODO: Update images - perhaps you should remove current product images if the form fields are set and replace
-            # TODO: Handle deletion of products form the edit raffle form
-            # TODO: Handle adding a new product form the edit
+            # --- CREATE NEW PRODUCT ---
+            if product_id:
+                print("We are UPDATING the product!")
+                product = next(
+                    (p for p in target_raffle.products if p.id == int(product_id)), None
+                )
+                if not product:
+                    abort(404)
+            else:
+                print("We are CREATING the product!")
+                product = Product(raffle=target_raffle)
+                db.session.add(product)
 
-        # products_to_save = []
-        # for product_entry in form.products.entries:
-        #     product_data = product_entry.form
+            # --- UPDATE PRODUCT ---
+            product.name = product_form.form.name.data
+            product.description = product_form.form.description.data
+            product.estimated_value = product_form.form.estimated_value.data
+            product.quantity = product_form.form.quantity.data
+            product.condition = ProductCondition[product_form.form.condition.data]
 
-        #     # Create Product entity
-        #     product: Product = Product(
-        #         raffle=raffle,
-        #         name=product_data.name.data,
-        #         description=product_data.description.data,
-        #         estimated_value=product_data.estimated_value.data,
-        #         quantity=product_data.quantity.data,
-        #         condition=ProductCondition[product_data.condition.data],
-        #     )
+            new_valid_images = get_valid_images(product_form.form.images.data)
 
-        #     # Handle images
-        #     valid_images = get_valid_images(product_data.images.data)
+            # Remove old images
+            if new_valid_images:
+                for old_image in product.images:
+                    db.session.delete(old_image)
+                    delete_product_image(old_image.image_url)
 
-        #     for image_file in valid_images:
-        #         image_url = save_product_image(image_file)
-        #         product.images.append(ProductImage(image_url=image_url))
-
-        #     # Append the products
-        #     products_to_save.append(product)
-
-        # if not products_to_save:
-        #     flash("Please add at least one product.", "error")
-        #     return render_template("create_raffle.html", form=form)
+                # Save new images
+                for image_file in new_valid_images:
+                    image_url = save_product_image(image_file)
+                    product.images.append(ProductImage(image_url=image_url))
 
         # Save raffle in the db
         try:
@@ -280,7 +286,7 @@ def update_raffle(id):
                 next=next_url,
             )
 
-        flash("Raffle created.", "success")
+        flash("Raffle updated.", "success")
         return redirect("/")
 
     if form.is_submitted():

@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
         });
-    }, 3500); // 2500 ms = 2.5 seconds
+    }, 3500);
 
     const deleteModal = document.getElementById('deleteUserModal');
 
@@ -27,17 +27,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const addProductBtn = document.getElementById('add-product-btn');
     const container = document.getElementById("products-container");
-    const cards = document.querySelectorAll(".product-card");
     const template = document.getElementById("product-template");
 
     addProductBtn?.addEventListener('click', function () {
-        const count = container.children.length;
+        const container = getContainer();
+        const activeCardsCount = container.querySelectorAll(".product-card").length;
 
-        if (count >= MAX_PRODUCTS) return;
+        console.log("ACTIVE CARDS COUNT: ", activeCardsCount)
 
+        if (activeCardsCount >= MAX_PRODUCTS) return;
+
+        const totalCards = container.querySelectorAll(".product-card").length;
         // Clone template content
-        const html = template.innerHTML.replace(/__index__/g, count);
-
+        const html = template.innerHTML.replace(/__index__/g, totalCards);
 
         // Insert the new template
         container.insertAdjacentHTML("beforeend", html);
@@ -45,13 +47,15 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleAddButton();
     });
 
-    container.addEventListener("click", function (e) {
-        if (e.target.classList.contains("remove-product")) {
-            e.target.closest(".product-card").remove();
+    container?.addEventListener("click", function (e) {
+        if (!e.target.classList.contains("remove-product")) return;
 
-            reindex();
-            toggleAddButton();
-        }
+        const card = e.target.closest(".product-card");
+        if (!card) return;
+
+        card.remove();
+        reindex();
+        toggleAddButton();
     });
 
     function reindex() {
@@ -74,7 +78,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function toggleAddButton() {
-        const count = container.children.length;
+        const container = getContainer();
+        const addProductBtn = document.getElementById('add-product-btn');
+        if (!container || !addProductBtn) return;
+
+        const count = container.querySelectorAll(
+            ".product-card:not(.is-deleted)"
+        ).length;
+
+        console.log("COUNT", count)
 
         if (count >= MAX_PRODUCTS) {
             addProductBtn.style.display = "none";
@@ -82,6 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
         else {
             addProductBtn.style.display = "inline-block";
         }
+    }
+
+    function getContainer() {
+        return document.getElementById("products-container");
     }
 
     // initial call to set add products button state

@@ -49,6 +49,10 @@ def minimum_images():
 
 
 class ProductForm(Form):
+    def __init__(self, *args, is_edit=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_edit = is_edit
+
     id = HiddenField()
     delete = BooleanField()
 
@@ -98,4 +102,15 @@ class ProductForm(Form):
     )
 
 
-# class UpdateProductForm(ProductForm):
+class EditProductForm(ProductForm):
+    images = MultipleFileField(
+        "Product image",
+        render_kw={
+            "multiple": True,
+            "accept": "image/jpeg,image/png",
+        },
+        validators=[
+            max_file_count(3),
+            file_size_limit(5),  # e.g. 5 MB per file
+        ],
+    )

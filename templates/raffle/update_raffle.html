@@ -15,8 +15,8 @@
               Update your raffle and the prize
             </p>
 
-            <form action="{{ url_for('raffle_bp.create_raffle') }}" method="POST" enctype="multipart/form-data"
-              novalidate>
+            <form action="{{ url_for('raffle_bp.update_raffle', id=raffle.id) }}" method="POST"
+              enctype="multipart/form-data" novalidate>
               {{ form.hidden_tag() }}
 
               <!-- raffle fields -->
@@ -109,15 +109,15 @@
               <hr>
               <div id="products-container">
                 {% for product_form in form.products %}
-                {% set product = raffle.products[loop.index0] %}
-                <div class="card border-0 shadow mb-4 product-card" data-index="{{ loop.index0 }}">
+                {% set product = raffle.products[loop.index0] if loop.index0 < raffle.products|length else none %} <div
+                  class="card border-0 shadow mb-4 product-card" data-index="{{ loop.index0 }}">
                   <div class="card-body">
 
                     <div class="d-flex align-items-center justify-content-between
                                                             mb-3 pb-2 border-bottom">
                       <h6 class="mb-0 fw-semibold">
                         <i class="bi bi-box-seam me-2 text-secondary"></i>
-                        Product {{ loop.index }}
+                        Product
                       </h6>
 
                       {% if loop.first %}
@@ -129,7 +129,8 @@
                       {% endif %}
                     </div>
 
-                    {{ product_form.form.id }}
+                    <input type="hidden" name="{{ product_form.form.id.name }}" value="{{ product_form.form.id.data }}"
+                      data-field="id">
 
                     <div class="row g-3">
                       <div class="col-12 col-md-12">
@@ -185,7 +186,8 @@
                           <div class="d-flex justify-content-center">
                             {{ product_form.form.condition(
                             class="form-select w-100",
-                            style="max-width: 220px;"
+                            style="max-width: 220px;",
+                            **{"data-field": "condition"}
                             ) }}
                           </div>
                           {% for error in product_form.form.condition.errors
@@ -196,20 +198,13 @@
                         </div>
                       </div>
 
-                      <hr>
-
-                      <h6>Current product images</h6>
+                      <h6 class="mt-4">Current product images</h6>
                       <div class="row g-3">
                         {% for image in product.images %}
                         <div class="col-md-3 mb-3">
                           <div class="card shadow overflow-hidden">
                             <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
                               alt="Product image" class="card-img-top">
-                            <div class="card-body">
-                              <input type="checkbox" name="delete_images" value="{{ image.id }}"
-                                class="form-check-input">
-                              <label class="form-check-label">Delete</label>
-                            </div>
                           </div>
                         </div>
                         {% endfor %}
@@ -234,26 +229,113 @@
 
                     </div>
                   </div>
-                </div>
+              </div>
+              {% endfor %}
+          </div>
+
+          <div class="text-center">
+            <button type="button" id="add-product-btn" class="btn btn-outline-secondary">
+              + Add another product
+            </button>
+          </div>
+
+          <!-- submit button -->
+          <hr>
+
+          <!-- Footer actions -->
+          <div class="mt-4 text-center">
+            {{ form.submit(class="btn btn-secondary btn-lg px-5 me-2") }}
+            <a href="{{ next }}" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
+          </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PRODUCT TEMPLATE -->
+<template id="product-template">
+  <div class="card border-0 shadow mb-4 product-card" data-index="__index__">
+
+    <div class="card-body">
+
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <h6 class="mb-0 fw-semibold">
+          <i class="bi bi-box-seam me-2 text-secondary"></i>
+          Product
+        </h6>
+
+        <button type="button" class="btn btn-sm btn-outline-danger remove-product">
+          Remove
+        </button>
+      </div>
+
+      <div class="row g-3">
+
+        <!-- ID -->
+        <input type="hidden" name="products-__index__-id" value="" data-field="id">
+
+        <!-- Name -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">Product name</label>
+          <input type="text" class="form-control" name="products-__index__-name" data-field="name">
+        </div>
+
+        <!-- Description -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea class="form-control" rows="3" name="products-__index__-description"
+            data-field="description"></textarea>
+        </div>
+
+        <!-- Quantity -->
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-semibold">Quantity</label>
+          <input type="number" class="form-control" name="products-__index__-quantity" data-field="quantity" value="1">
+        </div>
+
+        <!-- Estimated value -->
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-semibold">Estimated value</label>
+          <input type="number" class="form-control" name="products-__index__-estimated_value"
+            data-field="estimated_value" value="1">
+        </div>
+
+        <!-- Condition -->
+        <div class="col-12 col-md-4">
+          <div class="text-center">
+            <label class="form-label fw-semibold d-block">Condition</label>
+            <div class="d-flex justify-content-center">
+              <select class="form-select w-100" style="max-width: 220px;" name="products-__index__-condition"
+                data-field="condition">
+
+                {% for value, label in form.products[0].form.condition.choices %}
+                <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
-              </div>
 
-              <!-- submit button -->
-              <hr>
+              </select>
+            </div>
+          </div>
+        </div>
 
-              <!-- Footer actions -->
-              <div class="mt-4 text-center">
-                {{ form.submit(class="btn btn-secondary btn-lg px-5 me-2") }}
-                <a href="{{ next }}" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
-              </div>
-            </form>
-
+        <!-- Images -->
+        <div class="col-12">
+          <div class="text-center">
+            <label class="form-label fw-semibold d-block">Product image</label>
+            <div class="d-flex justify-content-center">
+              <input type="file" class="form-control w-100" style="max-width: 400px;" name="products-__index__-images"
+                data-field="images" multiple accept="image/jpeg,image/png">
+            </div>
           </div>
         </div>
 
       </div>
     </div>
   </div>
-</div>
+</template>
 
 {% endblock %}
