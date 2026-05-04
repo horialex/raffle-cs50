@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Raffle details
+{% endblock %}
+
+{% block main %}
+
+<div class="container py-4">
+
+    <h1 class="mb-4">Raffle details</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow border-1">
+
+                <div class="card-body">
+
+                    <!-- Title + status -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="card-title">{{ raffle.title }}</h3>
+
+                        <span class="badge 
+                            {% if raffle.status.value == 'active' %}bg-success
+                            {% elif raffle.status.value == 'completed' %}bg-primary
+                            {% elif raffle.status.value == 'cancelled' %}bg-danger
+                            {% else %}bg-secondary
+                            {% endif %}">
+
+                            {{ raffle.status.value | capitalize }}
+                        </span>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-muted">
+                        {{ raffle.description or "No description provided." }}
+                    </p>
+
+                    <!-- Details -->
+                    <ul class="list-group list-group-flush mt-3">
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Creator</span>
+                            <strong>{{ raffle.creator.first_name }} {{ raffle.creator.last_name }}</strong>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Ticket price</span>
+                            <strong>${{ raffle.ticket_price }}</strong>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Minimum tickets</span>
+                            <strong>{{ raffle.minimum_required_tickets }}</strong>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Created date</span>
+                            <strong>{{ raffle.created_at.strftime('%d %b %Y - %H:%M') }}</strong>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Due date</span>
+                            <strong>{{ raffle.due_date.strftime('%d %b %Y - %H:%M') }}</strong>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Max tickets / user</span>
+                            <strong>{{ raffle.maximum_tickets_per_user }}</strong>
+                        </li>
+
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
