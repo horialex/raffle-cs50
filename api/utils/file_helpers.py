@@ -20,6 +20,22 @@ def delete_profile_picture(filename):
         os.remove(file_path)
 
 
+def delete_product_image(filename):
+    if not filename:
+        return
+
+    print("filename: ", filename)
+    folder = current_app.config["PRODUCT_IMAGES_FOLDER"]
+    file_path = os.path.abspath(os.path.join(folder, filename))
+
+    # ensure file is inside the intended folder
+    if not file_path.startswith(os.path.abspath(folder)):
+        return
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
 def save_product_image(product_image_form_data) -> str:
     product_images_folder = current_app.config["PRODUCT_IMAGES_FOLDER"]
 

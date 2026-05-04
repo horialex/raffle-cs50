@@ -2,6 +2,7 @@ from flask import current_app
 from flask_wtf import Form
 from wtforms.validators import DataRequired, Length
 from wtforms import (
+    BooleanField,
     HiddenField,
     MultipleFileField,
     StringField,
@@ -48,7 +49,12 @@ def minimum_images():
 
 
 class ProductForm(Form):
-    active = HiddenField(default="0")
+    def __init__(self, *args, is_edit=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_edit = is_edit
+
+    id = HiddenField()
+    delete = BooleanField()
 
     name = StringField(
         "Product name",
@@ -90,6 +96,20 @@ class ProductForm(Form):
         validators=[
             DataRequired(),
             minimum_images(),
+            max_file_count(3),
+            file_size_limit(5),  # e.g. 5 MB per file
+        ],
+    )
+
+
+class EditProductForm(ProductForm):
+    images = MultipleFileField(
+        "Product image",
+        render_kw={
+            "multiple": True,
+            "accept": "image/jpeg,image/png",
+        },
+        validators=[
             max_file_count(3),
             file_size_limit(5),  # e.g. 5 MB per file
         ],

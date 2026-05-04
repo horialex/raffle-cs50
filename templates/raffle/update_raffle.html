@@ -1,0 +1,341 @@
+{% extends "layout.html" %}
+{% block title %}Update Raffle{% endblock %}
+
+{% block main %}
+<div id="main" class="py-2">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8">
+
+        <div class="card shadow border-0">
+          <div class="card-body bg-light rounded shadow-sm p-3 p-md-4">
+
+            <h2 class="text-center mb-2 fw-bold">Update Raffle</h2>
+            <p class="text-center text-muted mb-4">
+              Update your raffle and the prize
+            </p>
+
+            <form action="{{ url_for('raffle_bp.update_raffle', id=raffle.id) }}" method="POST"
+              enctype="multipart/form-data" novalidate>
+              {{ form.hidden_tag() }}
+
+              <!-- raffle fields -->
+              <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                <i class="bi bi-ticket-perforated me-2 text-secondary"></i>
+                <h5 class="mb-0 fw-semibold">Raffle details</h5>
+              </div>
+
+              <div class="mb-3">
+                {{ form.title.label(class="form-label fw-semibold") }}
+                {{ form.title(
+                class="form-control" + (" is-invalid" if form.title.errors else "")
+                ) }}
+                {% for error in form.title.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+              </div>
+
+              <div class="mb-3">
+                {{ form.description.label(class="form-label fw-semibold") }}
+                {{ form.description(
+                class="form-control" + (" is-invalid" if form.description.errors else ""),
+                placeholder="Describe the raffle item..."
+                ) }}
+                {% for error in form.description.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  {{ form.maximum_tickets_per_user.label(class="form-label fw-semibold") }}
+                  {{ form.maximum_tickets_per_user(
+                  class="form-control" + (" is-invalid" if form.maximum_tickets_per_user.errors else
+                  ""),
+                  placeholder="e.g. 2"
+                  ) }}
+                  {% for error in form.maximum_tickets_per_user.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                  {{ form.minimum_required_tickets.label(class="form-label fw-semibold") }}
+                  {{ form.minimum_required_tickets(
+                  class="form-control" + (" is-invalid" if form.minimum_required_tickets.errors else
+                  ""),
+                  placeholder="e.g. 5"
+                  ) }}
+                  {% for error in form.minimum_required_tickets.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                  {{ form.ticket_price.label(class="form-label fw-semibold") }}
+                  {{ form.ticket_price(
+                  class="form-control" + (" is-invalid" if form.ticket_price.errors else ""),
+                  placeholder="e.g. 10"
+                  ) }}
+                  {% for error in form.ticket_price.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-3">
+                  {{ form.due_date_date.label(class="form-label fw-semibold") }}
+                  {{ form.due_date_date(
+                  class="form-control" + (" is-invalid" if form.due_date_date.errors else "")
+                  ) }}
+                  {% for error in form.due_date_date.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-3">
+                  {{ form.due_date_hour.label(class="form-label fw-semibold") }}
+                  {{ form.due_date_hour(
+                  class="form-select" + (" is-invalid" if form.due_date_hour.errors else "")
+                  ) }}
+                  {% for error in form.due_date_hour.errors %}
+                  <div class="invalid-feedback d-block">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- prize details section -->
+              <hr>
+              <div id="products-container">
+                {% for product_form in form.products %}
+                {% set product = raffle.products[loop.index0] if loop.index0 < raffle.products|length else none %} <div
+                  class="card border-0 shadow mb-4 product-card" data-index="{{ loop.index0 }}">
+                  <div class="card-body">
+
+                    <div class="d-flex align-items-center justify-content-between
+                                                            mb-3 pb-2 border-bottom">
+                      <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-box-seam me-2 text-secondary"></i>
+                        Product
+                      </h6>
+
+                      {% if loop.first %}
+                      <span class="badge text-bg-danger">Required</span>
+                      {% else %}
+                      <button type="button" class="btn btn-sm btn-outline-danger remove-product">
+                        Remove
+                      </button>
+                      {% endif %}
+                    </div>
+
+                    <input type="hidden" name="{{ product_form.form.id.name }}" value="{{ product_form.form.id.data }}"
+                      data-field="id">
+
+                    <div class="row g-3">
+                      <div class="col-12 col-md-12">
+                        {{ product_form.form.name.label(class="form-label
+                        fw-semibold") }}
+                        {{ product_form.form.name(class="form-control") }}
+
+                        {% for error in product_form.form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                      </div>
+
+                      <div class="col-12">
+                        {{ product_form.form.description.label(class="form-label
+                        fw-semibold") }}
+                        {{ product_form.form.description(class="form-control",
+                        rows="3") }}
+
+                        {% for error in product_form.form.description.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                      </div>
+
+                      <div class="col-12 col-md-4">
+                        {{ product_form.form.quantity.label(class="form-label
+                        fw-semibold") }}
+                        {{ product_form.form.quantity(class="form-control") }}
+
+                        {% for error in product_form.form.quantity.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                      </div>
+
+                      <div class="col-12 col-md-4">
+                        {{
+                        product_form.form.estimated_value.label(class="form-label
+                        fw-semibold") }}
+                        {{
+                        product_form.form.estimated_value(class="form-control")
+                        }}
+
+                        {% for error in product_form.form.estimated_value.errors
+                        %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                      </div>
+
+                      <div class="col-12 col-md-4">
+                        <div class="text-center">
+                          {{
+                          product_form.form.condition.label(class="form-label
+                          fw-semibold d-block") }}
+                          <div class="d-flex justify-content-center">
+                            {{ product_form.form.condition(
+                            class="form-select w-100",
+                            style="max-width: 220px;",
+                            **{"data-field": "condition"}
+                            ) }}
+                          </div>
+                          {% for error in product_form.form.condition.errors
+                          %}
+                          <div class="invalid-feedback d-block text-center">{{
+                            error }}</div>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <h6 class="mt-4">Current product images</h6>
+                      <div class="row g-3">
+                        {% for image in product.images %}
+                        <div class="col-md-3 mb-3">
+                          <div class="card shadow overflow-hidden">
+                            <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
+                              alt="Product image" class="card-img-top">
+                          </div>
+                        </div>
+                        {% endfor %}
+                      </div>
+
+                      <div class=" col-12">
+                        <div class="text-center">
+                          {{ product_form.form.images.label(class="form-label
+                          fw-semibold d-block") }}
+                          <div class="d-flex justify-content-center">
+                            {{ product_form.form.images(
+                            class="form-control w-100",
+                            style="max-width: 400px;"
+                            ) }}
+                          </div>
+                          {% for error in product_form.form.images.errors %}
+                          <div class="invalid-feedback d-block text-center">{{
+                            error }}</div>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+              </div>
+              {% endfor %}
+          </div>
+
+          <div class="text-center">
+            <button type="button" id="add-product-btn" class="btn btn-outline-secondary">
+              + Add another product
+            </button>
+          </div>
+
+          <!-- submit button -->
+          <hr>
+
+          <!-- Footer actions -->
+          <div class="mt-4 text-center">
+            {{ form.submit(class="btn btn-secondary btn-lg px-5 me-2") }}
+            <a href="{{ next }}" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
+          </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PRODUCT TEMPLATE -->
+<template id="product-template">
+  <div class="card border-0 shadow mb-4 product-card" data-index="__index__">
+
+    <div class="card-body">
+
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <h6 class="mb-0 fw-semibold">
+          <i class="bi bi-box-seam me-2 text-secondary"></i>
+          Product
+        </h6>
+
+        <button type="button" class="btn btn-sm btn-outline-danger remove-product">
+          Remove
+        </button>
+      </div>
+
+      <div class="row g-3">
+
+        <!-- ID -->
+        <input type="hidden" name="products-__index__-id" value="" data-field="id">
+
+        <!-- Name -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">Product name</label>
+          <input type="text" class="form-control" name="products-__index__-name" data-field="name">
+        </div>
+
+        <!-- Description -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea class="form-control" rows="3" name="products-__index__-description"
+            data-field="description"></textarea>
+        </div>
+
+        <!-- Quantity -->
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-semibold">Quantity</label>
+          <input type="number" class="form-control" name="products-__index__-quantity" data-field="quantity" value="1">
+        </div>
+
+        <!-- Estimated value -->
+        <div class="col-12 col-md-4">
+          <label class="form-label fw-semibold">Estimated value</label>
+          <input type="number" class="form-control" name="products-__index__-estimated_value"
+            data-field="estimated_value" value="1">
+        </div>
+
+        <!-- Condition -->
+        <div class="col-12 col-md-4">
+          <div class="text-center">
+            <label class="form-label fw-semibold d-block">Condition</label>
+            <div class="d-flex justify-content-center">
+              <select class="form-select w-100" style="max-width: 220px;" name="products-__index__-condition"
+                data-field="condition">
+
+                {% for value, label in form.products[0].form.condition.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="col-12">
+          <div class="text-center">
+            <label class="form-label fw-semibold d-block">Product image</label>
+            <div class="d-flex justify-content-center">
+              <input type="file" class="form-control w-100" style="max-width: 400px;" name="products-__index__-images"
+                data-field="images" multiple accept="image/jpeg,image/png">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</template>
+
+{% endblock %}

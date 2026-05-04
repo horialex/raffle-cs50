@@ -17,7 +17,7 @@ from wtforms.validators import (
     NumberRange,
     ValidationError,
 )
-from forms.product_form import ProductForm
+from forms.product_form import EditProductForm, ProductForm
 
 
 class CreateRaffleForm(FlaskForm):
@@ -62,17 +62,7 @@ class CreateRaffleForm(FlaskForm):
         choices=[(str(hour), f"{hour:02d}:00") for hour in range(24)],
     )
 
-    # TODO: Check if you can remove this field
-    product_count = SelectField(
-        "Number of products",
-        choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5")],
-        default=1,
-        validators=[DataRequired()],
-    )
-
-    # be careful here
     products = FieldList(FormField(ProductForm), min_entries=1, max_entries=3)
-    # products = FieldList(FormField(ProductForm), min_entries=1)
 
     submit = SubmitField("Submit")
 
@@ -115,3 +105,7 @@ class CreateRaffleForm(FlaskForm):
 
         if count > max_count:
             raise ValidationError(f"You can add at most {max_count} products.")
+
+
+class EditRaffleForm(CreateRaffleForm):
+    products = FieldList(FormField(EditProductForm), min_entries=1, max_entries=3)

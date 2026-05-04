@@ -37,10 +37,10 @@ Users
             <td>{{ user.address }}</td>
             <td>{{ user.createdAt }}</td>
             <td>{{ user.lastLogin }}</td>
-            <td>
+            <td class="d-flex justify-content-center align-items-center">
                 {% if user.profilePicture %}
                 <img src="{{ url_for('static', filename='uploads/images/profile_pictures/' ~ user.profilePicture) }}"
-                    alt="Profile Picture" style="max-width: 65px; height: auto;">
+                    alt="Profile Picture" class="img-fluid" style="max-width: 65px; height: auto;">
                 {% else %}
                 N/A
                 {% endif %}
