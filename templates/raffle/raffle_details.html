@@ -6,17 +6,20 @@ Raffle details
 
 {% block main %}
 
-<div class="container py-4">
+<div class="container py-1">
 
-    <h1 class="mb-4">Raffle details</h1>
+    <div class="mb-3">
+        <h2 class="mb-1">Raffle details</h2>
+        <p class="text-muted mb-0">View raffle information, products, and actions.</p>
+    </div>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+    <div class="row g-4">
+        <div class="col-lg-8">
 
-            <div class="card shadow border-1">
-
+            <!-- Raffle details card -->
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
-
+                    Raffle details go here
                     <!-- Title + status -->
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <h3 class="card-title">{{ raffle.title }}</h3>
@@ -77,8 +80,87 @@ Raffle details
 
             </div>
 
+            <!-- Products section -->
+            <div class="mb-3">
+                <h4 class="mb-0">Products in this raffle</h4>
+            </div>
+
+            <!-- Products grid -->
+            <div class="row g-3">
+                {% for product in raffle.products %}
+                <div class="col-md-4">
+                    <div class="card shadow-lg border h-100">
+
+                        <div class="position-relative">
+
+                            {% if product.images %}
+                            <img src="{{ url_for('static', filename='uploads/images/products/' + product.images[0].image_url) }}"
+                                class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                style="height: 180px;">
+                                <span class="text-muted">No image</span>
+                            </div>
+                            {% endif %}
+
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-primary">
+                                {{ loop.index }}
+                            </span>
+
+                            <button
+                                class="btn btn-light btn-sm rounded-circle position-absolute top-50 start-0 translate-middle-y ms-2">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <button
+                                class="btn btn-light btn-sm rounded-circle position-absolute top-50 end-0 translate-middle-y me-2">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="card-title fw-bold mb-1">{{ product.name }}</h6>
+                                <i class="bi bi-box-seam text-primary"></i>
+                            </div>
+
+                            <p class="card-text text-start text-muted small mb-0">
+                                {{ product.description }}
+                            </p>
+
+                            <p class="card-text text-start text-muted small mb-0">
+                                Value: {{ product.estimated_value }}
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-secondary">
+                        No products added to this raffle yet.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+
+
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    Action panel goes here
+                </div>
+            </div>
         </div>
     </div>
+
+
+
+
 
 </div>
 
