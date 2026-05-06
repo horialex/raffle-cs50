@@ -203,31 +203,56 @@ Raffle details
                 <div class="col-md-4">
                     <div class="card product-card shadow-lg border h-100">
 
-                        <div class="position-relative">
+                        <div id="carousel-{{ product.id }}" class="position-relative carousel slide"
+                            data-bs-ride="carousel">
 
-                            {% if product.images %}
-                            <img src="{{ url_for('static', filename='uploads/images/products/' + product.images[0].image_url) }}"
-                                class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ product.name }}">
-                            {% else %}
-                            <div class="bg-light d-flex align-items-center justify-content-center"
-                                style="height: 180px;">
-                                <span class="text-muted">No image</span>
+                            {% if product.images and product.images|length > 1 %}
+                            <div class="carousel-indicators">
+                                {% for image in product.images %}
+                                <button type="button" data-bs-target="#carousel-{{ product.id }}"
+                                    data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}">
+                                </button>
+                                {% endfor %}
                             </div>
+                            {% endif %}
+
+                            <div class="carousel-inner">
+
+                                {% if product.images %}
+                                {% for image in product.images %}
+                                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                    <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
+                                        class="d-block w-100" style="height: 180px; object-fit: cover;"
+                                        alt="{{ product.name }}">
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="carousel-item active">
+                                    <div class="bg-light d-flex align-items-center justify-content-center"
+                                        style="height: 180px;">
+                                        <span class="text-muted">No image</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {% if product.images and product.images | length > 1 %}
+                            <button class="carousel-control-prev" type="button"
+                                data-bs-target="#carousel-{{ product.id }}" data-bs-slide="prev">
+
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+
+                            <button class="carousel-control-next" type="button"
+                                data-bs-target="#carousel-{{ product.id }}" data-bs-slide="next">
+
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
                             {% endif %}
 
                             <span class="position-absolute top-0 start-0 m-2 badge bg-primary">
                                 {{ loop.index }}
                             </span>
-
-                            <button
-                                class="btn btn-light btn-sm rounded-circle position-absolute top-50 start-0 translate-middle-y ms-2">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-
-                            <button
-                                class="btn btn-light btn-sm rounded-circle position-absolute top-50 end-0 translate-middle-y me-2">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
 
                         </div>
 
