@@ -51,4 +51,9 @@ a:hover {
 
 .card {
     border-radius: 12px;
+    transition: 0.5s;
+}
+
+.product-card:hover {
+    transform: scale(1.05);
 }
