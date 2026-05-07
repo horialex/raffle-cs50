@@ -85,8 +85,8 @@ Raffle details
                                             <i class="bi bi-cash-coin"></i>
                                         </div>
                                         <div>
-                                            <div class="small text-muted">Ticket Price</div>
-                                            <strong>${{ raffle.ticket_price }}</strong>
+                                            <div class="small text-muted"><strong>Ticket Price</strong></div>
+                                            ${{ raffle.ticket_price }}
                                         </div>
                                     </div>
                                 </div>
@@ -100,8 +100,8 @@ Raffle details
                                             <i class="bi bi-people-fill fs-5"></i>
                                         </div>
                                         <div>
-                                            <div class="small text-muted">Minimum Tickets</div>
-                                            <strong>{{ raffle.minimum_required_tickets }}</strong>
+                                            <div class="small text-muted"><strong>Minimum Tickets</strong></div>
+                                            {{ raffle.minimum_required_tickets }}
                                         </div>
                                     </div>
                                 </div>
@@ -115,8 +115,8 @@ Raffle details
                                             <i class="bi bi-calendar-event fs-5"></i>
                                         </div>
                                         <div>
-                                            <div class="small text-muted">Due Date</div>
-                                            <strong>{{ raffle.due_date.strftime('%b %d, %Y %H:%M') }}</strong>
+                                            <div class="small text-muted"><strong>Due Date</strong></div>
+                                            {{ raffle.due_date.strftime('%d-%m-%Y %H:%M') }}
                                         </div>
                                     </div>
                                 </div>
@@ -137,8 +137,8 @@ Raffle details
                                             <i class="bi bi-ticket-detailed-fill fs-5"></i>
                                         </div>
                                         <div>
-                                            <div class="small text-muted">Max Tickets / User</div>
-                                            <strong>{{ raffle.maximum_tickets_per_user }}</strong>
+                                            <div class="small text-muted"><strong>Max Tickets / User</strong></div>
+                                            {{ raffle.maximum_tickets_per_user }}
                                         </div>
                                     </div>
                                 </div>
@@ -152,8 +152,8 @@ Raffle details
                                             <i class="bi bi-hash fs-5"></i>
                                         </div>
                                         <div>
-                                            <div class="small text-muted">Total Tickets Sold</div>
-                                            <strong>{{ sold_tickets or 0 }}</strong>
+                                            <div class="small text-muted"><strong> Tickets Sold</strong></div>
+                                            {{ sold_tickets or 0 }}
                                         </div>
                                     </div>
                                 </div>
@@ -167,8 +167,8 @@ Raffle details
                                             <i class="bi bi-bar-chart-fill fs-5"></i>
                                         </div>
                                         <div>
-                                            <div class="small text-muted">Progress</div>
-                                            <strong>{{ progress_percent or 0 }}% of minimum</strong>
+                                            <div class="small text-muted"><strong>Progress</strong></div>
+                                            {{ progress_percent or 0 }}% of min
                                         </div>
                                     </div>
                                 </div>
@@ -223,7 +223,7 @@ Raffle details
                                 {% for image in product.images %}
                                 <div class="carousel-item {% if loop.first %}active{% endif %}">
                                     <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
-                                        class="d-block w-100" style="height: 220px; object-fit: cover;"
+                                        class="d-block w-100 rounded" style="height: 220px; object-fit: cover;"
                                         alt="{{ product.name }}">
                                 </div>
                                 {% endfor %}
