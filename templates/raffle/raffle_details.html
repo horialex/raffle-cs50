@@ -73,15 +73,16 @@ Raffle details
                             <hr>
 
                             <!-- Stats row 1 -->
-                            <div class="row g-3 mb-3 text-center text-md-start">
+                            <div class="row g-0 text-center text-md-start">
 
+                                <!-- Ticket Price -->
                                 <div class="col-md-4">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
-                                        <div class="rounded-circle bg-primary-subtle text-primary 
-                        d-flex align-items-center justify-content-center 
-                        p-2 mb-2 mb-md-0 me-md-3">
-                                            <i class="bi bi-cash-coin fs-5"></i>
+                                        <div class="rounded-circle bg-primary-subtle text-primary
+            d-flex align-items-center justify-content-center
+            mb-2 mb-md-0 me-md-3 icon-circle">
+                                            <i class="bi bi-cash-coin"></i>
                                         </div>
                                         <div>
                                             <div class="small text-muted">Ticket Price</div>
@@ -90,12 +91,12 @@ Raffle details
                                     </div>
                                 </div>
 
+                                <!-- Minimum Tickets -->
                                 <div class="col-md-4">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
-                                        <div class="rounded-circle bg-warning-subtle text-warning 
-                        d-flex align-items-center justify-content-center 
-                        p-2 mb-2 mb-md-0 me-md-3">
+                                        <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center 
+                                            mb-2 mb-md-0 me-md-3 icon-circle">
                                             <i class="bi bi-people-fill fs-5"></i>
                                         </div>
                                         <div>
@@ -105,12 +106,12 @@ Raffle details
                                     </div>
                                 </div>
 
+                                <!-- Due Date -->
                                 <div class="col-md-4">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
-                                        <div class="rounded-circle bg-info-subtle text-primary 
-                        d-flex align-items-center justify-content-center 
-                        p-2 mb-2 mb-md-0 me-md-3">
+                                        <div class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center 
+                                            mb-2 mb-md-0 me-md-3 icon-circle">
                                             <i class="bi bi-calendar-event fs-5"></i>
                                         </div>
                                         <div>
@@ -127,12 +128,12 @@ Raffle details
                             <!-- Stats row 2 -->
                             <div class="row g-3 mb-4 text-center text-md-start">
 
+                                <!-- Maximum Tickets per User-->
                                 <div class="col-md-4">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
-                                        <div class="rounded-circle bg-success-subtle text-success 
-                        d-flex align-items-center justify-content-center 
-                        p-2 mb-2 mb-md-0 me-md-3">
+                                        <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center 
+                                            mb-2 mb-md-0 me-md-3 icon-circle">
                                             <i class="bi bi-ticket-detailed-fill fs-5"></i>
                                         </div>
                                         <div>
@@ -142,12 +143,12 @@ Raffle details
                                     </div>
                                 </div>
 
+                                <!-- Total Tickets Sold -->
                                 <div class="col-md-4">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
-                                        <div class="rounded-circle bg-danger-subtle text-danger 
-                        d-flex align-items-center justify-content-center 
-                        p-2 mb-2 mb-md-0 me-md-3">
+                                        <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center 
+                                            mb-2 mb-md-0 me-md-3 icon-circle">
                                             <i class="bi bi-hash fs-5"></i>
                                         </div>
                                         <div>
@@ -157,12 +158,12 @@ Raffle details
                                     </div>
                                 </div>
 
+                                <!-- Progress -->
                                 <div class="col-md-4">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
-                                        <div class="rounded-circle bg-warning-subtle text-warning 
-                        d-flex align-items-center justify-content-center 
-                        p-2 mb-2 mb-md-0 me-md-3">
+                                        <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center 
+                                            mb-2 mb-md-0 me-md-3 icon-circle">
                                             <i class="bi bi-bar-chart-fill fs-5"></i>
                                         </div>
                                         <div>
@@ -206,7 +207,7 @@ Raffle details
                         <div id="carousel-{{ product.id }}" class="position-relative carousel slide"
                             data-bs-ride="carousel">
 
-                            {% if product.images and product.images|length > 1 %}
+                            {% if product.images and product.images | length > 1 %}
                             <div class="carousel-indicators">
                                 {% for image in product.images %}
                                 <button type="button" data-bs-target="#carousel-{{ product.id }}"
@@ -222,14 +223,14 @@ Raffle details
                                 {% for image in product.images %}
                                 <div class="carousel-item {% if loop.first %}active{% endif %}">
                                     <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
-                                        class="d-block w-100" style="height: 180px; object-fit: cover;"
+                                        class="d-block w-100" style="height: 220px; object-fit: cover;"
                                         alt="{{ product.name }}">
                                 </div>
                                 {% endfor %}
                                 {% else %}
                                 <div class="carousel-item active">
                                     <div class="bg-light d-flex align-items-center justify-content-center"
-                                        style="height: 180px;">
+                                        style="height: 220px;">
                                         <span class="text-muted">No image</span>
                                     </div>
                                 </div>

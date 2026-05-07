@@ -13,7 +13,7 @@ class Raffle(db.Model):
         db.Integer, db.ForeignKey("users.id"), nullable=False
     )  # fk to users.id
     title = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
 
     status = db.Column(
         SqlEnum(
