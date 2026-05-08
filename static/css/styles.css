@@ -1,7 +1,13 @@
+.main-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
 }
+
 
 th,
 td {
