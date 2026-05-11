@@ -18,7 +18,7 @@ Raffle details
     <div class="col-lg-9">
         {% set is_raffle_creator = raffle.creator_id == current_user.id %}
         <!-- Raffle card -->
-        <div class="card shadow border-0 mb-4">
+        <div class="card shadow border-0 mb-5">
             <div class="card-body p-4">
                 <div class="row g-4">
 
@@ -315,14 +315,12 @@ Raffle details
                         Edit Raffle
                     </a>
 
-                    <form method="POST" action="">
-
-                        <button type="submit" class="btn btn-danger btn-lg w-100">
-                            <i class="bi bi-trash3 me-2"></i>
-                            Delete Raffle
-                        </button>
-
-                    </form>
+                    <button type="submit" class="btn btn-danger btn-lg w-100" data-bs-toggle="modal"
+                        data-bs-target="#deleteRaffleModal" data-raffle-id="{{ raffle.id }}"
+                        data-title="{{ raffle.title }}">
+                        <i class="bi bi-trash3 me-2"></i>
+                        Delete Raffle
+                    </button>
 
                     {% if raffle.status.value == 'draft' %}
 
@@ -373,6 +371,36 @@ Raffle details
 </div>
 
 
-<!-- </div> -->
+<!--Confirm delete user modal-->
+<div class="modal fade" id="deleteRaffleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm delete raffle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Are you sure you want to delete raffle <strong id="modalUsername"></strong>?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <form method="post" action="{{ url_for('raffle_bp.delete_raffle', id=raffle.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <button type="submit" class="btn btn-danger">
+                        Confirm delete
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 {% endblock %}

@@ -162,7 +162,7 @@ def create_raffle():
             return render_template("/raffle/create_raffle.html", form=form)
 
         flash("Raffle created.", "success")
-        return redirect("/")
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle.id))
 
     if form.is_submitted():
         if form.errors:
@@ -284,7 +284,7 @@ def update_raffle(id):
             )
 
         flash("Raffle updated.", "success")
-        return redirect("/")
+        return redirect(url_for("raffle_bp.get_raffle", id=target_raffle.id))
 
     if form.is_submitted():
         if form.errors:
@@ -311,6 +311,43 @@ def get_raffle(id):
         abort(403)
 
     return render_template("/raffle/raffle_details.html", raffle=raffle)
+
+
+# ---------------
+# Delete Raffle
+# ---------------
+@raffle_bp.route("/delete/<int:id>", methods=["POST"])
+@login_required
+def delete_raffle(id):
+    current_user_id = get_current_user_id()
+    user: User = User.query.get_or_404(current_user_id)
+    is_admin = user.is_admin
+
+    raffle: Raffle = Raffle.query.get_or_404(id)
+
+    if raffle.creator_id != current_user_id and not is_admin:
+        abort(403)
+
+    image_urls = []
+    for product in raffle.products:
+        for image in product.images:
+            image_urls.append(image.image_url)
+
+    try:
+        db.session.delete(raffle)
+        db.session.commit()
+
+        # Delete images from storage
+        for image_url in image_urls:
+            delete_product_image(image_url)
+
+    except Exception as e:
+        db.session.rollback()
+        flash("Unable to delete the raffle", "error")
+        return render_template("/raffle/raffle_details.html", raffle=raffle)
+
+    flash("Raffle deleted.", "success")
+    return redirect("/")
 
 
 # ----------------------------

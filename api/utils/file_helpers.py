@@ -24,7 +24,7 @@ def delete_product_image(filename):
     if not filename:
         return
 
-    print("filename: ", filename)
+    print("deleing file: ", filename)
     folder = current_app.config["PRODUCT_IMAGES_FOLDER"]
     file_path = os.path.abspath(os.path.join(folder, filename))
 
