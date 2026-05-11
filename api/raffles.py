@@ -328,6 +328,9 @@ def delete_raffle(id):
     if raffle.creator_id != current_user_id and not is_admin:
         abort(403)
 
+    if raffle.status != "draft":
+        abort(403)
+
     image_urls = []
     for product in raffle.products:
         for image in product.images:
