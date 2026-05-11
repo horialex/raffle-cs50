@@ -1,0 +1,327 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Raffle details
+{% endblock %}
+
+{% block main %}
+
+<div class="container py-4">
+
+    <!-- Breadcrumb -->
+    <nav class="mb-3">
+        <a href="#" class="text-decoration-none">Home</a>
+        <span class="text-muted mx-2">/</span>
+        <a href="#" class="text-decoration-none">Raffles</a>
+        <span class="text-muted mx-2">/</span>
+        <span class="text-muted">Raffle Details</span>
+    </nav>
+
+    <!-- Page title -->
+    <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-ticket-perforated-fill text-primary fs-2 me-3"></i>
+        <h1 class="mb-0 fw-bold">Raffle Details</h1>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT CONTENT -->
+        <div class="col-lg-8">
+
+            <!-- Raffle card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+
+                    <div class="row g-4">
+
+                        <!-- Main image -->
+                        <div class="col-md-4">
+                            <img src="{{ url_for('static', filename='images/win.png') }}" class="img-fluid rounded"
+                                style="height: 260px; width: 100%; object-fit: cover;" alt="Raffle product">
+                        </div>
+
+                        <!-- Details -->
+                        <div class="col-md-8">
+
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="fw-bold mb-0">{{ raffle.name }}</h3>
+
+                                <span class="badge rounded-pill px-3 py-2
+                                    {% if raffle.status.value == 'active' %}bg-success-subtle text-success
+                                    {% elif raffle.status.value == 'completed' %}bg-primary-subtle text-primary
+                                    {% elif raffle.status.value == 'cancelled' %}bg-danger-subtle text-danger
+                                    {% else %}bg-secondary-subtle text-secondary
+                                    {% endif %}">
+                                    ● {{ raffle.status.value | capitalize }}
+                                </span>
+                            </div>
+
+                            <p class="text-muted">
+                                {{ raffle.description or "Get a chance to win this amazing raffle prize." }}
+                            </p>
+
+                            <div class="d-flex align-items-center gap-3 small text-muted mb-3">
+                                <span>
+                                    Created by
+                                    <strong class="text-primary">{{ raffle.creator.username }}</strong>
+                                </span>
+                                <span>·</span>
+                                <span>
+                                    Created on {{ raffle.created_at.strftime('%b %d, %Y') }}
+                                </span>
+                            </div>
+
+                            <hr>
+
+                            <!-- Stats row 1 -->
+                            <div class="row g-3 mb-3">
+
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-primary-subtle text-primary p-2 me-3">
+                                            <i class="bi bi-ticket-perforated-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small text-muted">Ticket Price</div>
+                                            <strong>${{ raffle.ticket_price }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-warning-subtle text-warning p-2 me-3">
+                                            <i class="bi bi-people-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small text-muted">Minimum Tickets</div>
+                                            <strong>{{ raffle.minimum_required_tickets }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-info-subtle text-primary p-2 me-3">
+                                            <i class="bi bi-calendar-event"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small text-muted">Due Date</div>
+                                            <strong>{{ raffle.due_date.strftime('%b %d, %Y %H:%M') }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <hr>
+
+                            <!-- Stats row 2 -->
+                            <div class="row g-3 mb-4">
+
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-success-subtle text-success p-2 me-3">
+                                            <i class="bi bi-cash-stack"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small text-muted">Max Tickets / User</div>
+                                            <strong>{{ raffle.max_tickets_per_user }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-danger-subtle text-danger p-2 me-3">
+                                            <i class="bi bi-hash"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small text-muted">Total Tickets Sold</div>
+                                            <strong>{{ sold_tickets or 0 }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-warning-subtle text-warning p-2 me-3">
+                                            <i class="bi bi-bar-chart-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small text-muted">Progress</div>
+                                            <strong>{{ progress_percent or 0 }}% of minimum</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Progress bar -->
+                            <div class="progress mb-2" style="height: 10px;">
+                                <div class="progress-bar bg-primary" style="width: {{ progress_percent or 0 }}%;">
+                                </div>
+                            </div>
+
+                            <div class="text-center text-muted small">
+                                {{ sold_tickets or 0 }} / {{ raffle.minimum_required_tickets }} tickets sold
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Products title -->
+            <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-gift-fill text-primary fs-4 me-2"></i>
+                <h4 class="mb-0 fw-bold">Products in this raffle</h4>
+            </div>
+
+            <!-- Products grid -->
+            <div class="row g-3">
+
+                {% for product in raffle.products %}
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100">
+
+                        <div class="position-relative">
+
+                            {% if product.images %}
+                            <img src="{{ product.images[0].url }}" class="card-img-top"
+                                style="height: 180px; object-fit: cover;" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                style="height: 180px;">
+                                <span class="text-muted">No image</span>
+                            </div>
+                            {% endif %}
+
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-primary">
+                                {{ loop.index }}
+                            </span>
+
+                            <button
+                                class="btn btn-light btn-sm rounded-circle position-absolute top-50 start-0 translate-middle-y ms-2">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <button
+                                class="btn btn-light btn-sm rounded-circle position-absolute top-50 end-0 translate-middle-y me-2">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title fw-bold mb-1">{{ product.name }}</h5>
+                                <i class="bi bi-box-seam text-primary"></i>
+                            </div>
+
+                            <p class="card-text text-muted small mb-0">
+                                {{ product.description or "No description provided." }}
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-secondary">
+                        No products added to this raffle yet.
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+
+                    {% if current_user and current_user.id != raffle.creator_id %}
+
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-ticket-perforated-fill text-primary fs-3 me-3"></i>
+                        <h4 class="fw-bold mb-0">Join this raffle</h4>
+                    </div>
+
+                    <p class="text-muted">
+                        Buy tickets for a chance to win one of the amazing prizes in this raffle.
+                    </p>
+
+                    <form method="POST" action="{{ url_for('raffles.buy_ticket', raffle_id=raffle.id) }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Number of Tickets</label>
+                            <input type="number" name="quantity" class="form-control text-center" min="1"
+                                max="{{ raffle.max_tickets_per_user }}" value="1">
+                            <div class="form-text text-center">
+                                Maximum {{ raffle.max_tickets_per_user }} tickets per user
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between border-top pt-3 mb-3">
+                            <strong>Total Price</strong>
+                            <strong class="text-success">${{ raffle.ticket_price }}</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-cart me-2"></i>
+                            Buy Ticket
+                        </button>
+
+                    </form>
+
+                    {% elif current_user and current_user.id == raffle.creator_id %}
+
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-gear-fill text-warning fs-3 me-3"></i>
+                        <h4 class="fw-bold mb-0">Manage this raffle</h4>
+                    </div>
+
+                    <p class="text-muted">
+                        You are the owner of this raffle.
+                    </p>
+
+                    <a href="{{ url_for('raffles.edit_raffle', raffle_id=raffle.id) }}"
+                        class="btn btn-warning text-white w-100 mb-2">
+                        <i class="bi bi-pencil me-2"></i>
+                        Edit Raffle
+                    </a>
+
+                    <form method="POST" action="{{ url_for('raffles.delete_raffle', raffle_id=raffle.id) }}"
+                        onsubmit="return confirm('Are you sure you want to delete this raffle?');">
+
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-trash me-2"></i>
+                            Delete Raffle
+                        </button>
+
+                    </form>
+
+                    {% else %}
+
+                    <div class="alert alert-info mb-0">
+                        Please log in to join this raffle.
+                    </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

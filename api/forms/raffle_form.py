@@ -28,7 +28,7 @@ class CreateRaffleForm(FlaskForm):
 
     description = TextAreaField(
         "Description",
-        validators=[DataRequired(), Length(min=8, max=100)],
+        validators=[DataRequired(), Length(min=8, max=255)],
     )
 
     ticket_price = IntegerField(

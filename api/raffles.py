@@ -53,7 +53,7 @@ def test():
 # ----------------------------
 @raffle_bp.route("/", methods=["GET"])
 @login_required
-def list_raffles():
+def get_raffles():
     current_user_id = session.get("user_id")
     user: User = User.query.get_or_404(current_user_id)
 
@@ -89,7 +89,7 @@ def list_raffles():
     ]
 
     return render_template(
-        "raffles.html",
+        "/raffle/raffles.html",
         raffles=raffles,
         total=paginated_raffles.total,
         page=page,
@@ -110,7 +110,7 @@ def create_raffle():
         due_date, error = build_due_date(form)
         if error:
             flash(error, "error")
-            return render_template("create_raffle.html", form=form)
+            return render_template("/raffle/create_raffle.html", form=form)
 
         # Raffle part
         raffle = Raffle(
@@ -150,7 +150,7 @@ def create_raffle():
 
         if not products_to_save:
             flash("Please add at least one product.", "error")
-            return render_template("create_raffle.html", form=form)
+            return render_template("/raffle/create_raffle.html", form=form)
 
         # Save raffle in the db
         try:
@@ -159,10 +159,10 @@ def create_raffle():
         except Exception as e:
             db.session.rollback()
             flash(f"Error creating raffle: {str(e)}", "error")
-            return render_template("create_raffle.html", form=form)
+            return render_template("/raffle/create_raffle.html", form=form)
 
         flash("Raffle created.", "success")
-        return redirect("/")
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle.id))
 
     if form.is_submitted():
         if form.errors:
@@ -171,7 +171,7 @@ def create_raffle():
                 "error",
             )
 
-    return render_template("create_raffle.html", form=form)
+    return render_template("/raffle/create_raffle.html", form=form)
 
 
 # ----------------------------
@@ -180,7 +180,7 @@ def create_raffle():
 @raffle_bp.route("/update/<int:id>", methods=["GET", "POST"])
 @login_required
 def update_raffle(id):
-    current_user_id = session.get("user_id")
+    current_user_id = get_current_user_id()
     target_raffle: Raffle = Raffle.query.get_or_404(id)
 
     if not target_raffle.creator_id == current_user_id:
@@ -205,7 +205,7 @@ def update_raffle(id):
         due_date, error = build_due_date(form)
         if error:
             flash(error, "error")
-            return render_template("create_raffle.html", form=form)
+            return render_template("/raffle/update_raffle.html", form=form)
 
         # ----------------------------
         # Update raffle
@@ -232,7 +232,6 @@ def update_raffle(id):
         # work on a copy of target_raffle.products by using [:]
         for product in target_raffle.products[:]:
             if product.id not in submitted_ids:
-                print("We are DELETING the product!")
                 db.session.delete(product)
 
         # --- UPDATE AND CREATE PRODUCT ---
@@ -241,14 +240,12 @@ def update_raffle(id):
 
             # --- CREATE NEW PRODUCT ---
             if product_id:
-                print("We are UPDATING the product!")
                 product = next(
                     (p for p in target_raffle.products if p.id == int(product_id)), None
                 )
                 if not product:
                     abort(404)
             else:
-                print("We are CREATING the product!")
                 product = Product(raffle=target_raffle)
                 db.session.add(product)
 
@@ -278,7 +275,7 @@ def update_raffle(id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f"Error creating raffle: {str(e)}", "error")
+            flash(f"Error updating raffle: {str(e)}", "error")
             return render_template(
                 "/raffle/update_raffle.html",
                 form=form,
@@ -287,7 +284,7 @@ def update_raffle(id):
             )
 
         flash("Raffle updated.", "success")
-        return redirect("/")
+        return redirect(url_for("raffle_bp.get_raffle", id=target_raffle.id))
 
     if form.is_submitted():
         if form.errors:
@@ -302,78 +299,60 @@ def update_raffle(id):
 
 
 # ----------------------------
+# Get Raffle details page
+# ----------------------------
+@raffle_bp.route("/<int:id>", methods=["GET"])
+@login_required
+def get_raffle(id):
+    current_user_id = get_current_user_id()
+    raffle: Raffle = Raffle.query.get_or_404(id)
+
+    if not raffle.creator_id == current_user_id:
+        abort(403)
+
+    return render_template("/raffle/raffle_details.html", raffle=raffle)
+
+
+# ---------------
+# Delete Raffle
+# ---------------
+@raffle_bp.route("/delete/<int:id>", methods=["POST"])
+@login_required
+def delete_raffle(id):
+    current_user_id = get_current_user_id()
+    user: User = User.query.get_or_404(current_user_id)
+    is_admin = user.is_admin
+
+    raffle: Raffle = Raffle.query.get_or_404(id)
+
+    if raffle.creator_id != current_user_id and not is_admin:
+        abort(403)
+
+    image_urls = []
+    for product in raffle.products:
+        for image in product.images:
+            image_urls.append(image.image_url)
+
+    try:
+        db.session.delete(raffle)
+        db.session.commit()
+
+        # Delete images from storage
+        for image_url in image_urls:
+            delete_product_image(image_url)
+
+    except Exception as e:
+        db.session.rollback()
+        flash("Unable to delete the raffle", "error")
+        return render_template("/raffle/raffle_details.html", raffle=raffle)
+
+    flash("Raffle deleted.", "success")
+    return redirect("/")
+
+
+# ----------------------------
 # Helpers
 # ----------------------------
-def validate_product_form(product_form: ProductForm, index) -> str | None:
-    max_image_size = current_app.config["MAX_IMAGE_SIZE"]  # bytes
-
-    max_allowed_images = current_app.config["MAX_IMAGES_PER_PRODUCT"]
-    name = (product_form.name.data or "").strip()
-    description = (product_form.description.data or "").strip()
-    estimated_value = product_form.estimated_value.data
-    quantity = product_form.quantity.data
-    condition = product_form.condition.data
-    images = product_form.images.data
-
-    # Validate name
-    if not name:
-        return f"Product {index}: Name is required."
-
-    if len(name) < 3 or len(name) > 100:
-        return f"Product {index}: Name must be between 3 and 100 characters"
-
-    # Validate descr
-    if not description:
-        return f"Product {index}: Description is required."
-
-    if len(description) < 8 or len(description) > 255:
-        return f"Product {index}: Description must be between 8 and 255 characters"
-
-    # Validate estimated_value
-    if not estimated_value:
-        return f"Product {index}: Estimated value is required."
-
-    if estimated_value < 1 or estimated_value > 100_000:
-        return f"Product {index}: Estimated value must be at least 1."
-
-    # Validate quantity
-    if not quantity:
-        return f"Product {index}: Quantity is required."
-
-    if quantity < 1 or quantity > 99:
-        return f"Product {index}: Quantity must be between 1 and 99"
-
-    # Validate condition
-    if not condition:
-        return f"Product {index}: Condition is required."
-
-    # Validate images
-    valid_images = get_valid_images(images)
-
-    if not valid_images:
-        return f"Product {index}: At least one image is required."
-
-    if len(valid_images) > max_allowed_images:
-        return (
-            f"Product {index}: Maximum {max_allowed_images} images per product allowed"
-        )
-
-    # Validate image extensions
-    for img in valid_images:
-        if not allowed_file(img.filename):
-            return f"Product {index}: Only JPG, JPEG and PNG images are allowed."
-
-    # Validate image size
-    for img in valid_images:
-        size = get_file_size(img)
-
-        if size > max_image_size:
-            max_mb = max_image_size // (1024 * 1024)
-            return f"Product {index}: Each image must be under {max_mb}MB"
-
-    return None
-
-
 def build_due_date(form):
     due_date = datetime.combine(form.due_date_date.data, datetime.min.time()).replace(
         hour=int(form.due_date_hour.data),
@@ -384,3 +363,11 @@ def build_due_date(form):
         return None, "Due date must be set in the future."
 
     return due_date, None
+
+
+def get_current_user(id) -> User:
+    return User.query.get_or_404(id)
+
+
+def get_current_user_id() -> int:
+    return session.get("user_id")

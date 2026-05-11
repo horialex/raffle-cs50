@@ -1,7 +1,13 @@
+.main-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
 }
+
 
 th,
 td {
@@ -51,4 +57,44 @@ a:hover {
 
 .card {
     border-radius: 12px;
+    transition: 0.5s;
+}
+
+.product-card:hover {
+    transform: scale(1.05);
+}
+
+.carousel-indicators button {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: white;
+    opacity: 0.6;
+    margin: 0 4px;
+}
+
+.carousel-indicators .active {
+    background-color: #0d6efd;
+    opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 8%;
+}
+
+.icon-circle {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+}
+
+.icon-circle i {
+    font-size: 1rem;
 }
