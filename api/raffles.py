@@ -305,9 +305,14 @@ def update_raffle(id):
 @login_required
 def get_raffle(id):
     current_user_id = get_current_user_id()
+
+    user: User = User.query.get_or_404(current_user_id)
     raffle: Raffle = Raffle.query.get_or_404(id)
 
-    if not raffle.creator_id == current_user_id:
+    is_admin = user.is_admin
+    is_owner = raffle.creator_id == current_user_id
+
+    if raffle.is_draft and not (is_admin or is_owner):
         abort(403)
 
     return render_template("/raffle/raffle_details.html", raffle=raffle)
@@ -326,6 +331,9 @@ def delete_raffle(id):
     raffle: Raffle = Raffle.query.get_or_404(id)
 
     if raffle.creator_id != current_user_id and not is_admin:
+        abort(403)
+
+    if not raffle.is_draft:
         abort(403)
 
     image_urls = []
@@ -348,6 +356,36 @@ def delete_raffle(id):
 
     flash("Raffle deleted.", "success")
     return redirect("/")
+
+
+# ---------------
+# Start Raffle
+# ---------------
+@raffle_bp.route("/start/<int:id>", methods=["POST"])
+@login_required
+def start_raffle(id):
+    current_user_id = get_current_user_id()
+    user: User = User.query.get_or_404(current_user_id)
+    is_admin = user.is_admin
+    raffle: Raffle = Raffle.query.get_or_404(id)
+    is_raffle_creator = raffle.creator_id == current_user_id
+
+    if not is_raffle_creator and not is_admin:
+        abort(403)
+
+    if not raffle.is_draft:
+        abort(403)
+
+    raffle.status = RaffleStatus.ACTIVE
+
+    try:
+        db.session.commit()
+        flash("Raffle started", "success")
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle.id))
+    except Exception as e:
+        db.session.rollback()
+        flash("Unable to start the raffle", "error")
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle.id))
 
 
 # ----------------------------
