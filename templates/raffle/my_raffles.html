@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}
+My Raffles
+{% endblock %}
+
+{% block main %}
+<div class="container py-5">
+
+    <!-- Page header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-body p-4 header-banner">
+
+                    <div class="row align-items-center g-4">
+
+                        <div class="col-12 col-md">
+                            <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
+                                <div class="rounded-circle bg-primary-subtle text-primary
+            d-flex align-items-center justify-content-center
+            flex-shrink-0 mb-3 mb-md-0 me-md-3 p-3">
+                                    <i class="bi bi-ticket-perforated-fill fs-3"></i>
+                                </div>
+
+                                <div>
+                                    <h2 class="fw-bold mb-1">My Raffles</h2>
+                                    <p class="text-muted mb-0">
+                                        Manage the raffles you created and track their current status.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex flex-column flex-md-row align-items-center gap-3 gap-md-4">
+
+                                <div class="d-none d-md-flex align-items-center gap-2">
+                                    <i class="bi bi-ticket-perforated-fill text-primary fs-3"></i>
+                                    <i class="bi bi-ticket-perforated-fill text-warning fs-3"></i>
+                                    <i class="bi bi-stars text-info fs-3"></i>
+                                </div>
+
+                                <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-lg btn-primary w-100">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    Create Raffle
+                                </a>
+
+                            </div>
+                        </div>
+
+                        <!-- <div class="col-12 col-md-auto">
+                            <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-lg btn-primary w-100">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Create Raffle
+                            </a>
+                        </div> -->
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

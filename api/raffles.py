@@ -89,7 +89,7 @@ def get_raffles():
     ]
 
     return render_template(
-        "/raffle/raffles.html",
+        "/raffle/my_raffles.html",
         raffles=raffles,
         total=paginated_raffles.total,
         page=page,

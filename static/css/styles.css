@@ -98,3 +98,13 @@ a:hover {
 .icon-circle i {
     font-size: 1rem;
 }
+
+.header-icon-circle {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.header-banner {
+    background: linear-gradient(90deg, #ffffff 0%, #f8fbff 45%, #e7f1ff 100%)
+}
