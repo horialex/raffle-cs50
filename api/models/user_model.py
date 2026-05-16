@@ -32,7 +32,6 @@ class User(db.Model):
         nullable=False,
     )
     last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
-    # The user can be the creator of many raffles
     raffles = db.relationship("Raffle", backref="creator", lazy=True)
 
     def __repr__(self):

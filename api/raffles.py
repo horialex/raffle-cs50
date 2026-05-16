@@ -404,27 +404,27 @@ def start_raffle(id):
 def my_raffles():
     user_id = get_current_user_id()
 
+    # Grab request args
     page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
     per_page = request.args.get("per_page", 10, type=int)
     per_page = min(max(per_page, 1), 20)
 
     sort = request.args.get("sort", "newest")
     search = request.args.get("search", "").strip()
 
-    # Filters
     status_filter = request.args.get("status", "all")
     start_date_filter = request.args.get("start_date", "").strip()
     end_date_filter = request.args.get("end_date", "").strip()
-
     min_price = request.args.get("min_price", type=int)
     max_price = request.args.get("max_price", type=int)
     category_filter = request.args.get("category")
 
+    # Only show current user's raffles
     query = Raffle.query.filter(Raffle.creator_id == user_id)
 
     # Filters
-
-    # Validate status
+    ## Status filter
     allowed_statuses = ["all"] + [status.value for status in RaffleStatus]
 
     if status_filter not in allowed_statuses:
@@ -433,7 +433,7 @@ def my_raffles():
     if status_filter != "all":
         query = query.filter(Raffle.status == status_filter)
 
-    # Validate dates
+    ## Date filter
     start_date = None
     end_date = None
 
@@ -463,7 +463,7 @@ def my_raffles():
     if end_date:
         query = query.filter(Raffle.due_date <= end_date)
 
-    # Validate price range
+    ## Price filter
     if min_price is not None and min_price < 0:
         min_price = None
 
@@ -481,9 +481,10 @@ def my_raffles():
     if max_price:
         query = query.filter(Raffle.ticket_price <= max_price)
 
+    ## Category filter
     # TODO: implement this once categories are added to the raffle products
-    # if category_filter:
-    #     pass
+    if category_filter:
+        pass
 
     # Search
     if search:
@@ -503,8 +504,18 @@ def my_raffles():
         )
 
     # Sorting - add the sorting options
-    # TODO: add extra sorts for raffle_value and for tickets sold
-    allowed_sorts = ["newest", "oldest", "due_soon", "price_low", "price_high"]
+    # TODO: implement tickets_most, tickets_least, value_high, value_low
+    allowed_sorts = [
+        "newest",
+        "oldest",
+        "due_soon",
+        "price_low",
+        "price_high",
+        "tickets_most",
+        "tickets_least",
+        "value_high",
+        "value_low",
+    ]
 
     if sort not in allowed_sorts:
         sort = "newest"
@@ -519,6 +530,14 @@ def my_raffles():
         query = query.order_by(Raffle.ticket_price.asc())
     elif sort == "price_high":
         query = query.order_by(Raffle.ticket_price.desc())
+    elif sort == "tickets_most":
+        pass
+    elif sort == "tickets_least":
+        pass
+    elif sort == "value_high":
+        pass
+    elif sort == "value_low":
+        pass
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     raffles = pagination.items

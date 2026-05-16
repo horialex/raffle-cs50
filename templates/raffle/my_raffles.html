@@ -20,7 +20,7 @@ My Raffles
                                 <div class="rounded-circle bg-primary-subtle text-primary
             d-flex align-items-center justify-content-center
             flex-shrink-0 mb-3 mb-md-0 me-md-3 p-3">
-                                    <i class="bi bi-ticket-perforated-fill fs-3"></i>
+                                    <i class="bi bi-ticket-perforated-fill fs-4"></i>
                                 </div>
 
                                 <div>
@@ -34,26 +34,19 @@ My Raffles
                         <div class="col-12 col-md-auto">
                             <div class="d-flex flex-column flex-md-row align-items-center gap-3 gap-md-4">
 
-                                <div class="d-none d-md-flex align-items-center gap-2">
-                                    <i class="bi bi-ticket-perforated-fill text-primary fs-3"></i>
-                                    <i class="bi bi-ticket-perforated-fill text-warning fs-3"></i>
-                                    <i class="bi bi-stars text-info fs-3"></i>
+                                <div class="d-flex justify-content-center align-items-center gap-2"
+                                    style="min-height: 56px;">
+                                    <i class="bi bi-ticket-perforated-fill text-primary fs-3 mb-3"></i>
+                                    <i class="bi bi-ticket-perforated-fill text-warning fs-3 mt-3"></i>
+                                    <i class="bi bi-stars text-info fs-3 mb-2"></i>
                                 </div>
 
                                 <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-lg btn-primary w-100">
                                     <i class="bi bi-plus-circle me-2"></i>
                                     Create Raffle
                                 </a>
-
                             </div>
                         </div>
-
-                        <!-- <div class="col-12 col-md-auto">
-                            <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-lg btn-primary w-100">
-                                <i class="bi bi-plus-circle me-2"></i>
-                                Create Raffle
-                            </a>
-                        </div> -->
 
                     </div>
 
