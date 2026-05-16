@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 from sqlalchemy import Enum as SqlEnum
-
 from constants.raffle_status import RaffleStatus
 from db import db
 
@@ -9,9 +8,7 @@ class Raffle(db.Model):
     __tablename__ = "raffles"
 
     id = db.Column(db.Integer, primary_key=True)
-    creator_id = db.Column(
-        db.Integer, db.ForeignKey("users.id"), nullable=False
-    )  # fk to users.id
+    creator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     title = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(255), nullable=False)
 
