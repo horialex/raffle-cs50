@@ -87,7 +87,7 @@ def get_raffles():
     ]
 
     return render_template(
-        "/raffle/my_raffles.html",
+        "/raffle/all_raffles_admin.html",
         raffles=raffles,
         total=paginated_raffles.total,
         page=page,
@@ -413,7 +413,7 @@ def my_raffles():
     sort = request.args.get("sort", "newest")
     search = request.args.get("search", "").strip()
 
-    status_filter = request.args.get("status", "all")
+    selected_status = request.args.get("status_filter", "all")
     start_date_filter = request.args.get("start_date", "").strip()
     end_date_filter = request.args.get("end_date", "").strip()
     min_price = request.args.get("min_price", type=int)
@@ -427,11 +427,15 @@ def my_raffles():
     ## Status filter
     allowed_statuses = ["all"] + [status.value for status in RaffleStatus]
 
-    if status_filter not in allowed_statuses:
-        status_filter = "all"
+    if selected_status not in allowed_statuses:
+        selected_status = "all"
 
-    if status_filter != "all":
-        query = query.filter(Raffle.status == status_filter)
+    status_filter_options = [
+        {"value": status, "label": status.title()} for status in allowed_statuses
+    ]
+
+    if selected_status != "all":
+        query = query.filter(Raffle.status == selected_status)
 
     ## Date filter
     start_date = None
@@ -475,10 +479,10 @@ def my_raffles():
         min_price = None
         max_price = None
 
-    if min_price:
+    if min_price is not None:
         query = query.filter(Raffle.ticket_price >= min_price)
 
-    if max_price:
+    if max_price is not None:
         query = query.filter(Raffle.ticket_price <= max_price)
 
     ## Category filter
@@ -546,7 +550,7 @@ def my_raffles():
         "raffle/my_raffles.html",
         raffles=raffles,
         pagination=pagination,
-        selected_status=status_filter,
+        selected_status=selected_status,
         selected_sort=sort,
         search=search,
         per_page=per_page,
@@ -554,6 +558,8 @@ def my_raffles():
         end_date=end_date_filter,
         min_price=min_price,
         max_price=max_price,
+        status_filter_options=status_filter_options,
+        allowed_sorts=allowed_sorts,
     )
 
 

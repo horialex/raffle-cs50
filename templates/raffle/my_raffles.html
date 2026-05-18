@@ -56,67 +56,185 @@ My Raffles
     </div>
 
     <!-- Filters section: Search, Sort, Filters, Applied filters/Clear filters -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow border-0">
-                <div class="card-body p-4">
+    <form method="GET" action="{{ url_for('raffle_bp.my_raffles') }}">
+        <div class="row g-4">
 
-                    <form method="GET" action="{{ url_for('raffle_bp.my_raffles') }}" class="row g-3 align-items-end">
+            <!-- Left column -->
+            <div class="col-12 col-lg-3">
+                <div class="card shadow border-0 filters-card">
+                    <div class="card-body p-4">
 
-                        <div class="col-12 col-md-3">
-                            <label for="search" class="form-label fw-semibold">Search</label>
-                            <input type="text" id="search" name="search" class="form-control"
-                                placeholder="Search by raffle title" value="{{ search }}">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="bi bi-search text-primary fs-5 me-2"></i>
+                            <h5 class="fw-bold mb-0">Search & Sorting</h5>
                         </div>
 
-                        <div class="col-12 col-md-4">
-                            <label for="status" class="form-label fw-semibold">Status</label>
-                            <select id="status" name="status" class="form-select">
-                                <option value="all" {% if selected_status=="all" %}selected{% endif %}>All statuses
-                                </option>
-                                <option value="active" {% if selected_status=="active" %}selected{% endif %}>Active
-                                </option>
-                                <option value="completed" {% if selected_status=="completed" %}selected{% endif %}>
-                                    Completed</option>
-                                <option value="cancelled" {% if selected_status=="cancelled" %}selected{% endif %}>
-                                    Cancelled</option>
-                                <option value="draft" {% if selected_status=="draft" %}selected{% endif %}>Draft
-                                </option>
-                            </select>
+                        <!--##  Basic filters ## -->
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label for="search_input"
+                                class="form-label fw-semibold text-nowrap text-start d-block">Search raffle</label>
+                            <div class="input-group">
+                                <!-- <span class="input-group-text bg-white">
+                                    <i class="bi bi-search"></i>
+                                </span> -->
+                                <input type="text" name="search" value="{{ search }}" class="form-control"
+                                    placeholder="Search raffles...">
+                            </div>
+
                         </div>
 
-                        <div class="col-12 col-md-3">
-                            <label for="sort" class="form-label fw-semibold">Sort by</label>
+                        <!-- Sorting -->
+                        <div class="mb-3">
+                            <label for="sort" class="form-label fw-semibold text-nowrap text-start d-block">Sort
+                                by</label>
+
                             <select id="sort" name="sort" class="form-select">
-                                <option value="newest" {% if selected_sort=="newest" %}selected{% endif %}>Newest first
+                                {% for option in allowed_sorts %}
+                                <option value="{{ option }}" {% if selected_sort==option %}selected{% endif %}>
+                                    {{ option | replace("_", " ") | capitalize}}
                                 </option>
-                                <option value="oldest" {% if selected_sort=="oldest" %}selected{% endif %}>Oldest first
-                                </option>
-                                <option value="ending_soon" {% if selected_sort=="ending_soon" %}selected{% endif %}>
-                                    Ending soon</option>
-                                <option value="ticket_price_low" {% if selected_sort=="ticket_price_low" %}selected{%
-                                    endif %}>Ticket price: low to high</option>
-                                <option value="ticket_price_high" {% if selected_sort=="ticket_price_high" %}selected{%
-                                    endif %}>Ticket price: high to low</option>
+                                {% endfor %}
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-2 d-grid">
-                            <button type="submit" class="btn btn-dark">
+                        <br>
+                        <!-- <hr> -->
+
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="bi bi-funnel text-primary fs-5 me-2"></i>
+                            <h5 class="fw-bold mb-0">Filters</h5>
+                        </div>
+
+                        <!-- Status filter-->
+                        <div class="mb-3">
+                            <label for="status_filter" class="form-label fw-semibold text-start d-block">Status</label>
+                            <select id="status_filter" name="status_filter" class="form-select">
+                                {% for option in status_filter_options %}
+                                <option value="{{ option.value }}" {% if selected_status==option.value %}selected{%
+                                    endif %}>
+                                    {{ option.label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Date filter-->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-start d-block">Due date</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="date" name="start_date" value="{{ start_date }}" class="form-control"
+                                        placeholder="start date">
+                                </div>
+
+                                <div class="col-6">
+                                    <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket price filter-->
+                        <div class="mb-3">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold text-start d-block">Min price</label>
+                                    <input type="number" name="min_price" value="{{ min_price or '' }}" min="0"
+                                        class="form-control" placeholder="Min">
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold text-start d-block">Max price</label>
+                                    <input type="number" name="max_price" value="{{ max_price or '' }}" min="0"
+                                        class="form-control" placeholder="Max">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--##  More filters ## -->
+                        <div class="collapse" id="moreFilters">
+                            <hr class="my-4">
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Category</label>
+                                <select name="category" class="form-select">
+                                    <option value="">All Categories</option>
+                                    <!-- <option value="electronics" {% if category_filter=="electronics" %}selected{% endif
+                                        %}>
+                                        All
+                                    </option> -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-funnel me-2"></i>
-                                Apply
+                                Apply Filters
+                            </button>
+
+                            <a href="{{ url_for('raffle_bp.my_raffles') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                Clear
+                            </a>
+
+                            <button class="btn btn-outline-primary mt-4" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#moreFilters" aria-expanded="false" aria-controls="moreFilters">
+                                Show More Filters
+                                <i id="moreFiltersChevron" class="bi bi-chevron-down ms-2"></i>
                             </button>
                         </div>
 
-                    </form>
+                    </div>
 
                 </div>
             </div>
+
+            <!-- Right column -->
+            <!-- Paginated content section -->
+            <div class="col-12 col-lg-9">
+                <!-- Cards -->
+                {% if raffles %}
+                <div class="row g-4 mt-1">
+                    {% for raffle in raffles %}
+                    <!-- set raffle properties -->
+                    <div class="col-12 col-xl-4 col-md-6">
+                        <div class="card raffle-card shadow border-0 h-100 position-relative overflow-hidden">
+                            <p>Rffle title: {{ raffle.title }}</p>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                <div class="card shadow-sm border-0 mt-4">
+
+                </div>
+
+                {% else %}
+                <!-- Empty state -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center p-5">
+
+                        <h4 class="fw-bold mb-2">No raffles found</h4>
+
+                        <p class="text-muted mb-4">
+                            You do not have raffles matching the current filters.
+                        </p>
+
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+
         </div>
-    </div>
+    </form>
 
 
-    <!-- Paginated content section -->
+
 
 </div>
 
