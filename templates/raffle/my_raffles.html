@@ -55,6 +55,69 @@ My Raffles
         </div>
     </div>
 
+    <!-- Filters section: Search, Sort, Filters, Applied filters/Clear filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+
+                    <form method="GET" action="{{ url_for('raffle_bp.my_raffles') }}" class="row g-3 align-items-end">
+
+                        <div class="col-12 col-md-3">
+                            <label for="search" class="form-label fw-semibold">Search</label>
+                            <input type="text" id="search" name="search" class="form-control"
+                                placeholder="Search by raffle title" value="{{ search }}">
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="status" class="form-label fw-semibold">Status</label>
+                            <select id="status" name="status" class="form-select">
+                                <option value="all" {% if selected_status=="all" %}selected{% endif %}>All statuses
+                                </option>
+                                <option value="active" {% if selected_status=="active" %}selected{% endif %}>Active
+                                </option>
+                                <option value="completed" {% if selected_status=="completed" %}selected{% endif %}>
+                                    Completed</option>
+                                <option value="cancelled" {% if selected_status=="cancelled" %}selected{% endif %}>
+                                    Cancelled</option>
+                                <option value="draft" {% if selected_status=="draft" %}selected{% endif %}>Draft
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label for="sort" class="form-label fw-semibold">Sort by</label>
+                            <select id="sort" name="sort" class="form-select">
+                                <option value="newest" {% if selected_sort=="newest" %}selected{% endif %}>Newest first
+                                </option>
+                                <option value="oldest" {% if selected_sort=="oldest" %}selected{% endif %}>Oldest first
+                                </option>
+                                <option value="ending_soon" {% if selected_sort=="ending_soon" %}selected{% endif %}>
+                                    Ending soon</option>
+                                <option value="ticket_price_low" {% if selected_sort=="ticket_price_low" %}selected{%
+                                    endif %}>Ticket price: low to high</option>
+                                <option value="ticket_price_high" {% if selected_sort=="ticket_price_high" %}selected{%
+                                    endif %}>Ticket price: high to low</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-2 d-grid">
+                            <button type="submit" class="btn btn-dark">
+                                <i class="bi bi-funnel me-2"></i>
+                                Apply
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Paginated content section -->
+
 </div>
 
 {% endblock %}

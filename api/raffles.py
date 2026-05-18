@@ -543,7 +543,7 @@ def my_raffles():
     raffles = pagination.items
 
     return render_template(
-        "raffles/my_raffles.html",
+        "raffle/my_raffles.html",
         raffles=raffles,
         pagination=pagination,
         selected_status=status_filter,
