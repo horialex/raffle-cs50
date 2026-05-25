@@ -345,7 +345,7 @@ Raffle details
                 </p>
 
                 <!-- Join Raffle -->
-                {% elif not is_raffle_creator and raffle.is_active %}
+                {% elif not is_raffle_creator and raffle.is_active and not raffle.is_admin %}
 
                 <div class="d-flex align-items-center mb-3">
                     <i class="bi bi-ticket-perforated-fill text-primary fs-3 me-3"></i>

@@ -10,6 +10,36 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }, 3500);
 
+    // Treat form fields - to clean when defaults or not filled fields
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function () {
+        const fields = form.querySelectorAll("input, select");
+
+        fields.forEach(function (field) {
+            const fieldName = field.name;
+            const value = field.value.trim();
+
+            // Do not send empty fields
+            if (value === "") {
+                field.disabled = true;
+            }
+
+            // Do not send default status
+            if (fieldName === "status_filter" && value === "all") {
+                field.disabled = true;
+            }
+
+            // Do not send default sort
+            if (fieldName === "sort" && value === "newest") {
+                field.disabled = true;
+            }
+            // Do not send default category TODO: Fix this when categories are added
+            if (field.name === "category" && value === "") {
+                field.disabled = true;
+            }
+        });
+    });
+
     const deleteModal = document.getElementById('deleteUserModal');
 
     deleteModal?.addEventListener('show.bs.modal', function (event) {
@@ -102,5 +132,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // initial call to set add products button state
     toggleAddButton();
+
+
+    // More Filters chevron icon up-down
+    const moreFiltersContainer = document.getElementById('moreFilters');
+    const chevronIcon = document.getElementById('moreFiltersChevron')
+
+    moreFiltersContainer?.addEventListener('show.bs.collapse', () => {
+        chevronIcon.classList.remove('bi-chevron-down');
+        chevronIcon.classList.add('bi-chevron-up');
+    });
+
+    moreFiltersContainer?.addEventListener('hide.bs.collapse', () => {
+        chevronIcon.classList.remove('bi-chevron-up');
+        chevronIcon.classList.add('bi-chevron-down');
+    });
 
 });

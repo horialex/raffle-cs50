@@ -98,3 +98,32 @@ a:hover {
 .icon-circle i {
     font-size: 1rem;
 }
+
+.header-icon-circle {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.header-banner {
+    background: linear-gradient(90deg, #ffffff 0%, #f8fbff 45%, #e7f1ff 100%)
+}
+
+.raffle-card-img {
+    height: 185px;
+    object-fit: cover;
+}
+
+
+.raffle-description {
+    min-height: 2.6rem;
+}
+
+@media (max-width: 767.98px) {
+    .raffle-card {
+        border: 3px solid rgba(0, 0, 0, 0.14) !important;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+        margin-bottom: 1.5rem;
+    }
+}

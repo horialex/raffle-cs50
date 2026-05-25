@@ -1,5 +1,4 @@
 import uuid
-import hashlib
 import os
 from flask import (
     Blueprint,
@@ -117,8 +116,9 @@ def get_users():
         abort(403)
 
     page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
     per_page = request.args.get("per_page", 20, type=int)
-    per_page = min(per_page, 100)
+    per_page = min(max(per_page, 1), 20)
 
     pagination = (
         User.query.filter(User.role != "admin")

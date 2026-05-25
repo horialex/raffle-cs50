@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timedelta, timezone
 import os
 import uuid
 
@@ -16,13 +16,11 @@ from flask import (
 
 from models.user_model import User
 from utils.file_helpers import (
-    allowed_file,
     delete_product_image,
-    get_file_size,
     get_valid_images,
     save_product_image,
 )
-from forms.product_form import ProductForm
+from sqlalchemy import or_
 from constants.product_condition import ProductCondition
 from constants.raffle_status import RaffleStatus
 from utils.helpers import is_safe_url, login_required
@@ -89,7 +87,7 @@ def get_raffles():
     ]
 
     return render_template(
-        "/raffle/raffles.html",
+        "/raffle/all_raffles_admin.html",
         raffles=raffles,
         total=paginated_raffles.total,
         page=page,
@@ -376,6 +374,16 @@ def start_raffle(id):
     if not raffle.is_draft:
         abort(403)
 
+    today = date.today()
+    raffle_due_date = raffle.due_date.date()
+
+    if raffle_due_date <= today:
+        flash(
+            "You cannot start a raffle with a due date of today or in the past. Please change your due-date",
+            "error",
+        )
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle.id))
+
     raffle.status = RaffleStatus.ACTIVE
 
     try:
@@ -386,6 +394,173 @@ def start_raffle(id):
         db.session.rollback()
         flash("Unable to start the raffle", "error")
         return redirect(url_for("raffle_bp.get_raffle", id=raffle.id))
+
+
+# ---------------
+# Get my raffles
+# ---------------
+@raffle_bp.route("/my-raffles", methods=["GET"])
+@login_required
+def my_raffles():
+    user_id = get_current_user_id()
+
+    # Grab request args
+    page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
+    per_page = request.args.get("per_page", 10, type=int)
+    per_page = min(max(per_page, 1), 20)
+
+    sort = request.args.get("sort", "newest")
+    search = request.args.get("search", "").strip()
+
+    selected_status = request.args.get("status_filter", "all")
+    start_date_filter = request.args.get("start_date", "").strip()
+    end_date_filter = request.args.get("end_date", "").strip()
+    min_price = request.args.get("min_price", type=int)
+    max_price = request.args.get("max_price", type=int)
+    category_filter = request.args.get("category")
+
+    # Only show current user's raffles
+    query = Raffle.query.filter(Raffle.creator_id == user_id)
+
+    # Filters
+    ## Status filter
+    allowed_statuses = ["all"] + [status.value for status in RaffleStatus]
+
+    if selected_status not in allowed_statuses:
+        selected_status = "all"
+
+    status_filter_options = [
+        {"value": status, "label": status.title()} for status in allowed_statuses
+    ]
+
+    if selected_status != "all":
+        query = query.filter(Raffle.status == selected_status)
+
+    ## Date filter
+    start_date = None
+    end_date = None
+
+    if start_date_filter:
+        try:
+            start_date = datetime.strptime(start_date_filter, "%Y-%m-%d")
+        except ValueError:
+            start_date_filter = ""
+
+    if end_date_filter:
+        try:
+            end_date = datetime.strptime(end_date_filter, "%Y-%m-%d")
+            end_date = datetime.combine(end_date.date(), time.max)
+        except ValueError:
+            end_date_filter = ""
+
+    if start_date and end_date and start_date > end_date:
+        flash("Start date cannot be after end date.", "warning")
+        start_date = None
+        end_date = None
+        start_date_filter = ""
+        end_date_filter = ""
+
+    if start_date:
+        query = query.filter(Raffle.due_date >= start_date)
+
+    if end_date:
+        query = query.filter(Raffle.due_date <= end_date)
+
+    ## Price filter
+    if min_price is not None and min_price < 0:
+        min_price = None
+
+    if max_price is not None and max_price < 0:
+        max_price = None
+
+    if min_price is not None and max_price is not None and min_price > max_price:
+        flash("Minimum price cannot be greater than maximum price.", "warning")
+        min_price = None
+        max_price = None
+
+    if min_price is not None:
+        query = query.filter(Raffle.ticket_price >= min_price)
+
+    if max_price is not None:
+        query = query.filter(Raffle.ticket_price <= max_price)
+
+    ## Category filter
+    # TODO: implement this once categories are added to the raffle products
+    if category_filter:
+        pass
+
+    # Search
+    if search:
+        search_pattern = f"%{search}%"
+
+        query = query.filter(
+            or_(
+                Raffle.title.ilike(search_pattern),
+                Raffle.description.ilike(search_pattern),
+                Raffle.products.any(
+                    or_(
+                        Product.name.ilike(search_pattern),
+                        Product.description.ilike(search_pattern),
+                    )
+                ),
+            )
+        )
+
+    # Sorting - add the sorting options
+    # TODO: implement tickets_most, tickets_least, value_high, value_low
+    allowed_sorts = [
+        "newest",
+        "oldest",
+        "due_soon",
+        "price_low",
+        "price_high",
+        "tickets_most",
+        "tickets_least",
+        "value_high",
+        "value_low",
+    ]
+
+    if sort not in allowed_sorts:
+        sort = "newest"
+
+    if sort == "newest":
+        query = query.order_by(Raffle.created_at.desc())
+    elif sort == "oldest":
+        query = query.order_by(Raffle.created_at.asc())
+    elif sort == "due_soon":
+        query = query.order_by(Raffle.due_date.asc())
+    elif sort == "price_low":
+        query = query.order_by(Raffle.ticket_price.asc())
+    elif sort == "price_high":
+        query = query.order_by(Raffle.ticket_price.desc())
+    elif sort == "tickets_most":
+        pass
+    elif sort == "tickets_least":
+        pass
+    elif sort == "value_high":
+        pass
+    elif sort == "value_low":
+        pass
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    raffles = pagination.items
+
+    return render_template(
+        "raffle/my_raffles.html",
+        raffles=raffles,
+        pagination=pagination,
+        selected_status=selected_status,
+        selected_sort=sort,
+        search=search,
+        per_page=per_page,
+        start_date=start_date_filter,
+        end_date=end_date_filter,
+        min_price=min_price,
+        max_price=max_price,
+        status_filter_options=status_filter_options,
+        allowed_sorts=allowed_sorts,
+    )
 
 
 # ----------------------------
