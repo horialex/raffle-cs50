@@ -407,7 +407,7 @@ def my_raffles():
     # Grab request args
     page = request.args.get("page", 1, type=int)
     page = max(page, 1)
-    per_page = request.args.get("per_page", 10, type=int)
+    per_page = request.args.get("per_page", 9, type=int)
     per_page = min(max(per_page, 1), 20)
 
     sort = request.args.get("sort", "newest")

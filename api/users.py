@@ -85,6 +85,7 @@ def register():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
+            delete_profile_picture(pic_name)
             if "Duplicate entry" in str(e):
                 flash("Username or email already exists", "error")
                 return render_template("register_user.html", form=form)
@@ -111,7 +112,7 @@ def register():
 @users_bp.route("/users", methods=["GET"])
 @login_required
 def get_users():
-    user = User.query.get(session["user_id"])
+    user = db.session.get(User, session["user_id"])
     if not user.is_admin:
         abort(403)
 

@@ -86,7 +86,7 @@ def inject_user():
     user_id = session.get("user_id")
     user = None
     if user_id:
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
 
     return {"current_user": user}
 

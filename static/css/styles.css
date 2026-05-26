@@ -64,6 +64,11 @@ a:hover {
     transform: scale(1.05);
 }
 
+.raffle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+}
+
 .carousel-indicators button {
     width: 8px;
     height: 8px;
@@ -125,5 +130,11 @@ a:hover {
         border-radius: 1rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
         margin-bottom: 1.5rem;
+    }
+
+    .raffle-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1) !important;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
     }
 }
