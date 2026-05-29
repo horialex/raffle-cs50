@@ -1,6 +1,6 @@
 <nav class="bg-light border navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/"><span class="blue">C</span><span class="red">S</span><span
+        <a class="navbar-brand" href="/raffles/"><span class="blue">C</span><span class="red">S</span><span
                 class="yellow">5</span><span class="green">0</span> <span class="red">Raffle</span></a>
         <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
             data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
@@ -27,7 +27,7 @@
             <ul class="navbar-nav me-auto d-md-none d-flex align-items-center"> <!-- ADDED: mobile-only menu -->
                 <li class="nav-item">
                     <a class="nav-link"
-                        href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('home')) }}">
+                        href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('raffle_bp.get_raffles')) }}">
                         Profile preferences
                     </a>
                 </li>
@@ -67,7 +67,7 @@
                             </p>
                         </li>
                         <li><a class="dropdown-item"
-                                href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('home')) }}">
+                                href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('raffle_bp.get_raffles')) }}">
                                 Profile preferences
                             </a></li>
 
@@ -78,8 +78,7 @@
                         <li><a class="dropdown-item" href="/logout">Log Out</a></li>
                     </ul>
                 </li>
-                <!-- </li> -->
-                <!-- <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li> -->
+
             </ul>
             {% else %}
             <ul class="navbar-nav ms-auto mt-2">

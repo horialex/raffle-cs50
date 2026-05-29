@@ -2,7 +2,7 @@ import os
 from config import Config
 from pathlib import Path
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, redirect, session
+from flask import Flask, render_template, request, flash, redirect, session, url_for
 from flask_session import Session
 from sqlalchemy import text
 from flask_migrate import Migrate
@@ -17,7 +17,6 @@ from auth import auth_bp
 from raffles import raffle_bp
 from utils.helpers import login_required
 from flask_wtf.csrf import CSRFProtect
-
 
 # ----------------------------
 # Config
@@ -103,7 +102,7 @@ def inject_forms():
 @app.route("/", methods=["GET"])
 @login_required
 def home():
-    return render_template("index.html")
+    return redirect(url_for("raffle_bp.get_raffles"))
 
 
 @app.route("/health")
