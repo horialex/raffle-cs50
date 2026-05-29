@@ -6,9 +6,9 @@ Register user
 
 {% block main %}
 <div id="main">
-    <div class="container ">
-        <div class="card shadow-sm">
-            <div class="card-body bg-light rounded shadow-sm">
+    <div class="container rounded">
+        <div class="card shadow-sm rounded">
+            <div class="card-body bg-light rounded">
                 <h2 class="card-title text-center mb-2">Join us</h2>
                 <p class="card-title text-center mb-4">Create your account and test your luck</p>
                 <form id="register-form" action="{{ url_for('users_bp.register') }}" method="post"
