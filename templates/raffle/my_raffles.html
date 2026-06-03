@@ -214,18 +214,19 @@ My Raffles
 
                     <div class="col">
                         <div
-                            class="card raffle-card shadow-sm h-100 d-flex flex-column position-relative overflow-hidden">
+                            class="card raffle-card shadow-sm h-100 d-flex flex-column position-relative overflow-hidden p-1">
 
                             <!-- Status badge -->
                             <span
-                                class="position-absolute top-0 end-0 m-2 badge rounded-pill px-3 py-2 {{ badge_color }}">
+                                class="position-absolute top-0 end-0 me-3 mt-3 badge rounded-pill px-3 py-2 {{ badge_color }}">
                                 {{ status|capitalize }}
                             </span>
 
                             <!-- Product image -->
                             {% if product_image %}
                             <img src="{{ url_for('static', filename='uploads/images/products/' + product_image.image_url) }}"
-                                class="card-img-top d-block w-100" style="height: 200px; object-fit: cover;"
+                                class="card-img-top d-block w-100 p-1"
+                                style="height: 200px; object-fit: cover; border-radius: 10px"
                                 alt="{{ product.name if product else raffle.title }}">
                             {% else %}
                             <div class="bg-primary-subtle d-flex align-items-center justify-content-center"
@@ -234,74 +235,78 @@ My Raffles
                             </div>
                             {% endif %}
 
-                            <div class="card-body flex-grow-1 d-flex flex-column p-3">
+                            <div class="card-body d-flex flex-column flex-grow-1 p-2">
 
                                 <h5 class="card-title fw-bold mb-1 pe-5 text-start">
                                     {{ raffle.title }}
                                 </h5>
                                 <p class="card-text text-muted small mb-3 text-start">
-                                    {{ raffle.description|truncate(90, True, '…') }}
+                                    {{ raffle.description|truncate(100, True, '…') }}
                                 </p>
 
-                                <!-- Product details -->
-                                {% if product %}
-                                <div class="bg-light border rounded-3 p-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-start gap-2">
-                                        <div>
-                                            <div class="small text-muted text-start">Product</div>
-                                            <div class="fw-semibold text-start">
-                                                {{ product.name | capitalize }}
+                                <div class="mt-auto">
+
+
+                                    <!-- Product details -->
+                                    {% if product %}
+                                    <div class="bg-light border rounded-3 p-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                            <div>
+                                                <div class="small text-muted text-start">Product</div>
+                                                <div class="fw-semibold text-start">
+                                                    {{ product.name | capitalize }}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="text-end">
-                                            <div class="small text-muted">Value</div>
-                                            <div class="fw-bold text-success">
-                                                ${{ "%.2f"|format(product.estimated_value) }}
+                                            <div class="text-end">
+                                                <div class="small text-muted">Value</div>
+                                                <div class="fw-bold text-success">
+                                                    ${{ "%.2f"|format(product.estimated_value) }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                {% endif %}
+                                    {% endif %}
 
-                                <!-- Stats -->
-                                <ul class="list-group list-group-horizontal rounded-3 mb-3">
-                                    <li class="list-group-item flex-fill text-center px-1 py-2">
-                                        <div class="text-muted small">Ticket</div>
-                                        <div class="d-flex align-items-center justify-content-center gap-1">
-                                            <i class="bi bi-ticket-perforated-fill text-primary small"></i>
-                                            <span class="fw-bold small">
-                                                ${{ "%.2f"|format(raffle.ticket_price) }}
-                                            </span>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item flex-fill text-center px-1 py-2">
-                                        <div class="text-muted small">Sold</div>
-                                        <div class="d-flex align-items-center justify-content-center gap-1">
-                                            <i class="bi bi-people-fill text-success small"></i>
-                                            <span class="fw-bold small">
-                                                {{ sold_tickets }} / {{ min_tickets }}
-                                            </span>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item flex-fill text-center px-1 py-2">
-                                        <div class="text-muted small">Due</div>
-                                        <div class="d-flex align-items-center justify-content-center gap-1">
-                                            <i class="bi bi-calendar-event text-primary small"></i>
-                                            <span class="fw-bold small">
-                                                {{ raffle.due_date.strftime("%b %d") }}
-                                            </span>
-                                        </div>
-                                    </li>
-                                </ul>
+                                    <!-- Stats -->
+                                    <ul class="list-group list-group-horizontal rounded-3 mb-3">
+                                        <li class="list-group-item flex-fill text-center px-1 py-2">
+                                            <div class="text-muted small">Ticket</div>
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <i class="bi bi-ticket-perforated-fill text-primary small"></i>
+                                                <span class="fw-bold small">
+                                                    ${{ "%.2f"|format(raffle.ticket_price) }}
+                                                </span>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item flex-fill text-center px-1 py-2">
+                                            <div class="text-muted small">Sold</div>
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <i class="bi bi-people-fill text-success small"></i>
+                                                <span class="fw-bold small">
+                                                    {{ sold_tickets }} / {{ min_tickets }}
+                                                </span>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item flex-fill text-center px-1 py-2">
+                                            <div class="text-muted small">Due</div>
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <i class="bi bi-calendar-event text-primary small"></i>
+                                                <span class="fw-bold small">
+                                                    {{ raffle.due_date.strftime("%b %d") }}
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </ul>
 
-                                <!-- Progress -->
-                                <div class="mb-2">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <small class="text-muted">Progress</small>
-                                        <small class="fw-semibold">{{ progress }}%</small>
-                                    </div>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar {{ bar_color }}" style="width: {{ progress }}%">
+                                    <!-- Progress -->
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="text-muted">Progress</small>
+                                            <small class="fw-semibold">{{ progress }}%</small>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar {{ bar_color }}" style="width: {{ progress }}%">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

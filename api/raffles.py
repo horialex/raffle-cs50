@@ -655,13 +655,13 @@ def get_raffles():
         query = (
             query.join(Raffle.products)
             .group_by(Raffle.id)
-            .order_by(func.sum(Product.value).desc())
+            .order_by(func.sum(Product.estimated_value).desc())
         )
     elif sort == "value_low":
         query = (
             query.join(Raffle.products)
             .group_by(Raffle.id)
-            .order_by(func.sum(Product.value).asc())
+            .order_by(func.sum(Product.estimated_value).asc())
         )
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
