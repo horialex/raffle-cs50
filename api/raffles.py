@@ -539,6 +539,7 @@ def get_raffles():
     max_price = request.args.get("max_price", type=int)
     category_filter = request.args.get("category")
 
+    # TODO: Rethink this  - I need to think better about this
     now = datetime.now(timezone.utc)
 
     # Only show raffles that are not belonging to current user, status: ACTIVE, and not past due
@@ -651,19 +652,32 @@ def get_raffles():
     elif sort == "tickets_least":
         pass
     elif sort == "value_high":
-        pass
+        query = (
+            query.join(Raffle.products)
+            .group_by(Raffle.id)
+            .order_by(func.sum(Product.value).desc())
+        )
     elif sort == "value_low":
-        pass
+        query = (
+            query.join(Raffle.products)
+            .group_by(Raffle.id)
+            .order_by(func.sum(Product.value).asc())
+        )
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     raffles: list[Raffle] = pagination.items
 
     today = date.today()
-    today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
-    today_end = datetime.combine(today, datetime.max.time()).replace(tzinfo=timezone.utc)
+    today_start = datetime.combine(today, datetime.min.time()).replace(
+        tzinfo=timezone.utc
+    )
+    today_end = datetime.combine(today, datetime.max.time()).replace(
+        tzinfo=timezone.utc
+    )
 
     ending_today_raffles: list[Raffle] = [
-        raffle for raffle in raffles
+        raffle
+        for raffle in raffles
         if today_start <= raffle.due_date.replace(tzinfo=timezone.utc) <= today_end
     ]
 

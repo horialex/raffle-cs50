@@ -328,7 +328,7 @@ Home
                                     <div class="col">
                                         <a href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}"
                                             class="btn btn-success w-100 fw-semibold">
-                                            Buy ticket ${{ "%.2f"|format(product.estimated_value) }}
+                                            Buy ticket ${{ "%.2f"|format(raffle.ticket_price) }}
                                         </a>
                                     </div>
                                 </div>
