@@ -1,8 +1,9 @@
 import os
 from config import Config
 from pathlib import Path
+from datetime import date
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, redirect, session
+from flask import Flask, render_template, request, flash, redirect, session, url_for
 from flask_session import Session
 from sqlalchemy import text
 from flask_migrate import Migrate
@@ -17,7 +18,6 @@ from auth import auth_bp
 from raffles import raffle_bp
 from utils.helpers import login_required
 from flask_wtf.csrf import CSRFProtect
-
 
 # ----------------------------
 # Config
@@ -86,7 +86,7 @@ def inject_user():
     user_id = session.get("user_id")
     user = None
     if user_id:
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
 
     return {"current_user": user}
 
@@ -97,13 +97,18 @@ def inject_forms():
     return dict(delete_self_account_form=delete_self_account_form)
 
 
+@app.context_processor
+def inject_today():
+    return {"today": date.today().isoformat()}
+
+
 # ----------------------------
 # Routes
 # ----------------------------
 @app.route("/", methods=["GET"])
 @login_required
 def home():
-    return render_template("index.html")
+    return redirect(url_for("raffle_bp.get_raffles"))
 
 
 @app.route("/health")

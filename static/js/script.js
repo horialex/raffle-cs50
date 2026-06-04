@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Treat form fields - to clean when defaults or not filled fields
     const form = document.querySelector("form");
     form.addEventListener("submit", function () {
+        const defaultSort = form.dataset.defaultSort;
         const fields = form.querySelectorAll("input, select");
 
         fields.forEach(function (field) {
@@ -30,11 +31,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Do not send default sort
-            if (fieldName === "sort" && value === "newest") {
+            if (fieldName === "sort" && value === defaultSort) {
                 field.disabled = true;
             }
             // Do not send default category TODO: Fix this when categories are added
             if (field.name === "category" && value === "") {
+                field.disabled = true;
+            }
+
+            // Do not send default pagination
+            if (fieldName === "page" && value === "1") {
+                field.disabled = true;
+            }
+            if (fieldName === "per_page" && value === "6") {
                 field.disabled = true;
             }
         });
@@ -133,6 +142,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // initial call to set add products button state
     toggleAddButton();
 
+
+    // Header tabs active state
+    document.querySelectorAll('.nav-tabs .nav-link').forEach(link => {
+        link.addEventListener('click', function () {
+            document.querySelectorAll('.nav-tabs .nav-link').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
 
     // More Filters chevron icon up-down
     const moreFiltersContainer = document.getElementById('moreFilters');

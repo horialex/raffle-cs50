@@ -26,9 +26,16 @@ img {
     object-fit: cover;
 }
 
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
 a:hover {
     cursor: pointer;
 }
+
+
 
 .dropdown-item:active,
 .dropdown-item:focus {
@@ -62,6 +69,11 @@ a:hover {
 
 .product-card:hover {
     transform: scale(1.05);
+}
+
+.raffle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
 }
 
 .carousel-indicators button {
@@ -119,11 +131,35 @@ a:hover {
     min-height: 2.6rem;
 }
 
+.nav-tabs .nav-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.nav-tabs .nav-link:hover {
+    color: inherit;
+}
+
+.navbar .nav-link {
+    transition: transform 0.15s ease;
+    font-size: 1.05rem;
+}
+
+.navbar .nav-link:hover {
+    transform: translateY(-2px);
+}
+
 @media (max-width: 767.98px) {
     .raffle-card {
         border: 3px solid rgba(0, 0, 0, 0.14) !important;
         border-radius: 1rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
         margin-bottom: 1.5rem;
+    }
+
+    .raffle-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1) !important;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
     }
 }

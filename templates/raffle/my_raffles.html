@@ -5,7 +5,7 @@ My Raffles
 {% endblock %}
 
 {% block main %}
-<div class="container-fluid px-0 py-5">
+<div class="container-fluid px-1 pt-0 pb-5 px-lg-2">
 
     <!-- Page header -->
     <div class="row mb-4">
@@ -18,8 +18,8 @@ My Raffles
                         <div class="col-12 col-md">
                             <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
                                 <div class="rounded-circle bg-primary-subtle text-primary
-            d-flex align-items-center justify-content-center
-            flex-shrink-0 mb-3 mb-md-0 me-md-3 p-3">
+                                    d-flex align-items-center justify-content-center
+                                    flex-shrink-0 mb-3 mb-md-0 me-md-3 p-3">
                                     <i class="bi bi-ticket-perforated-fill fs-4 d-inline-block"
                                         style="rotate: 30deg;"></i>
                                 </div>
@@ -32,6 +32,7 @@ My Raffles
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-12 col-md-auto">
                             <div class="d-flex flex-column flex-md-row align-items-center gap-3 gap-md-4">
 
@@ -56,143 +57,142 @@ My Raffles
         </div>
     </div>
 
-    <!-- Filters section: Search, Sort, Filters, Applied filters/Clear filters -->
-    <form method="GET" action="{{ url_for('raffle_bp.my_raffles') }}">
+    <!-- Filters section -->
+    <form method="GET" action="{{ url_for('raffle_bp.my_raffles') }}" data-default-sort="newest">
         <div class="row g-4">
 
-            <!-- Left column -->
+            <!-- Mobile filter toggle -->
+            <div class="col-12 d-lg-none">
+                <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#filterSidebar" aria-expanded="false" aria-controls="filterSidebar">
+                    <i class="bi bi-funnel me-2"></i>Show Filters & Sorting
+                </button>
+            </div>
+
+            <!-- Left column: filters -->
             <div class="col-12 col-lg-3">
-                <div class="card shadow border-0 filters-card">
-                    <div class="card-body p-4">
+                <div class="collapse d-lg-block sticky-top" id="filterSidebar" style="top: 1rem;">
+                    <div class="card shadow border-0">
+                        <div class="card-body p-4">
 
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="bi bi-search text-primary fs-5 me-2"></i>
-                            <h5 class="fw-bold mb-0">Search & Sorting</h5>
-                        </div>
-
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label for="search_input"
-                                class="form-label fw-semibold text-nowrap text-start d-block">Search raffle</label>
-                            <div class="input-group">
-                                <input type="text" name="search" value="{{ search }}" class="form-control"
-                                    placeholder="Search raffles...">
+                            <div class="d-flex align-items-center mb-4">
+                                <i class="bi bi-search text-primary fs-5 me-2"></i>
+                                <h5 class="fw-bold mb-0">Search & Sorting</h5>
                             </div>
 
-                        </div>
-
-                        <!-- Sorting -->
-                        <div class="mb-3">
-                            <label for="sort" class="form-label fw-semibold text-nowrap text-start d-block">Sort
-                                by</label>
-
-                            <select id="sort" name="sort" class="form-select">
-                                {% for option in allowed_sorts %}
-                                <option value="{{ option }}" {% if selected_sort==option %}selected{% endif %}>
-                                    {{ option | replace("_", " ") | capitalize}}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <br>
-                        <!-- <hr> -->
-
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="bi bi-funnel text-primary fs-5 me-2"></i>
-                            <h5 class="fw-bold mb-0">Filters</h5>
-                        </div>
-
-                        <!-- Status filter-->
-                        <div class="mb-3">
-                            <label for="status_filter" class="form-label fw-semibold text-start d-block">Status</label>
-                            <select id="status_filter" name="status_filter" class="form-select">
-                                {% for option in status_filter_options %}
-                                <option value="{{ option.value }}" {% if selected_status==option.value %}selected{%
-                                    endif %}>
-                                    {{ option.label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Date filter-->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-start d-block">Due date</label>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <input type="date" name="start_date" value="{{ start_date }}" class="form-control"
-                                        placeholder="start date">
-                                </div>
-
-                                <div class="col-6">
-                                    <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ticket price filter-->
-                        <div class="mb-3">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label class="form-label fw-semibold text-start d-block">Min price</label>
-                                    <input type="number" name="min_price" value="{{ min_price or '' }}" min="0"
-                                        class="form-control" placeholder="Min">
-                                </div>
-
-                                <div class="col-6">
-                                    <label class="form-label fw-semibold text-start d-block">Max price</label>
-                                    <input type="number" name="max_price" value="{{ max_price or '' }}" min="0"
-                                        class="form-control" placeholder="Max">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!--##  More filters ## -->
-                        <div class="collapse" id="moreFilters">
-                            <hr class="my-4">
-
+                            <!-- Search -->
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Category</label>
-                                <select name="category" class="form-select">
-                                    <option value="">All Categories</option>
-                                    <!-- <option value="electronics" {% if category_filter=="electronics" %}selected{% endif
-                                        %}>
-                                        All
-                                    </option> -->
+                                <label for="search_input"
+                                    class="form-label fw-semibold text-nowrap text-start d-block">Search raffle</label>
+                                <div class="input-group">
+                                    <input type="text" id="search_input" name="search" value="{{ search }}"
+                                        class="form-control" placeholder="Search raffles...">
+                                </div>
+                            </div>
+
+                            <!-- Sorting -->
+                            <div class="mb-3">
+                                <label for="sort" class="form-label fw-semibold text-nowrap text-start d-block">Sort
+                                    by</label>
+                                <select id="sort" name="sort" class="form-select">
+                                    {% for option in allowed_sorts %}
+                                    <option value="{{ option }}" {% if selected_sort==option %}selected{% endif %}>
+                                        {{ option | replace("_", " ") | capitalize}}
+                                    </option>
+                                    {% endfor %}
                                 </select>
                             </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex align-items-center mb-4">
+                                <i class="bi bi-funnel text-primary fs-5 me-2"></i>
+                                <h5 class="fw-bold mb-0">Filters</h5>
+                            </div>
+
+                            <!-- Status filter -->
+                            <div class="mb-3">
+                                <label for="status_filter"
+                                    class="form-label fw-semibold text-start d-block">Status</label>
+                                <select id="status_filter" name="status_filter" class="form-select">
+                                    {% for option in status_filter_options %}
+                                    <option value="{{ option.value }}" {% if selected_status==option.value %}selected{%
+                                        endif %}>
+                                        {{ option.label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Date filter -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-start d-block">Due date</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="date" name="start_date" value="{{ start_date }}"
+                                            class="form-control" placeholder="start date">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ticket price filter -->
+                            <div class="mb-3">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold text-start d-block">Min price</label>
+                                        <input type="number" name="min_price" value="{{ min_price or '' }}" min="0"
+                                            class="form-control" placeholder="Min">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold text-start d-block">Max price</label>
+                                        <input type="number" name="max_price" value="{{ max_price or '' }}" min="0"
+                                            class="form-control" placeholder="Max">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- More filters -->
+                            <div class="collapse" id="moreFilters">
+                                <hr class="my-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Category</label>
+                                    <select name="category" class="form-select">
+                                        <option value="">All Categories</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-funnel me-2"></i>
+                                    Apply Filters
+                                </button>
+
+                                <a href="{{ url_for('raffle_bp.my_raffles') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                    Clear
+                                </a>
+
+                                <button class="btn btn-outline-primary mt-4" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#moreFilters" aria-expanded="false" aria-controls="moreFilters">
+                                    Show More Filters
+                                    <i id="moreFiltersChevron" class="bi bi-chevron-down ms-2"></i>
+                                </button>
+                            </div>
+
                         </div>
-
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-funnel me-2"></i>
-                                Apply Filters
-                            </button>
-
-                            <a href="{{ url_for('raffle_bp.my_raffles') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-counterclockwise me-2"></i>
-                                Clear
-                            </a>
-
-                            <button class="btn btn-outline-primary mt-4" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#moreFilters" aria-expanded="false" aria-controls="moreFilters">
-                                Show More Filters
-                                <i id="moreFiltersChevron" class="bi bi-chevron-down ms-2"></i>
-                            </button>
-                        </div>
-
                     </div>
-
                 </div>
             </div>
 
             <!-- Right column -->
-            <!-- Paginated content section -->
             <div class="col-12 col-lg-9">
-                <!-- Cards -->
+
                 {% if raffles %}
-                <div class="row gx-4 gy-5 gy-md-4">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                     {% for raffle in raffles %}
                     {% set min_tickets = raffle.minimum_required_tickets %}
                     {% set sold_tickets = raffle.tickets|length if raffle.tickets is defined else 0 %}
@@ -202,136 +202,126 @@ My Raffles
                     {% set product = raffle.products[0] if raffle.products else None %}
                     {% set product_image = product.images[0] if product and product.images else None %}
 
-                    <div class="col-12 col-md-6 col-xl-4">
-                        <div class="card raffle-card shadow-sm h-100 position-relative overflow-hidden">
+                    {% if status == 'active' %}{% set badge_color = 'text-bg-success' %}
+                    {% elif status == 'completed' %}{% set badge_color = 'text-bg-primary' %}
+                    {% elif status == 'cancelled' %}{% set badge_color = 'text-bg-danger' %}
+                    {% else %}{% set badge_color = 'text-bg-secondary' %}{% endif %}
 
-                            <!-- Status ribbon -->
-                            <span class="position-absolute top-0 end-0 m-2 badge rounded-pill px-3 py-2 fs-6
-                                {% if status == 'active' %}text-bg-success
-                                {% elif status == 'completed' %}text-bg-primary
-                                {% elif status == 'cancelled' %}text-bg-danger
-                                {% else %}text-bg-secondary
-                                {% endif %}">
+                    {% if status == 'active' %}{% set bar_color = 'bg-success' %}
+                    {% elif status == 'completed' %}{% set bar_color = 'bg-primary' %}
+                    {% elif status == 'cancelled' %}{% set bar_color = 'bg-danger' %}
+                    {% else %}{% set bar_color = 'bg-secondary' %}{% endif %}
+
+                    <div class="col">
+                        <div
+                            class="card raffle-card shadow-sm h-100 d-flex flex-column position-relative overflow-hidden p-1">
+
+                            <!-- Status badge -->
+                            <span
+                                class="position-absolute top-0 end-0 me-3 mt-3 badge rounded-pill px-3 py-2 {{ badge_color }}">
                                 {{ status|capitalize }}
                             </span>
 
                             <!-- Product image -->
                             {% if product_image %}
                             <img src="{{ url_for('static', filename='uploads/images/products/' + product_image.image_url) }}"
-                                class="card-img-top raffle-card-img d-block w-100 rounded"
-                                style="height: 220px; object-fit: cover;"
+                                class="card-img-top d-block w-100 p-1"
+                                style="height: 200px; object-fit: cover; border-radius: 10px"
                                 alt="{{ product.name if product else raffle.title }}">
                             {% else %}
-                            <div class="raffle-card-img bg-light d-flex align-items-center justify-content-center">
-                                <i class="bi bi-gift fs-1 text-muted"></i>
+                            <div class="bg-primary-subtle d-flex align-items-center justify-content-center"
+                                style="height: 200px;">
+                                <i class="bi bi-gift display-4 text-primary opacity-50"></i>
                             </div>
                             {% endif %}
 
-                            <div class="card-body d-flex flex-column p-3">
-                                <div class="mb-3">
-                                    <!-- Raffle title -->
-                                    <h5 class="card-title fw-bold mb-1 pe-5 text-start">
-                                        {{ raffle.title }}
-                                    </h5>
+                            <div class="card-body d-flex flex-column flex-grow-1 p-2">
 
-                                    <p class="card-text text-muted small mb-3 text-start raffle-description">
-                                        {{ raffle.description|truncate(90, True, '…') }}
-                                    </p>
-                                </div>
+                                <h5 class="card-title fw-bold mb-1 pe-5 text-start">
+                                    {{ raffle.title }}
+                                </h5>
+                                <p class="card-text text-muted small mb-4 text-start">
+                                    {{ raffle.description|truncate(100, True, '…') }}
+                                </p>
 
-                                <!-- Product details -->
-                                {% if product %}
-                                <div class="bg-light border rounded-3 p-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                        <div>
-                                            <div class="small text-muted text-start">Product</div>
-                                            <div class="fw-semibold text-start">
-                                                {{ product.name | capitalize }}
+                                <div class="mt-auto">
+
+
+                                    <!-- Product details -->
+                                    {% if product %}
+                                    <div class="bg-light border rounded-3 p-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                            <div>
+                                                <div class="small text-muted text-start">Product</div>
+                                                <div class="fw-semibold text-start">
+                                                    {{ product.name | capitalize | truncate(30, True, '…') }}
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div class="text-end">
-                                            <div class="small text-muted">Value</div>
-                                            <div class="fw-bold text-success">
-                                                ${{ "%.2f"|format(product.estimated_value) }}
+                                            <div class="text-end">
+                                                <div class="small text-muted">Value</div>
+                                                <div class="fw-bold text-success">
+                                                    ${{ "%.2f"|format(product.estimated_value) }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                    {% endif %}
 
-                                </div>
-                                {% endif %}
-
-                                <!-- Stats -->
-                                <div class="row g-2 text-center mb-3">
-                                    <div class="col-4">
-                                        <div class="border rounded-3 p-2 h-100">
+                                    <!-- Stats -->
+                                    <ul class="list-group list-group-horizontal rounded-3 mb-3">
+                                        <li class="list-group-item flex-fill text-center px-1 py-2">
                                             <div class="text-muted small">Ticket</div>
                                             <div class="d-flex align-items-center justify-content-center gap-1">
-                                                <i class="bi bi-ticket-perforated-fill text-primary"></i>
-                                                <div class="fw-bold small">
+                                                <i class="bi bi-ticket-perforated-fill text-primary small"></i>
+                                                <span class="fw-bold small">
                                                     ${{ "%.2f"|format(raffle.ticket_price) }}
-                                                </div>
+                                                </span>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-4">
-                                        <div class="border rounded-3 p-2 h-100">
+                                        </li>
+                                        <li class="list-group-item flex-fill text-center px-1 py-2">
                                             <div class="text-muted small">Sold</div>
                                             <div class="d-flex align-items-center justify-content-center gap-1">
-                                                <i class="bi bi-people-fill text-success"></i>
-                                                <div class="fw-bold small">
+                                                <i class="bi bi-people-fill text-success small"></i>
+                                                <span class="fw-bold small">
                                                     {{ sold_tickets }} / {{ min_tickets }}
-                                                </div>
+                                                </span>
                                             </div>
-
-
-                                        </div>
-                                    </div>
-
-                                    <div class="col-4">
-                                        <div class="border rounded-3 p-2 h-100">
+                                        </li>
+                                        <li class="list-group-item flex-fill text-center px-1 py-2">
                                             <div class="text-muted small">Due</div>
-                                            <div class="d-flex align-items-center justify-content-center gap-2">
-                                                <i class="bi bi-calendar-event text-primary"></i>
-                                                <div class="fw-bold small">
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <i class="bi bi-calendar-event text-primary small"></i>
+                                                <span class="fw-bold small">
                                                     {{ raffle.due_date.strftime("%b %d") }}
-                                                </div>
+                                                </span>
                                             </div>
+                                        </li>
+                                    </ul>
 
-
+                                    <!-- Progress -->
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="text-muted">Progress</small>
+                                            <small class="fw-semibold">{{ progress }}%</small>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar {{ bar_color }}" style="width: {{ progress }}%">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Progress -->
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <small class="text-muted">Minimum tickets progress</small>
-                                        <small class="fw-semibold">{{ progress }}%</small>
-                                    </div>
+                            </div>
 
-
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar
-                                            {% if status == 'active' %}bg-success
-                                            {% elif status == 'completed' %}bg-primary
-                                            {% elif status == 'cancelled' %}bg-danger
-                                            {% else %}bg-secondary
-                                            {% endif %}" style="width: {{ progress }}%">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Actions -->
-                                <div class="row g-2 mt-auto">
+                            <!-- Actions -->
+                            <div class="card-footer border-0 bg-transparent px-3 pb-3 pt-0">
+                                <div class="row g-2">
                                     <div class="col">
                                         <a href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}"
                                             class="btn btn-success w-100 fw-semibold">
                                             Details
                                         </a>
                                     </div>
-
                                     {% if status == "draft" %}
                                     <div class="col">
                                         <a href="{{ url_for('raffle_bp.update_raffle', id=raffle.id) }}"
@@ -341,7 +331,6 @@ My Raffles
                                     </div>
                                     {% endif %}
                                 </div>
-
                             </div>
 
                         </div>
@@ -350,106 +339,139 @@ My Raffles
                 </div>
 
                 <!-- Pagination -->
-                <div class="card border-0 mt-4">
-                    <div class="card-body">
+                <!-- TODO: Make this for all the query parameters so that they don't remain empty in the url when you navigate the pages -->
+                {% set _search = search or None %}
+                {% set _status = selected_status if selected_status !='all' else None %}
+                {% set _per_page = per_page if per_page != 9 else None %}
+                {% set _sort = selected_sort if selected_sort!='newest' else None %}
+                {% set _start_date = start_date or None %}
+                {% set _end_date = end_date or None %}
 
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
 
-                            <small class="text-muted">
-                                Showing {{ pagination.first }} to {{ pagination.last }} of {{ pagination.total }}
-                                raffles.
-                            </small>
+                    <small class="text-muted">
+                        You have a total of {{ pagination.total }} raffles.
+                    </small>
 
-                            {% if pagination.pages > 1 %}
-                            <nav aria-label="My raffles pagination">
-                                <ul class="pagination mb-0">
+                    {% if pagination.pages > 1 %}
+                    <nav aria-label="My raffles pagination">
+                        <ul class="pagination mb-0">
 
-                                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                                        <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
-                                                page=pagination.prev_num,
-                                                per_page=per_page,
-                                                search=search,
-                                                status=selected_status,
-                                                sort=selected_sort,
-                                                start_date=start_date,
-                                                end_date=end_date,
-                                                min_price=min_price,
-                                                max_price=max_price) }}">
-                                            Previous
-                                        </a>
-                                    </li>
-
-                                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1,
-                                    right_current=2) %}
-                                    {% if page_num %}
-                                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                                        <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
-                                                        page=page_num,
-                                                        per_page=per_page,
-                                                        search=search,
-                                                        status=selected_status,
-                                                        sort=selected_sort,
-                                                        start_date=start_date,
-                                                        end_date=end_date,
-                                                        min_price=min_price,
-                                                        max_price=max_price) }}">
-                                            {{ page_num }}
-                                        </a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                    {% endif %}
-                                    {% endfor %}
-
-                                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                                        <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
-                                                page=pagination.next_num,
-                                                per_page=per_page,
-                                                search=search,
-                                                status=selected_status,
-                                                sort=selected_sort,
-                                                start_date=start_date,
-                                                end_date=end_date,
-                                                min_price=min_price,
-                                                max_price=max_price) }}">
-                                            Next
-                                        </a>
-                                    </li>
-
-                                </ul>
-                            </nav>
+                            <!-- First page button -->
+                            {% if pagination.page > 3 %}
+                            <li class="page-item me-2">
+                                <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status,
+                                        sort=_sort,
+                                        start_date=_start_date,
+                                        end_date=_end_date,
+                                        min_price=min_price,
+                                        max_price=max_price) }}">
+                                    First
+                                </a>
+                            </li>
                             {% endif %}
 
-                        </div>
+                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
+                                        page=pagination.prev_num if pagination.prev_num != 1 else None,
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status,
+                                        sort=_sort,
+                                        start_date=_start_date,
+                                        end_date=_end_date,
+                                        min_price=min_price,
+                                        max_price=max_price) }}">
+                                    Previous
+                                </a>
+                            </li>
 
-                    </div>
+                            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1,
+                            right_current=2) %}
+                            {% if page_num %}
+                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
+                                                page=page_num if page_num != 1 else None,
+                                                per_page=_per_page,
+                                                search=_search,
+                                                status=_status,
+                                                sort=_sort,
+                                                start_date=_start_date,
+                                                end_date=_end_date,
+                                                min_price=min_price,
+                                                max_price=max_price) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+
+                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
+                                        page=pagination.next_num,
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status,
+                                        sort=_sort,
+                                        start_date=_start_date,
+                                        end_date=_end_date,
+                                        min_price=min_price,
+                                        max_price=max_price) }}">
+                                    Next
+                                </a>
+                            </li>
+
+                            <!-- Last page button -->
+                            {% if pagination.pages > 3 and pagination.page < pagination.pages - 1 %} <li
+                                class="page-item ms-2">
+                                <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
+                                        page=pagination.pages,        
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status,
+                                        sort=_sort,
+                                        start_date=_start_date,
+                                        end_date=_end_date,
+                                        min_price=min_price,
+                                        max_price=max_price) }}">
+                                    Last
+                                </a>
+                                </li>
+                                {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
                 </div>
 
                 {% else %}
                 <!-- Empty state -->
                 <div class="card shadow-sm border-0">
-                    <div class="card-body text-center p-5">
-
-                        <h4 class="fw-bold mb-2">No raffles found</h4>
-
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-ticket-perforated text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold mt-3 mb-2">No raffles found</h5>
                         <p class="text-muted mb-4">
-                            You do not have raffles matching the current filters.
+                            You don't have any raffles matching the current filters.
                         </p>
-
+                        <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Create your first raffle
+                        </a>
                     </div>
                 </div>
                 {% endif %}
 
             </div>
 
-
         </div>
     </form>
-
-
-
 
 </div>
 

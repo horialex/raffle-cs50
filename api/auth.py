@@ -47,7 +47,7 @@ def login():
 
         db.session.commit()
         flash(f"Welcome back, {user.first_name}!", "success")
-        return redirect("/")
+        return redirect("/raffles/")
 
     return render_template("login.html", form=form)
 
