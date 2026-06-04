@@ -1,6 +1,7 @@
 import os
 from config import Config
 from pathlib import Path
+from datetime import date
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session, url_for
 from flask_session import Session
@@ -94,6 +95,11 @@ def inject_user():
 def inject_forms():
     delete_self_account_form = DeleteSelfAccountForm()
     return dict(delete_self_account_form=delete_self_account_form)
+
+
+@app.context_processor
+def inject_today():
+    return {"today": date.today().isoformat()}
 
 
 # ----------------------------

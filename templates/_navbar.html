@@ -32,17 +32,11 @@
                     </a>
                 </li>
 
-                {% if not current_user.is_admin %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/wallet">Wallet</a>
-                </li>
-                {% endif %}
-
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Log Out</a>
                 </li>
             </ul>
-            <!-- End mobile menu (added) -->
+            <!-- End mobile menu  -->
 
             <ul class="navbar-nav ms-auto d-flex align-items-center">
                 <!-- <li class="nav-item dropdown"> -->
@@ -71,9 +65,6 @@
                                 Profile preferences
                             </a></li>
 
-                        {% if not current_user.is_admin %}
-                        <li><a class="dropdown-item" href="/wallet">Wallet</a></li>
-                        {% endif %}
 
                         <li><a class="dropdown-item" href="/logout">Log Out</a></li>
                     </ul>

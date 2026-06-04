@@ -5,7 +5,7 @@ My Raffles
 {% endblock %}
 
 {% block main %}
-<div class="container-fluid px-0 pt-0 pb-5 px-lg-2">
+<div class="container-fluid px-1 pt-0 pb-5 px-lg-2">
 
     <!-- Page header -->
     <div class="row mb-4">
@@ -240,7 +240,7 @@ My Raffles
                                 <h5 class="card-title fw-bold mb-1 pe-5 text-start">
                                     {{ raffle.title }}
                                 </h5>
-                                <p class="card-text text-muted small mb-3 text-start">
+                                <p class="card-text text-muted small mb-4 text-start">
                                     {{ raffle.description|truncate(100, True, '…') }}
                                 </p>
 
@@ -254,7 +254,7 @@ My Raffles
                                             <div>
                                                 <div class="small text-muted text-start">Product</div>
                                                 <div class="fw-semibold text-start">
-                                                    {{ product.name | capitalize }}
+                                                    {{ product.name | capitalize | truncate(30, True, '…') }}
                                                 </div>
                                             </div>
                                             <div class="text-end">
@@ -377,7 +377,7 @@ My Raffles
 
                             <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
                                 <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
-                                        page=pagination.prev_num,
+                                        page=pagination.prev_num if pagination.prev_num != 1 else None,
                                         per_page=_per_page,
                                         search=_search,
                                         status=_status,
@@ -395,7 +395,7 @@ My Raffles
                             {% if page_num %}
                             <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
                                 <a class="page-link" href="{{ url_for('raffle_bp.my_raffles',
-                                                page=page_num,
+                                                page=page_num if page_num != 1 else None,
                                                 per_page=_per_page,
                                                 search=_search,
                                                 status=_status,

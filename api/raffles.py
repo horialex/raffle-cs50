@@ -520,7 +520,6 @@ def my_raffles():
 def get_raffles():
     user_id = get_current_user_id()
     user: User = User.query.get_or_404(user_id)
-    is_admin = user.is_admin
 
     # Grab request args
     page = request.args.get("page", 1, type=int)
@@ -543,11 +542,15 @@ def get_raffles():
     now = datetime.now(timezone.utc)
 
     # Only show raffles that are not belonging to current user, status: ACTIVE, and not past due
-    query = Raffle.query.filter(
-        Raffle.creator_id != user_id,
+    # Base query - global truth
+    base_query = Raffle.query.filter(
         Raffle.status == RaffleStatus.ACTIVE,
+        Raffle.creator_id != user_id,
         Raffle.due_date >= now,
     )
+
+    # Working query (user filters)
+    query = base_query
 
     # Filters
     ## Date filter
@@ -667,29 +670,21 @@ def get_raffles():
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     raffles: list[Raffle] = pagination.items
 
-    today = date.today()
-    today_start = datetime.combine(today, datetime.min.time()).replace(
-        tzinfo=timezone.utc
-    )
-    today_end = datetime.combine(today, datetime.max.time()).replace(
-        tzinfo=timezone.utc
-    )
+    # ----------------------------
+    # Stats (ALWAYS from base_query)
+    # ----------------------------
+    today = datetime.now(timezone.utc).date()
+    today_start = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
+    today_end = datetime.combine(today, datetime.max.time(), tzinfo=timezone.utc)
 
-    ending_today_raffles: list[Raffle] = [
-        raffle
-        for raffle in raffles
-        if today_start <= raffle.due_date.replace(tzinfo=timezone.utc) <= today_end
-    ]
+    ending_today_raffles = base_query.filter(
+        Raffle.due_date >= today_start,
+        Raffle.due_date <= today_end,
+    ).all()
 
-    active_base = Raffle.query.filter(
-        Raffle.status == RaffleStatus.ACTIVE,
-        Raffle.creator_id != user_id,
-        Raffle.due_date >= now,
-    )
-    total_active_raffles = active_base.count()
-    total_ending_today = active_base.filter(
-        Raffle.due_date >= today_start, Raffle.due_date <= today_end
-    ).count()
+    total_active_raffles = base_query.count()
+    total_ending_today = len(ending_today_raffles)
+
     total_prize_value = (
         db.session.query(func.sum(Product.estimated_value))
         .join(Raffle, Product.raffle_id == Raffle.id)
@@ -705,7 +700,6 @@ def get_raffles():
     return render_template(
         "index.html",
         raffles=raffles,
-        ending_today_raffles=ending_today_raffles,
         pagination=pagination,
         selected_sort=sort,
         search=search,

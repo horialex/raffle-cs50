@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (field.name === "category" && value === "") {
                 field.disabled = true;
             }
+
+            // Do not send default pagination
+            if (fieldName === "page" && value === "1") {
+                field.disabled = true;
+            }
+            if (fieldName === "per_page" && value === "6") {
+                field.disabled = true;
+            }
         });
     });
 
@@ -137,8 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Header tabs active state
     document.querySelectorAll('.nav-tabs .nav-link').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
+        link.addEventListener('click', function () {
             document.querySelectorAll('.nav-tabs .nav-link').forEach(l => l.classList.remove('active'));
             this.classList.add('active');
         });
