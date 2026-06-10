@@ -181,9 +181,14 @@ Raffle details
                                 <small class="text-muted">Progress</small>
                                 <small class="fw-semibold">{{ progress }}%</small>
                             </div>
+
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar bg-success" style="width: {{ progress }}%">
                                 </div>
+                            </div>
+
+                            <div class="text-center text-muted small mt-2">
+                                {{ sold_tickets or 0 }} / {{ raffle.minimum_required_tickets }} tickets sold
                             </div>
                         </div>
 

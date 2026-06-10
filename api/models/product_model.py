@@ -19,7 +19,7 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=1)
     images = db.relationship(
         "ProductImage",
+        backref="product",
         cascade="all, delete-orphan",
         lazy=True,
     )
-    # raffle = db.relationship("Raffle", back_populates="products")
