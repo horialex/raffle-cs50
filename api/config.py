@@ -34,3 +34,6 @@ class Config:
     MIN_PRODUCTS_PER_RAFFLE = 1
     MAX_PRODUCTS_PER_RAFFLE = 3
     MAX_IMAGES_PER_PRODUCT = 3
+
+    # Payment
+    SIMULATE_PAYMENT = True

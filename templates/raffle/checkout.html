@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block main %}
+<div class="container-fluid px-3 px-md-4 px-lg-5 mt-n3">
+
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-cart-check-fill text-primary fs-2 me-3"></i>
+        <h2 class="mb-0">Checkout</h2>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <p class="text-muted text-start">
+            Buy tickets for <strong>{{ raffle.title }}</strong>. Price per ticket: <strong>{{ raffle.ticket_price
+                }}</strong>.
+        </p>
+        <p class="text-muted text-start">
+            You have already bought <strong>{{ already_bought }}</strong> / {{ raffle.maximum_tickets_per_user }}
+            ticket(s).
+        </p>
+
+        <form action="{{ url_for('checkout_bp.create_payment', raffle_id=raffle.id) }}" method="post">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.quantity.label(class="form-label") }}
+                {{ form.quantity(class="form-control", min=1, max=raffle.maximum_tickets_per_user - already_bought) }}
+            </div>
+
+            <div class="d-grid mt-4">
+                {{ form.submit(class="btn btn-success btn-lg") }}
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

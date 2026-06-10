@@ -16,6 +16,7 @@ from db import db
 from users import users_bp
 from auth import auth_bp
 from raffles import raffle_bp
+from checkout import checkout_bp
 from utils.helpers import login_required
 from flask_wtf.csrf import CSRFProtect
 
@@ -68,6 +69,7 @@ Session(app)
 app.register_blueprint(users_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(raffle_bp)
+app.register_blueprint(checkout_bp)
 
 
 # ----------------------------
