@@ -38,16 +38,16 @@ class Raffle(db.Model):
         nullable=False,
     )
 
+    # Relations
     products = db.relationship(
         "Product",
         backref="raffle",
         cascade="all, delete-orphan",
         lazy=True,
     )
-
-    # user = db.relationship("User", back_populates="users")
-    # winner_ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id"), nullable=True) fk to tickets.id
-    # winner_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True) # fk to users.id #  TBD
+    tickets = db.relationship(
+        "Ticket", backref="raffle", cascade="all, delete-orphan", lazy=True
+    )
 
     def __repr__(self):
         return (
