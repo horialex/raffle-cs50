@@ -11,10 +11,16 @@
     </div>
 
     <div class="row g-4 justify-content-center">
+
         <p class="text-muted text-start">
-            Buy tickets for <strong>{{ raffle.title }}</strong>. Price per ticket: <strong>{{ raffle.ticket_price
-                }}</strong>.
+            <strong>{{ raffle.title }}</strong>
         </p>
+
+        <p class="text-muted text-start">
+            Ticket price: <strong>${{ raffle.ticket_price }}</strong>
+        </p>
+
+
         <p class="text-muted text-start">
             You have already bought <strong>{{ already_bought }}</strong> / {{ raffle.maximum_tickets_per_user }}
             ticket(s).

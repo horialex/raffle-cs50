@@ -213,6 +213,7 @@ Home
                     {% set progress = 100 if progress > 100 else progress %}
                     {% set product = raffle.products[0] if raffle.products else None %}
                     {% set product_image = product.images[0] if product and product.images else None %}
+                    {% set max_tickets_reached = True if sold_tickets >= raffle.maximum_tickets_per_user %}
 
                     <div class="col">
                         <div
@@ -322,12 +323,14 @@ Home
                                             Details
                                         </a>
                                     </div>
+                                    {% if not max_tickets_reached %}
                                     <div class="col">
                                         <a href="{{ url_for('checkout_bp.checkout', raffle_id=raffle.id) }}"
                                             class="btn btn-success w-100 fw-semibold">
                                             Buy ticket
                                         </a>
                                     </div>
+                                    {% endif %}
                                 </div>
                             </div>
 

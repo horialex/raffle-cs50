@@ -16,8 +16,11 @@ Raffle details
     <div class="row g-4">
         <div class="col-lg-9">
             {% set is_raffle_creator = raffle.creator_id == current_user.id %}
+            {% set min_tickets = raffle.minimum_required_tickets %}
+            {% set sold_tickets = raffle.tickets|length if raffle.tickets is defined else 0 %}
             {% set progress = ((sold_tickets / min_tickets) * 100)|round(0, 'floor') if min_tickets else 0 %}
             {% set progress = 100 if progress > 100 else progress %}
+            {% set max_tickets_reached = True if sold_tickets >= raffle.maximum_tickets_per_user %}
             <!-- Raffle card -->
             <div class="card shadow border-0 mb-5">
                 <div class="card-body p-4">
@@ -76,7 +79,7 @@ Raffle details
                             <div class="row g-0 text-center text-md-start">
 
                                 <!-- Ticket Price -->
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-2">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
                                         <div class="rounded-circle bg-primary-subtle text-primary
@@ -92,7 +95,7 @@ Raffle details
                                 </div>
 
                                 <!-- Minimum Tickets -->
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-2">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
                                         <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center
@@ -107,7 +110,7 @@ Raffle details
                                 </div>
 
                                 <!-- Due Date -->
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-2">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
                                         <div class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center
@@ -128,7 +131,7 @@ Raffle details
                                 <!-- Stats row 2 -->
 
                                 <!-- Maximum Tickets per User-->
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-2">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
                                         <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center
@@ -143,7 +146,7 @@ Raffle details
                                 </div>
 
                                 <!-- Total Tickets Sold -->
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-2">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
                                         <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center
@@ -158,7 +161,7 @@ Raffle details
                                 </div>
 
                                 <!-- Progress -->
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-2">
                                     <div
                                         class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start h-100">
                                         <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center
@@ -167,7 +170,7 @@ Raffle details
                                         </div>
                                         <div>
                                             <div class="small text-muted"><strong>Progress</strong></div>
-                                            {{ progress_percent or 0 }}% of min
+                                            {{ progress or 0 }}% of min
                                         </div>
                                     </div>
                                 </div>
@@ -355,6 +358,7 @@ Raffle details
                     <!-- Join Raffle -->
                     {% elif not is_raffle_creator and raffle.is_active and not raffle.is_admin %}
 
+                    {% if not max_tickets_reached%}
                     <div class="d-flex align-items-center mb-3">
                         <i class="bi bi-ticket-perforated-fill text-primary fs-3 me-3"></i>
                         <h4 class="fw-bold mb-0">Join this raffle</h4>
@@ -363,8 +367,6 @@ Raffle details
                     <p class="text-muted text-start">
                         Buy tickets for a chance to win one of the amazing prizes.
                     </p>
-
-
                     <div class="d-grid mt-4">
                         <a href="{{ url_for('checkout_bp.checkout', raffle_id=raffle.id) }}"
                             class="btn btn-primary btn-lg">
@@ -372,6 +374,12 @@ Raffle details
                             Buy Ticket
                         </a>
                     </div>
+                    {% else %}
+                    <div class="text-muted text-start">
+                        You reached the maxium tickets that you can buy for this raffle. Good luck!
+                    </div>
+                    {% endif %}
+
                     {% else %}
 
                     <div class="text-muted text-start">
