@@ -538,7 +538,7 @@ def get_raffles():
     max_price = request.args.get("max_price", type=int)
     category_filter = request.args.get("category")
 
-    # TODO: Rethink this  - I need to think better about this
+    # TODO: Rethink this - I need to think better about this
     now = datetime.now(timezone.utc)
 
     # Only show raffles that are not belonging to current user, status: ACTIVE, and not past due

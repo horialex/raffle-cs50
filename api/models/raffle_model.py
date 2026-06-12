@@ -69,3 +69,7 @@ class Raffle(db.Model):
     @property
     def is_cancelled(self):
         return self.status == RaffleStatus.CANCELLED
+
+    @property
+    def due_date_utc(self):
+        return self.due_date.replace(tzinfo=timezone.utc)
