@@ -5,40 +5,184 @@
 {% block main %}
 <div class="container-fluid px-3 px-md-4 px-lg-5 mt-n3">
 
-    <div class="d-flex align-items-center mb-4">
-        <i class="bi bi-cart-check-fill text-primary fs-2 me-3"></i>
-        <h2 class="mb-0">Checkout</h2>
+    <!-- Page title -->
+    <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-cart-check-fill text-primary fs-1 me-3"></i>
+        <h2 class="fw-bold mb-1">Checkout</h2>
     </div>
 
-    <div class="row g-4 justify-content-center">
+    <!-- Content -->
+    <div class="row g-3">
+        {% set sold_tickets = raffle.tickets|length if raffle.tickets is defined else 0 %}
 
-        <p class="text-muted text-start">
-            <strong>{{ raffle.title }}</strong>
-        </p>
+        <div class="col-lg-9">
 
-        <p class="text-muted text-start">
-            Ticket price: <strong>${{ raffle.ticket_price }}</strong>
-        </p>
+            <div class="card shadow border-0 mb-2">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-2">
+                        <h4>Raffle Details</h4>
+                    </div>
+
+                    <div class="row mb-3">
+
+                        <!-- Raffle image -->
+                        <div class="col-md-4 mb-2">
+                            <img src="{{ url_for('static', filename='images/win.png') }}" class="img-fluid rounded"
+                                style="height: 260px; width: 100%; object-fit: cover;" alt="Raffle product">
+                        </div>
+
+                        <!-- Details -->
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h4 class="fw-bold mb-0">{{ raffle.title | truncate(30, True, '…') }}</h4>
+                            </div>
+
+                            <p class="text-start text-muted mb-4">
+                                {{ raffle.description | truncate(80, True, '…') or "Get a chance to win this amazing
+                                raffle prize." }}
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-ticket-perforated text-muted me-1"></i>
+                                    <span class="fw-bold text-muted">Ticket Price</span>
+                                </div>
+                                <div class="me-3">
+                                    <p class="text-start text-muted">
+                                        ${{ raffle.ticket_price }}
+                                    </p>
+                                </div>
+                            </div>
 
 
-        <p class="text-muted text-start">
-            You have already bought <strong>{{ already_bought }}</strong> / {{ raffle.maximum_tickets_per_user }}
-            ticket(s).
-        </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-people text-muted me-1"></i>
+                                    <span class="fw-bold text-muted">Tickets Sold</span>
+                                </div>
+                                <div class="me-3">
+                                    <p class="text-start text-muted">
+                                        {{ sold_tickets }} / {{raffle.minimum_required_tickets}}
+                                    </p>
+                                </div>
+                            </div>
 
-        <form action="{{ url_for('checkout_bp.create_payment', raffle_id=raffle.id) }}" method="post">
-            {{ form.hidden_tag() }}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-calendar text-muted me-1"></i>
+                                    <span class="fw-bold text-muted">Raffle Ends</span>
+                                </div>
+                                <div class="me-3">
+                                    <p class="text-start text-muted">
+                                        {{ raffle.due_date.strftime('%B %d, %Y %M:%S') }}
+                                    </p>
+                                </div>
+                            </div>
 
-            <div class="mb-3">
-                {{ form.quantity.label(class="form-label") }}
-                {{ form.quantity(class="form-control", min=1, max=raffle.maximum_tickets_per_user - already_bought) }}
+                        </div>
+                    </div>
+
+                    <!-- Info box -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <div class="p-3 bg-light border rounded text-start">
+                                <i class=" bi bi-exclamation-circle me-2"></i>
+                                The raffle will be tirggered if the minimum ticket requirement is reached before the due
+                                date.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
-            <div class="d-grid mt-4">
-                {{ form.submit(class="btn btn-success btn-lg") }}
-            </div>
-        </form>
+            <!-- Your Tickets card -->
+            <div class="card shadow border-0 mb-2">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-2">
+                        <h5>Your Tickets</h5>
+                    </div>
 
+                    <div class="mb-3 text-start">
+                        <span>Number of Tickets</span>
+                        <div class="mt-2 mb-2">
+                            {{ form.quantity(class="form-control", id="quantity-input", min=1,
+                            data_price=raffle.ticket_price,
+                            max=raffle.maximum_tickets_per_user - already_bought,
+                            form="payment-form") }}
+                        </div>
+                        <span>Maximum {{ raffle.maximum_tickets_per_user }} tickets per user</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card shadow border-0 mb-2">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <h4>Order summary</h4>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Ticket Price</span>
+                        </div>
+                        <div class="me-3">
+                            <p class="text-start text-muted">
+                                ${{ raffle.ticket_price }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="text-muted">Number of Tickets</span>
+                        </div>
+                        <div class="me-3">
+                            <p id="ticket-count" class="text-start text-muted">
+                                1
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex align-items-start justify-content-between mb-4">
+                        <h5>Total</h5>
+                        <h5 id="checkout-total">${{ raffle.ticket_price }}</h5>
+                    </div>
+
+                    <form id="payment-form" action="{{ url_for('checkout_bp.create_payment', raffle_id=raffle.id) }}"
+                        method="post">
+                        {{ form.hidden_tag() }}
+
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="p-3 bg-light border rounded text-start mb-3">
+                                    <i class=" bi bi-exclamation-circle me-2"></i>
+                                    After confirming you will be redirected to our payment system. Once the payment is
+                                    succesfull your tickets will be registered.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-credit-card me-1"></i>
+                                Confirm & Pay
+                            </button>
+                            <a href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}"
+                                class="btn btn-lg btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+
+
+
 </div>
+
 {% endblock %}

@@ -165,4 +165,20 @@ document.addEventListener('DOMContentLoaded', function () {
         chevronIcon.classList.add('bi-chevron-down');
     });
 
+    const quantityInput = document.getElementById("quantity-input");
+    const ticketCount = document.getElementById("ticket-count");
+    const checkoutTotal = document.getElementById("checkout-total")
+
+
+    quantityInput?.addEventListener("input", function () {
+        const ticketPrice = parseFloat(quantityInput.dataset.price);
+        const qty = quantityInput.value;
+        ticketCount.textContent = qty;
+
+        checkoutTotal.textContent = `$${(qty * ticketPrice).toFixed(0)}`;
+    });
+
+
+
+
 });
