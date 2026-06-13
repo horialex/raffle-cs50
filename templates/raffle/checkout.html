@@ -17,7 +17,7 @@
 
         <div class="col-lg-9">
 
-            <div class="card shadow border-0 mb-2">
+            <div class="card shadow border-0 mb-3">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start mb-2">
                         <h4>Raffle Details</h4>
@@ -79,6 +79,18 @@
                                 </div>
                             </div>
 
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-person-fill-check text-muted me-1"></i>
+                                    <span class="fw-bold text-muted">Maximum Tickets per User</span>
+                                </div>
+                                <div class="me-3">
+                                    <p class="text-start text-muted">
+                                        {{ raffle.maximum_tickets_per_user }}
+                                    </p>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -97,24 +109,111 @@
             </div>
 
             <!-- Your Tickets card -->
+            <!-- Raffle Products card -->
             <div class="card shadow border-0 mb-2">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start mb-2">
-                        <h5>Your Tickets</h5>
+                        <h4>Raffle Products</h4>
                     </div>
 
-                    <div class="mb-3 text-start">
-                        <span>Number of Tickets</span>
-                        <div class="mt-2 mb-2">
-                            {{ form.quantity(class="form-control", id="quantity-input", min=1,
-                            data_price=raffle.ticket_price,
-                            max=raffle.maximum_tickets_per_user - already_bought,
-                            form="payment-form") }}
+                    <!-- Products grid -->
+                    <div class="row g-3">
+                        {% for product in raffle.products %}
+                        <div class="col-md-4">
+                            <div class="card product-card shadow-lg border h-100">
+
+                                <div id="carousel-{{ product.id }}" class="position-relative carousel slide"
+                                    data-bs-ride="carousel">
+
+                                    {% if product.images and product.images | length > 1 %}
+                                    <div class="carousel-indicators">
+                                        {% for image in product.images %}
+                                        <button type="button" data-bs-target="#carousel-{{ product.id }}"
+                                            data-bs-slide-to="{{ loop.index0 }}"
+                                            class="{% if loop.first %}active{% endif %}">
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="carousel-inner">
+
+                                        {% if product.images %}
+                                        {% for image in product.images %}
+                                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                            <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
+                                                class="d-block w-100 rounded" style="height: 220px; object-fit: cover;"
+                                                alt="{{ product.name }}">
+                                        </div>
+                                        {% endfor %}
+                                        {% else %}
+                                        <div class="carousel-item active">
+                                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                                style="height: 220px;">
+                                                <span class="text-muted">No image</span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if product.images and product.images | length > 1 %}
+                                    <button class="carousel-control-prev" type="button"
+                                        data-bs-target="#carousel-{{ product.id }}" data-bs-slide="prev">
+
+                                        <span class="carousel-control-prev-icon"></span>
+                                    </button>
+
+                                    <button class="carousel-control-next" type="button"
+                                        data-bs-target="#carousel-{{ product.id }}" data-bs-slide="next">
+
+                                        <span class="carousel-control-next-icon"></span>
+                                    </button>
+                                    {% endif %}
+
+                                    <span class="position-absolute top-0 start-0 m-2 badge bg-primary">
+                                        {{ loop.index }}
+                                    </span>
+
+                                </div>
+
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="card-title fw-bold mb-1">{{ product.name | truncate(30, True, '…') }}
+                                        </h6>
+                                        <i class="bi bi-box-seam text-primary"></i>
+                                    </div>
+
+                                    <p class="card-text text-start text-muted small mb-0">
+                                        {{ product.description }}
+                                    </p>
+
+                                    <div class="mt-auto">
+                                        <hr>
+                                        <p class="card-text text-start text-muted small mb-0">
+                                            <strong>Estimated value</strong> ${{ product.estimated_value }}
+                                        </p>
+
+                                        <p class="card-text text-start text-muted small mb-0">
+                                            <strong>Condition</strong> {{ product.condition.value | capitalize }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
-                        <span>Maximum {{ raffle.maximum_tickets_per_user }} tickets per user</span>
+                        {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-secondary">
+                                No products added to this raffle yet.
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
+
                 </div>
             </div>
+
+
         </div>
 
         <div class="col-lg-3">
@@ -135,7 +234,18 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Owned Tickets</span>
+                        </div>
+                        <div class="me-3">
+                            <p class="text-start text-muted">
+                                {{ already_bought }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center  mb-3">
                         <div>
                             <span class="text-muted">Number of Tickets</span>
                         </div>
@@ -156,6 +266,38 @@
                     <form id="payment-form" action="{{ url_for('checkout_bp.create_payment', raffle_id=raffle.id) }}"
                         method="post">
                         {{ form.hidden_tag() }}
+
+                        <!-- Your Tickets card -->
+                        <!-- <div class="card shadow border-0 mb-2"> -->
+                        <!-- <div class="card-body p-4"> -->
+                        <!-- <div class="d-flex align-items-start mb-2">
+                            <h4>Your Tickets</h4>
+                        </div> -->
+
+                        <div class="mb-4 text-start">
+                            <span class="text-muted">Number of Tickets</span>
+                            <div class="mt-2 mb-2">
+                                <div class="input-group" style="max-width: 130px;">
+
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        id="qty-decrement">−</button>
+
+                                    {{ form.quantity(class="form-control text-center", id="quantity-input",
+                                    type="text",
+                                    inputmode="numeric", min=1,
+                                    data_price=raffle.ticket_price,
+                                    max=raffle.maximum_tickets_per_user - already_bought) }}
+
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        id="qty-increment">+</button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <!-- </div> -->
+                        <!-- </div> -->
 
                         <div class="row mb-2">
                             <div class="col-12">

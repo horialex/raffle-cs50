@@ -167,15 +167,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const quantityInput = document.getElementById("quantity-input");
     const ticketCount = document.getElementById("ticket-count");
-    const checkoutTotal = document.getElementById("checkout-total")
+    const checkoutTotal = document.getElementById("checkout-total");
 
 
     quantityInput?.addEventListener("input", function () {
         const ticketPrice = parseFloat(quantityInput.dataset.price);
-        const qty = quantityInput.value;
+        const qty = parseInt(quantityInput.value) || 1;
         ticketCount.textContent = qty;
-
         checkoutTotal.textContent = `$${(qty * ticketPrice).toFixed(0)}`;
+    });
+
+    document.getElementById("qty-decrement")?.addEventListener("click", function () {
+        const min = parseInt(quantityInput.min) || 1;
+        const current = parseInt(quantityInput.value) || 1;
+        if (current > min) {
+            quantityInput.value = current - 1;
+            quantityInput.dispatchEvent(new Event("input"));
+        }
+    });
+
+    document.getElementById("qty-increment")?.addEventListener("click", function () {
+        const max = parseInt(quantityInput.max);
+        const current = parseInt(quantityInput.value) || 1;
+        if (!max || current < max) {
+            quantityInput.value = current + 1;
+            quantityInput.dispatchEvent(new Event("input"));
+        }
     });
 
 
