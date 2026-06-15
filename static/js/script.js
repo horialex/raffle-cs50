@@ -168,34 +168,58 @@ document.addEventListener('DOMContentLoaded', function () {
     const quantityInput = document.getElementById("quantity-input");
     const ticketCount = document.getElementById("ticket-count");
     const checkoutTotal = document.getElementById("checkout-total");
+    const increaseQtyBtn = document.getElementById("qty-increment");
+    const decreaseQtyBtn = document.getElementById("qty-decrement")
 
 
     quantityInput?.addEventListener("input", function () {
         const ticketPrice = parseFloat(quantityInput.dataset.price);
         const qty = parseInt(quantityInput.value) || 1;
+
+        const min = parseInt(quantityInput.min) || 1;
+        const max = parseInt(quantityInput.max);
+
+        if (qty < min) qty = min;
+        if (qty > max) qty = max;
+
+        quantityInput.value = qty;
+
         ticketCount.textContent = qty;
         checkoutTotal.textContent = `$${(qty * ticketPrice).toFixed(0)}`;
     });
 
-    document.getElementById("qty-decrement")?.addEventListener("click", function () {
-        const min = parseInt(quantityInput.min) || 1;
-        const current = parseInt(quantityInput.value) || 1;
-        if (current > min) {
-            quantityInput.value = current - 1;
-            quantityInput.dispatchEvent(new Event("input"));
-        }
-    });
-
-    document.getElementById("qty-increment")?.addEventListener("click", function () {
+    increaseQtyBtn?.addEventListener("click", function () {
+        const ticketPrice = parseFloat(quantityInput.dataset.price);
         const max = parseInt(quantityInput.max);
-        const current = parseInt(quantityInput.value) || 1;
-        if (!max || current < max) {
-            quantityInput.value = current + 1;
-            quantityInput.dispatchEvent(new Event("input"));
+        const qty = parseInt(quantityInput.value) || 1;
+
+        if (qty >= max) {
+            return;
         }
+
+        const newQty = qty + 1;
+        quantityInput.value = newQty;
+
+        ticketCount.textContent = newQty;
+        checkoutTotal.textContent = `$${(newQty * ticketPrice).toFixed(0)}`;
     });
 
 
+    decreaseQtyBtn?.addEventListener("click", function () {
+        const ticketPrice = parseFloat(quantityInput.dataset.price);
+        const min = parseInt(quantityInput.min) || 1;
+        let qty = parseInt(quantityInput.value) || 1;
 
+        if (qty <= min) {
+            qty = min;
+            return;
+        }
+
+        const newQty = qty - 1;
+        quantityInput.value = newQty;
+
+        ticketCount.textContent = newQty;
+        checkoutTotal.textContent = `$${(newQty * ticketPrice).toFixed(0)}`;
+    });
 
 });

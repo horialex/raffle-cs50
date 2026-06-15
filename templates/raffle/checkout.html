@@ -240,7 +240,7 @@
                         </div>
                         <div class="me-3">
                             <p class="text-start text-muted">
-                                {{ already_bought }}
+                                {{ user_ticket_count }}
                             </p>
                         </div>
                     </div>
@@ -258,7 +258,7 @@
 
                     <hr>
 
-                    <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="d-flex align-items-start justify-content-between mb-3">
                         <h5>Total</h5>
                         <h5 id="checkout-total">${{ raffle.ticket_price }}</h5>
                     </div>
@@ -268,36 +268,25 @@
                         {{ form.hidden_tag() }}
 
                         <!-- Your Tickets card -->
-                        <!-- <div class="card shadow border-0 mb-2"> -->
-                        <!-- <div class="card-body p-4"> -->
-                        <!-- <div class="d-flex align-items-start mb-2">
-                            <h4>Your Tickets</h4>
-                        </div> -->
-
-                        <div class="mb-4 text-start">
+                        <div class="d-flex flex-column align-items-center align-items-md-start mb-4">
                             <span class="text-muted">Number of Tickets</span>
-                            <div class="mt-2 mb-2">
-                                <div class="input-group" style="max-width: 130px;">
 
+                            <div class="mt-2 mb-2">
+                                <div class="input-group mx-auto mx-md-0" style="max-width: 150px;">
                                     <button type="button" class="btn btn-outline-secondary"
                                         id="qty-decrement">−</button>
 
                                     {{ form.quantity(class="form-control text-center", id="quantity-input",
-                                    type="text",
-                                    inputmode="numeric", min=1,
+                                    type="number", inputmode="numeric", min=1,
                                     data_price=raffle.ticket_price,
-                                    max=raffle.maximum_tickets_per_user - already_bought) }}
+                                    data_owned=user_ticket_count,
+                                    max=raffle.maximum_tickets_per_user - user_ticket_count) }}
 
                                     <button type="button" class="btn btn-outline-secondary"
                                         id="qty-increment">+</button>
-
                                 </div>
-
                             </div>
-
                         </div>
-                        <!-- </div> -->
-                        <!-- </div> -->
 
                         <div class="row mb-2">
                             <div class="col-12">
