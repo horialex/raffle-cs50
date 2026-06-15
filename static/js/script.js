@@ -165,4 +165,61 @@ document.addEventListener('DOMContentLoaded', function () {
         chevronIcon.classList.add('bi-chevron-down');
     });
 
+    const quantityInput = document.getElementById("quantity-input");
+    const ticketCount = document.getElementById("ticket-count");
+    const checkoutTotal = document.getElementById("checkout-total");
+    const increaseQtyBtn = document.getElementById("qty-increment");
+    const decreaseQtyBtn = document.getElementById("qty-decrement")
+
+
+    quantityInput?.addEventListener("input", function () {
+        const ticketPrice = parseFloat(quantityInput.dataset.price);
+        const qty = parseInt(quantityInput.value) || 1;
+
+        const min = parseInt(quantityInput.min) || 1;
+        const max = parseInt(quantityInput.max);
+
+        if (qty < min) qty = min;
+        if (qty > max) qty = max;
+
+        quantityInput.value = qty;
+
+        ticketCount.textContent = qty;
+        checkoutTotal.textContent = `$${(qty * ticketPrice).toFixed(0)}`;
+    });
+
+    increaseQtyBtn?.addEventListener("click", function () {
+        const ticketPrice = parseFloat(quantityInput.dataset.price);
+        const max = parseInt(quantityInput.max);
+        const qty = parseInt(quantityInput.value) || 1;
+
+        if (qty >= max) {
+            return;
+        }
+
+        const newQty = qty + 1;
+        quantityInput.value = newQty;
+
+        ticketCount.textContent = newQty;
+        checkoutTotal.textContent = `$${(newQty * ticketPrice).toFixed(0)}`;
+    });
+
+
+    decreaseQtyBtn?.addEventListener("click", function () {
+        const ticketPrice = parseFloat(quantityInput.dataset.price);
+        const min = parseInt(quantityInput.min) || 1;
+        let qty = parseInt(quantityInput.value) || 1;
+
+        if (qty <= min) {
+            qty = min;
+            return;
+        }
+
+        const newQty = qty - 1;
+        quantityInput.value = newQty;
+
+        ticketCount.textContent = newQty;
+        checkoutTotal.textContent = `$${(newQty * ticketPrice).toFixed(0)}`;
+    });
+
 });

@@ -28,18 +28,21 @@ def checkout(raffle_id):
         flash("This raffle is not open for ticket purchases.", "error")
         return redirect(url_for("raffle_bp.get_raffle", id=raffle_id))
 
-    already_bought = Ticket.query.filter_by(
+    user_ticket_count = Ticket.query.filter_by(
         raffle_id=raffle_id, user_id=session.get("user_id")
     ).count()
 
-    if already_bought >= raffle.maximum_tickets_per_user:
+    if user_ticket_count >= raffle.maximum_tickets_per_user:
         flash("You can't buy more tickets for this raffle", "error")
         return redirect(url_for("raffle_bp.get_raffle", id=raffle_id))
 
     form = CheckoutForm()
 
     return render_template(
-        "raffle/checkout.html", form=form, raffle=raffle, already_bought=already_bought
+        "raffle/checkout.html",
+        form=form,
+        raffle=raffle,
+        user_ticket_count=user_ticket_count,
     )
 
 
@@ -51,7 +54,7 @@ def create_payment(raffle_id):
     quantity = form.quantity.data
     user_id = session.get("user_id")
 
-    already_bought = Ticket.query.filter_by(
+    user_ticket_count = Ticket.query.filter_by(
         raffle_id=raffle_id, user_id=user_id
     ).count()
 
@@ -59,15 +62,27 @@ def create_payment(raffle_id):
         flash("This raffle is not open for ticket purchases.", "error")
         return redirect(url_for("raffle_bp.get_raffle", id=raffle_id))
 
-        # Check raffle has not reached due date
+    # Check raffle has not reached due date
     if raffle.due_date_utc < datetime.now(timezone.utc):
         flash("This raffle has already ended.", "error")
         return redirect(url_for("raffle_bp.get_raffle", id=raffle_id))
 
+    remaining_available_tickets_conut = (
+        raffle.maximum_tickets_per_user - user_ticket_count
+    )
+
+    if quantity < 1:
+        flash("Quantity must be positive", "danger")
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle_id))
+
+    if remaining_available_tickets_conut <= 0:
+        flash("You reached the maximum tickets for this raffle", "danger")
+        return redirect(url_for("raffle_bp.get_raffle", id=raffle_id))
+
     # Check maximum tickets per user not reached
-    if quantity > raffle.maximum_tickets_per_user - already_bought:
+    if quantity > remaining_available_tickets_conut:
         flash(
-            f"You can only buy {raffle.maximum_tickets_per_user - already_bought} more ticket(s) for this raffle.",
+            f"You can only buy {remaining_available_tickets_conut} more ticket(s) for this raffle.",
             "error",
         )
         return redirect(url_for("checkout_bp.checkout", raffle_id=raffle_id))
