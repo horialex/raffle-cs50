@@ -7,37 +7,117 @@ My Tickets
 {% block main %}
 <div class="container-fluid px-1 pt-0 pb-5 px-lg-2">
 
+
     <!-- Page header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow border-0">
-                <div class="card-body p-4 header-banner">
+    <div class="ms-1 mb-4 text-start">
+        <h2 class="fw-bold mb-1">My Tickets</h2>
+        <p class="text-muted mb-0">All the tickets you have purchased.</p>
+    </div>
 
-                    <div class="row align-items-center g-4">
-
-                        <div class="col-12 col-md">
-                            <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
-                                <div class="rounded-circle bg-primary-subtle text-primary
-                                    d-flex align-items-center justify-content-center
-                                    flex-shrink-0 mb-3 mb-md-0 me-md-3 p-3">
-                                    <i class="bi bi-ticket-perforated-fill fs-4 d-inline-block"
-                                        style="rotate: 30deg;"></i>
-                                </div>
-
-                                <div>
-                                    <h2 class="fw-bold mb-1">My Tickets</h2>
-                                    <p class="text-muted mb-0">
-                                        The tickets you own
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+    <!-- Stats cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow rounded-3 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3" style="background-color: #e8f0fe;">
+                        <i class="bi bi-ticket-perforated fs-3" style="color: #4a6cf7;"></i>
                     </div>
-
+                    <div class="text-start">
+                        <div class="text-muted small">Total Tickets</div>
+                        <div class="fw-bold fs-4">{{ metadata.tickets_count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow rounded-3 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-3" style="background-color: #28a745;">
+                        <i class="bi bi-bag fs-3 text-white"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="text-muted small">Raffles Joined</div>
+                        <div class="fw-bold fs-4">{{ metadata.raffles_joined }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow rounded-3 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-3" style="background-color: #6f42c1;">
+                        <i class="bi bi-cash-stack fs-3 text-white"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="text-muted small">Total Spent</div>
+                        <div class="fw-bold fs-4">${{ metadata.total_spent }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow rounded-3 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-3" style="background-color: #fd7e14;">
+                        <i class="bi bi-trophy fs-4 text-white"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="text-muted small">Winnings</div>
+                        <div class="fw-bold fs-4">{{ metadata.won_tickets }}</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+    <!-- Tabs and search -->
+    <div class="card border-0 shadow rounded-3 p-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4">
+            <ul class="nav mb-3" id="ticketTabs">
+                <li class="nav-item">
+                    <a class="tickets-nav-link nav-link px-3 pb-2 {{ 'active fw-medium' if selected_status == 'all' }}"
+                        href="{{ url_for('tickets_bp.my_tickets', status_filter='all') }}">All</a>
+                </li>
+                <li class="nav-item">
+                    <a class="tickets-nav-link nav-link px-3 pb-2 {{ 'active fw-medium' if selected_status == 'active' }}"
+                        href="{{ url_for('tickets_bp.my_tickets', status_filter='active') }}">Active</a>
+                </li>
+                <li class="nav-item">
+                    <a class="tickets-nav-link nav-link px-3 pb-2 {{ 'active fw-medium' if selected_status == 'completed' }}"
+                        href="{{ url_for('tickets_bp.my_tickets', status_filter='completed') }}">Completed</a>
+                </li>
+                <li class="nav-item">
+                    <a class="tickets-nav-link nav-link px-3 pb-2 {{ 'active fw-medium' if selected_status == 'cancelled' }}"
+                        href="{{ url_for('tickets_bp.my_tickets', status_filter='cancelled') }}">Cancelled</a>
+                </li>
+            </ul>
+            <form method="GET" action="{{ url_for('tickets_bp.my_tickets') }}" class="mb-2">
+                <input type="hidden" name="status_filter" value="{{ selected_status }}">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" id="raffleSearch" class="form-control border-start-0 ps-0"
+                        placeholder="Search raffles..." value="{{ search }}">
+                </div>
+            </form>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-3 p-1">
+            <hr>
+            {% for raffle in raffles %}
+            <p>{{raffle.title}}</p>
+            <hr>
+
+            {% endfor %}
+        </div>
+
+    </div>
+
+
+
+
 
 
 </div>

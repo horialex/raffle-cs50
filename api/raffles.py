@@ -440,20 +440,37 @@ def my_raffles():
 
     # Search
     if search:
-        search_pattern = f"%{search}%"
-
-        query = query.filter(
-            or_(
-                Raffle.title.ilike(search_pattern),
-                Raffle.description.ilike(search_pattern),
-                Raffle.products.any(
-                    or_(
-                        Product.name.ilike(search_pattern),
-                        Product.description.ilike(search_pattern),
-                    )
-                ),
-            )
+        # search_pattern = f"%{search}%"
+        search_escaped = (
+            search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         )
+        search_pattern = f"%{search_escaped}%"
+
+        query = (
+            query.join(Product, Product.raffle_id == Raffle.id)
+            .filter(
+                or_(
+                    Raffle.title.ilike(search_pattern, escape="\\"),
+                    Raffle.description.ilike(search_pattern, escape="\\"),
+                    Product.name.ilike(search_pattern, escape="\\"),
+                    Product.description.ilike(search_pattern, escape="\\"),
+                )
+            )
+            .distinct()
+        )
+
+        # query = query.filter(
+        #     or_(
+        #         Raffle.title.ilike(search_pattern),
+        #         Raffle.description.ilike(search_pattern),
+        #         Raffle.products.any(
+        #             or_(
+        #                 Product.name.ilike(search_pattern),
+        #                 Product.description.ilike(search_pattern),
+        #             )
+        #         ),
+        #     )
+        # )
 
     # Sorting - add the sorting options
     # TODO: implement tickets_most, tickets_least, value_high, value_low
@@ -608,20 +625,37 @@ def get_raffles():
 
     # Search
     if search:
-        search_pattern = f"%{search}%"
-
-        query = query.filter(
-            or_(
-                Raffle.title.ilike(search_pattern),
-                Raffle.description.ilike(search_pattern),
-                Raffle.products.any(
-                    or_(
-                        Product.name.ilike(search_pattern),
-                        Product.description.ilike(search_pattern),
-                    )
-                ),
-            )
+        # search_pattern = f"%{search}%"
+        search_escaped = (
+            search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         )
+        search_pattern = f"%{search_escaped}%"
+
+        query = (
+            query.join(Product, Product.raffle_id == Raffle.id)
+            .filter(
+                or_(
+                    Raffle.title.ilike(search_pattern, escape="\\"),
+                    Raffle.description.ilike(search_pattern, escape="\\"),
+                    Product.name.ilike(search_pattern, escape="\\"),
+                    Product.description.ilike(search_pattern, escape="\\"),
+                )
+            )
+            .distinct()
+        )
+
+        # query = query.filter(
+        #     or_(
+        #         Raffle.title.ilike(search_pattern),
+        #         Raffle.description.ilike(search_pattern),
+        #         Raffle.products.any(
+        #             or_(
+        #                 Product.name.ilike(search_pattern),
+        #                 Product.description.ilike(search_pattern),
+        #             )
+        #         ),
+        #     )
+        # )
 
     # Sorting - add the sorting options
     # TODO: implement tickets_most, tickets_least, value_high, value_low

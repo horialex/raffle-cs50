@@ -159,6 +159,20 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
+/* My Tickets page */
+.tickets-nav-link {
+    color: #6c757d;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    margin-bottom: -1px;
+}
+
+.tickets-nav-link.active {
+    color: #4a6cf7;
+    border-bottom-color: #4a6cf7;
+    background: none;
+}
+
 @media (max-width: 767.98px) {
     .raffle-card {
         border: 3px solid rgba(0, 0, 0, 0.14) !important;
