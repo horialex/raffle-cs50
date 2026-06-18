@@ -81,7 +81,7 @@ My Tickets
                 </li>
                 <li class="nav-item">
                     <a class="tickets-nav-link nav-link px-3 pb-2 {{ 'active fw-medium' if selected_status == 'active' }}"
-                        href="{{ url_for('tickets_bp.my_tickets', status_filter='active') }}">Active</a>
+                        href="{{ url_for('tickets_bp.my_tickets', status_filter='active') }}">Ongoing</a>
                 </li>
                 <li class="nav-item">
                     <a class="tickets-nav-link nav-link px-3 pb-2 {{ 'active fw-medium' if selected_status == 'completed' }}"
@@ -104,20 +104,222 @@ My Tickets
             </form>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-3 p-1">
-            <hr>
-            {% for raffle in raffles %}
-            <p>{{raffle.title}}</p>
-            <hr>
+        <!-- Raffles list section-->
+        <div>
 
-            {% endfor %}
+            {% if raffles %}
+
+            <!-- Desktop: table (md and up) -->
+            <div class="d-none d-md-block">
+                <table class="table table-hover table-borderless align-middle mb-0">
+                    <thead class="border-bottom">
+                        <tr>
+                            <th class="text-start">Raffle</th>
+                            <th>Products</th>
+                            <th>Status</th>
+                            <th>Your Tickets</th>
+                            <th>Prize value</th>
+                            <th class="text-start">Total Spent</th>
+                            <th class="text-start">Due Date</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for raffle in raffles %}
+                        {% set status = raffle.status.value %}
+                        {% set product = raffle.products[0] if raffle.products else None %}
+
+                        {% set min_tickets = raffle.minimum_required_tickets %}
+                        {% set sold_tickets = raffle.tickets|length if raffle.tickets is defined else 0 %}
+                        {% set progress = ((sold_tickets / min_tickets) * 100)|round(0, 'floor') if min_tickets else 0
+                        %}
+                        {% set progress = 100 if progress > 100 else progress %}
+                        {% set status = raffle.status.value %}
+
+                        {% if status == 'active' %}{% set badge_color = 'text-bg-success' %}
+                        {% elif status == 'completed' %}{% set badge_color = 'text-bg-primary' %}
+                        {% elif status == 'cancelled' %}{% set badge_color = 'text-bg-danger' %}
+                        {% else %}{% set badge_color = 'text-bg-secondary' %}{% endif %}
+
+
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if product and product.images %}
+                                    <img src="{{ url_for('static', filename='uploads/images/products/' + product.images[0].image_url) }}"
+                                        alt="{{ product.title }}" class="rounded"
+                                        style="width: 68px; height: 68px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="rounded bg-light d-flex align-items-center justify-content-center"
+                                        style="width: 68px; height: 68px;">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="text-start">
+                                        <div class="fw-semibold">
+                                            {{ raffle.title }}
+                                        </div>
+                                        <div class="text-muted small">Raffle ID: #{{ raffle.id }}</div>
+                                        <div>
+                                            {% if raffle.tickets | selectattr('status.value',
+                                            'equalto', 'winner') |
+                                            list %}
+                                            <span class="badge text-start text-bg-success ms-1">Winner!</span>
+                                            {% elif raffle.tickets | selectattr('status.value',
+                                            'equalto', 'pending') |
+                                            list %}
+                                            <span class="badge text-bg-warning">Tickets Pending</span>
+                                            {% else %}
+                                            <span class="badge text-bg-secondary">Tickets Lost</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ raffle.products|length }}</td>
+                            <td>
+                                <span class="badge {{ badge_color }} text-capitalize opacity-75">{{ status }}</span>
+                            </td>
+                            <td>
+                                <span
+                                    class="d-inline-flex align-items-center justify-content-center rounded-3 fw-semibold"
+                                    style="width: 36px; height: 36px; background-color: #e8f0fe; color: #4a6cf7;">
+                                    {{ raffle.tickets|length }}
+                                </span>
+                            </td>
+                            <td class="fw-semibold" style="color: #28a745;">
+                                $ {{ raffle.products | sum(attribute='estimated_value') }}
+                            </td>
+                            <td class="text-start">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-semibold">$ {{ raffle.tickets | sum(attribute='price') }}</span>
+                                    <span class="text-muted">$ {{ raffle.ticket_price }} per ticket</span>
+                                </div>
+
+                            </td>
+                            <td class="text-start">
+                                <div class="fw-semibold">{{ raffle.due_date.strftime("%b %d, %Y") }}</div>
+                                <div class="text-muted small">{{ raffle.due_date.strftime("%H:%M") }}</div>
+                            </td>
+                            <td>{{ progress }}%</td>
+                            <td>
+                                <a href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}"
+                                    class="btn btn-sm btn-outline-primary">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile: stacked cards (below md) -->
+            <div class="d-md-none d-flex flex-column gap-3">
+                {% for raffle in raffles %}
+                <div class="card shadow-sm border-0">
+                    <!-- TODO: mobile card content -->
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-ticket-perforated fs-1 text-muted"></i>
+                <p class="text-muted mt-3 mb-1">No tickets found.</p>
+                <p class="text-muted small">
+                    {% if search or selected_status != 'all' %}Try adjusting your search or filter.
+                    {% else %}You haven't purchased any tickets yet.{% endif %}
+                </p>
+            </div>
+            {% endif %}
+
         </div>
 
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        {% set _search = search or None %}
+        {% set _status = selected_status if selected_status !='all' else None %}
+        {% set _per_page = per_page if per_page != 9 else None %}
+        {% set _sort = selected_sort if selected_sort!='newest' else None %}
+        <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
+
+            <small class="text-muted">
+                You have a total of {{ pagination.total }} raffles where you have tickets.
+            </small>
+
+            <nav aria-label="My raffles pagination">
+                <ul class="pagination mb-0">
+
+                    <!-- First page button -->
+                    {% if pagination.page > 3 %}
+                    <li class="page-item me-2">
+                        <a class="page-link" href="{{ url_for('tickets_bp.my_tickets',
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status) }}">
+                            First
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('tickets_bp.my_tickets',
+                                        page=pagination.prev_num if pagination.prev_num != 1 else None,
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status) }}">
+                            Previous
+                        </a>
+                    </li>
+
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1,
+                    right_current=2) %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('tickets_bp.my_tickets',
+                                                page=page_num if page_num != 1 else None,
+                                                per_page=_per_page,
+                                                search=_search,
+                                                status=_status) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('tickets_bp.my_tickets',
+                                        page=pagination.next_num,
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status) }}">
+                            Next
+                        </a>
+                    </li>
+
+                    <!-- Last page button -->
+                    {% if pagination.pages > 3 and pagination.page < pagination.pages - 1 %} <li class="page-item ms-2">
+                        <a class="page-link" href="{{ url_for('tickets_bp.my_tickets',
+                                        page=pagination.pages,        
+                                        per_page=_per_page,
+                                        search=_search,
+                                        status=_status) }}">
+                            Last
+                        </a>
+                        </li>
+                        {% endif %}
+                </ul>
+            </nav>
+        </div>
+
+        {% endif %}
+
     </div>
-
-
-
-
 
 
 </div>

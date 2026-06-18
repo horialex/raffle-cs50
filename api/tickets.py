@@ -26,15 +26,9 @@ def my_tickets():
     per_page = min(max(per_page, 1), 9)
 
     ## Search - Filters - Sort
-    # Search for raffle
-    # Filter by Ticket status
-    # Sorting options ??
     search = request.args.get("search", "").strip()
     selected_status = request.args.get("status_filter", "all")
     category_filter = request.args.get("category")
-
-    # Only show current user's tickets
-    # query = Ticket.query.filter(Ticket.user_id == current_user_id)
 
     # Global metadata — computed before filters are applied
     user_tickets = Ticket.query.filter(Ticket.user_id == current_user_id)
@@ -51,7 +45,9 @@ def my_tickets():
         "won_tickets": won_tickets,
     }
 
-    query = Raffle.query.join(Ticket).filter(Ticket.user_id == current_user_id)
+    query = (
+        Raffle.query.join(Ticket).filter(Ticket.user_id == current_user_id).distinct()
+    )
 
     # Filters
     ## Status filter
@@ -59,8 +55,6 @@ def my_tickets():
 
     if selected_status not in allowed_statuses:
         selected_status = "all"
-
-    # query = query.join(Ticket.raffle)
 
     if selected_status != "all":
         query = query.filter(Raffle.status == selected_status)
@@ -93,29 +87,6 @@ def my_tickets():
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     raffles: list[Raffle] = pagination.items
-    # tickets: list[Ticket] = pagination.items
-
-    ## Cards data
-    # Total tickets
-    # Raffles Joined
-    # Total spent
-    # Winnings
-
-    ## Sections - by Ticket status
-    ## Paginated tickets list
-
-    ## Tickets data:
-    # Image
-    # Title
-    # Tickets count for raffle
-    # Prize value
-    # Total spent
-    # Raffle Status
-    # Purchase date
-    # Due Date
-    # Actions
-
-    print(raffles)
 
     return render_template(
         "/tickets/my_tickets.html",
