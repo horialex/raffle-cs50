@@ -73,3 +73,7 @@ class Raffle(db.Model):
     @property
     def due_date_utc(self):
         return self.due_date.replace(tzinfo=timezone.utc)
+
+    @property
+    def is_expired(self):
+        return datetime.now(timezone.utc) > self.due_date_utc

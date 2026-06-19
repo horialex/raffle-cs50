@@ -354,7 +354,7 @@ Raffle details
                     </p>
 
                     <!-- Join Raffle -->
-                    {% elif not is_raffle_creator and raffle.is_active and not raffle.is_admin %}
+                    {% elif not is_raffle_creator and raffle.is_active and not raffle.is_expired and not raffle.is_admin %}
 
                     {% if not max_tickets_reached%}
                     <div class="d-flex align-items-center mb-3">
@@ -365,6 +365,7 @@ Raffle details
                     <p class="text-muted text-start">
                         Buy tickets for a chance to win one of the amazing prizes.
                     </p>
+
                     <div class="d-grid mt-4">
                         <a href="{{ url_for('checkout_bp.checkout', raffle_id=raffle.id) }}"
                             class="btn btn-primary btn-lg">
