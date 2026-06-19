@@ -20,8 +20,7 @@ My Raffles
                                 <div class="rounded-circle bg-primary-subtle text-primary
                                     d-flex align-items-center justify-content-center
                                     flex-shrink-0 mb-3 mb-md-0 me-md-3 p-3">
-                                    <i class="bi bi-ticket-perforated-fill fs-4 d-inline-block"
-                                        style="rotate: 30deg;"></i>
+                                    <i class="bi bi-trophy-fill fs-4 d-inline-block"></i>
                                 </div>
 
                                 <div>
@@ -218,7 +217,7 @@ My Raffles
 
                             <!-- Status badge -->
                             <span
-                                class="position-absolute top-0 end-0 me-3 mt-3 badge rounded-pill px-3 py-2 {{ badge_color }}">
+                                class="position-absolute top-0 end-0 me-3 mt-3 badge rounded-pill px-3 py-2 {{ badge_color }} opacity-75">
                                 {{ status|capitalize }}
                             </span>
 
@@ -318,7 +317,7 @@ My Raffles
                                 <div class="row g-2">
                                     <div class="col">
                                         <a href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}"
-                                            class="btn btn-success w-100 fw-semibold">
+                                            class="btn btn-warning w-100 fw-semibold">
                                             Details
                                         </a>
                                     </div>
@@ -337,6 +336,22 @@ My Raffles
                     </div>
                     {% endfor %}
                 </div>
+
+                {% else %}
+                <!-- Empty state -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-ticket-perforated text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold mt-3 mb-2">No raffles found</h5>
+                        <p class="text-muted mb-4">
+                            You don't have any raffles matching the current filters.
+                        </p>
+                        <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Create your first raffle
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Pagination -->
                 <!-- TODO: Make this for all the query parameters so that they don't remain empty in the url when you navigate the pages -->
@@ -451,22 +466,6 @@ My Raffles
                     {% endif %}
 
                 </div>
-
-                {% else %}
-                <!-- Empty state -->
-                <div class="card shadow-sm border-0">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-ticket-perforated text-muted" style="font-size: 3rem;"></i>
-                        <h5 class="fw-bold mt-3 mb-2">No raffles found</h5>
-                        <p class="text-muted mb-4">
-                            You don't have any raffles matching the current filters.
-                        </p>
-                        <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-2"></i>Create your first raffle
-                        </a>
-                    </div>
-                </div>
-                {% endif %}
 
             </div>
 

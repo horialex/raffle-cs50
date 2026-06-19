@@ -3,22 +3,6 @@
     margin: 0 auto;
 }
 
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-
-th,
-td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-}
-
-th {
-    background-color: #f4f4f4;
-}
 
 img {
     width: 150px;
@@ -157,6 +141,20 @@ input[type=number]::-webkit-inner-spin-button {
 
 input[type=number] {
     -moz-appearance: textfield;
+}
+
+/* My Tickets page */
+.tickets-nav-link {
+    color: #6c757d;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    margin-bottom: -1px;
+}
+
+.tickets-nav-link.active {
+    color: #4a6cf7;
+    border-bottom-color: #4a6cf7;
+    background: none;
 }
 
 @media (max-width: 767.98px) {
