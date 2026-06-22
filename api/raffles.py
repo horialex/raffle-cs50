@@ -27,6 +27,7 @@ from models.raffle_model import Raffle
 from models.product_image_model import ProductImage
 from db import db
 from models.product_model import Product
+from models.ticket_model import Ticket
 
 USER_ROLE = "user"
 ADMIN_ROLE = "admin"
@@ -261,7 +262,11 @@ def get_raffle(id):
     if raffle.is_draft and not (is_admin or is_owner):
         abort(403)
 
-    return render_template("/raffle/raffle_details.html", raffle=raffle)
+    user_ticket_count = Ticket.query.filter_by(
+        raffle_id=id, user_id=current_user_id
+    ).count()
+
+    return render_template("/raffle/raffle_details.html", raffle=raffle, user_ticket_count=user_ticket_count)
 
 
 # ---------------
@@ -298,7 +303,7 @@ def delete_raffle(id):
     except Exception as e:
         db.session.rollback()
         flash("Unable to delete the raffle", "error")
-        return render_template("/raffle/raffle_details.html", raffle=raffle)
+        return render_template("/raffle/raffle_details.html", raffle=raffle, user_ticket_count=0)
 
     flash("Raffle deleted.", "success")
     return redirect("/")
@@ -704,6 +709,15 @@ def get_raffles():
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     raffles: list[Raffle] = pagination.items
 
+    raffle_ids = [r.id for r in raffles]
+    ticket_counts = (
+        db.session.query(Ticket.raffle_id, func.count(Ticket.id))
+        .filter(Ticket.user_id == user_id, Ticket.raffle_id.in_(raffle_ids))
+        .group_by(Ticket.raffle_id)
+        .all()
+    )
+    user_ticket_counts = {raffle_id: count for raffle_id, count in ticket_counts}
+
     # ----------------------------
     # Stats (ALWAYS from base_query)
     # ----------------------------
@@ -746,6 +760,7 @@ def get_raffles():
         total_active_raffles=total_active_raffles,
         total_ending_today=total_ending_today,
         total_prize_value=total_prize_value,
+        user_ticket_counts=user_ticket_counts,
     )
 
 

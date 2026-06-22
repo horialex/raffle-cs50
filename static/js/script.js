@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const MAX_PRODUCTS = 3;
-
     // Hide flash messages
     setTimeout(function () {
         let alerts = document.querySelectorAll(".alert");
@@ -69,12 +67,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const template = document.getElementById("product-template");
 
     addProductBtn?.addEventListener('click', function () {
+        const maxProducts = parseInt(addProductBtn.dataset.maxProducts);
         const container = getContainer();
         const activeCardsCount = container.querySelectorAll(".product-card").length;
 
-        console.log("ACTIVE CARDS COUNT: ", activeCardsCount)
-
-        if (activeCardsCount >= MAX_PRODUCTS) return;
+        if (activeCardsCount >= maxProducts) return;
 
         const totalCards = container.querySelectorAll(".product-card").length;
         // Clone template content
@@ -121,13 +118,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const addProductBtn = document.getElementById('add-product-btn');
         if (!container || !addProductBtn) return;
 
+        const maxProducts = parseInt(addProductBtn.dataset.maxProducts);
         const count = container.querySelectorAll(
             ".product-card:not(.is-deleted)"
         ).length;
 
-        console.log("COUNT", count)
-
-        if (count >= MAX_PRODUCTS) {
+        if (count >= maxProducts) {
             addProductBtn.style.display = "none";
         }
         else {
