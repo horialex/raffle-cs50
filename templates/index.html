@@ -213,7 +213,7 @@ Home
                     {% set progress = 100 if progress > 100 else progress %}
                     {% set product = raffle.products[0] if raffle.products else None %}
                     {% set product_image = product.images[0] if product and product.images else None %}
-                    {% set max_tickets_reached = True if sold_tickets >= raffle.maximum_tickets_per_user %}
+                    {% set max_tickets_reached = True if user_ticket_counts.get(raffle.id, 0) >= raffle.maximum_tickets_per_user %}
 
                     <div class="col">
                         <div
@@ -348,9 +348,6 @@ Home
                         <p class="text-muted mb-4">
                             You don't have any raffles matching the current filters.
                         </p>
-                        <a href="{{ url_for('raffle_bp.create_raffle') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-2"></i>Create your first raffle
-                        </a>
                     </div>
                 </div>
                 {% endif %}
@@ -367,7 +364,7 @@ Home
                     class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
 
                     <small class="text-muted">
-                        You have a total of {{ pagination.total }} raffles.
+                        {{ pagination.total }} raffles available.
                     </small>
 
                     {% if pagination.pages > 1 %}

@@ -20,7 +20,7 @@ Raffle details
             {% set sold_tickets = raffle.tickets|length if raffle.tickets is defined else 0 %}
             {% set progress = ((sold_tickets / min_tickets) * 100)|round(0, 'floor') if min_tickets else 0 %}
             {% set progress = 100 if progress > 100 else progress %}
-            {% set max_tickets_reached = True if sold_tickets >= raffle.maximum_tickets_per_user %}
+            {% set max_tickets_reached = True if user_ticket_count >= raffle.maximum_tickets_per_user %}
             <!-- Raffle card -->
             <div class="card shadow border-0 mb-5">
                 <div class="card-body p-4">

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from sqlalchemy import Enum as SqlEnum
 from constants.raffle_status import RaffleStatus
+from config import Config
 from db import db
 
 
@@ -23,8 +24,8 @@ class Raffle(db.Model):
     )
 
     ticket_price = db.Column(db.Integer, nullable=False)
-    minimum_required_tickets = db.Column(db.Integer, nullable=False, default=5)  # TBD
-    maximum_tickets_per_user = db.Column(db.Integer, nullable=False, default=1)
+    minimum_required_tickets = db.Column(db.Integer, nullable=False, default=Config.MIN_TICKETS_REQUIRED)
+    maximum_tickets_per_user = db.Column(db.Integer, nullable=False, default=Config.MAX_TICKETS_PER_USER)
     due_date = db.Column(db.DateTime(timezone=True), nullable=False)
     created_at = db.Column(
         db.DateTime(timezone=True),
