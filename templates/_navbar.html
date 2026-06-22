@@ -6,10 +6,10 @@
             data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbar">
 
+        <div class="collapse navbar-collapse" id="navbar">
             {% if current_user %}
-            <ul class="navbar-nav me-auto d-flex align-items-center">
+            <ul class="navbar-nav me-auto text-center text-lg-start">
                 {% if current_user.is_admin %}
                 <li class="nav-item"><a class="nav-link" href="/users">Users</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('raffle_bp.get_raffles') }}">All Raffles</a>
@@ -17,65 +17,46 @@
                 {% else %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('raffle_bp.my_raffles') }}">My Raffles</a>
                 </li>
-
-
                 <li class="nav-item"><a class="nav-link" href="/raffles/create">Add Raffle</a></li>
                 <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
-
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('tickets_bp.my_tickets') }}">Tickets</a>
-                </li>
-
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('tickets_bp.my_tickets') }}">Tickets</a></li>
                 {% endif %}
-            </ul>
-
-            <!-- Mobile menu (added) -->
-            <ul class="navbar-nav me-auto d-md-none d-flex align-items-center"> <!-- ADDED: mobile-only menu -->
-                <li class="nav-item">
+                <li class="nav-item d-lg-none">
                     <a class="nav-link"
-                        href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('raffle_bp.get_raffles')) }}">
-                        Profile preferences
-                    </a>
+                        href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('raffle_bp.get_raffles')) }}">Profile
+                        preferences</a>
                 </li>
-
-                <li class="nav-item">
+                <li class="nav-item d-lg-none">
                     <a class="nav-link" href="/logout">Log Out</a>
                 </li>
             </ul>
-            <!-- End mobile menu  -->
 
-            <ul class="navbar-nav ms-auto d-flex align-items-center">
-                <!-- <li class="nav-item dropdown"> -->
-                <li class="nav-item dropdown d-none d-md-block">
+            <ul class="navbar-nav ms-auto d-none d-lg-flex align-items-center">
+                <li class="nav-item dropdown">
                     <a class="nav-link d-flex align-items-center p-0 px-2" href="#" id="userDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
-
                         <img class="rounded-circle img-fluid shadow-lg avatar"
                             src="{{ url_for('static', filename='uploads/images/profile_pictures/' + current_user.profile_picture) if current_user.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
                             alt="user avatar">
-
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="ms-1"
                             viewBox="0 0 16 16">
                             <path d="M3.204 5h9.592L8 10.481 3.204 5z" />
                         </svg>
                     </a>
-
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
                             <p class="dropdown-item">
-                                <strong>{{current_user.first_name}} {{current_user.last_name}}</strong>
+                                <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong>
                             </p>
                         </li>
                         <li><a class="dropdown-item"
-                                href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('raffle_bp.get_raffles')) }}">
-                                Profile preferences
-                            </a></li>
-
-
+                                href="{{ url_for('users_bp.update', id=current_user.id, next=url_for('raffle_bp.get_raffles')) }}">Profile
+                                preferences</a></li>
                         <li><a class="dropdown-item" href="/logout">Log Out</a></li>
                     </ul>
                 </li>
-
             </ul>
+
             {% else %}
             <ul class="navbar-nav ms-auto mt-2">
                 <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
