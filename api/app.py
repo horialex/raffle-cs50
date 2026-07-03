@@ -20,6 +20,7 @@ from checkout import checkout_bp
 from tickets import tickets_bp
 from utils.helpers import login_required
 from flask_wtf.csrf import CSRFProtect
+from process_raffles import process_raffles
 
 # ----------------------------
 # Config
@@ -72,6 +73,15 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(raffle_bp)
 app.register_blueprint(checkout_bp)
 app.register_blueprint(tickets_bp)
+
+
+# ----------------------------
+# CLI commands
+# ----------------------------
+@app.cli.command("process-raffles")
+def process_raffles_command():
+    process_raffles()
+    print("Done!")
 
 
 # ----------------------------
