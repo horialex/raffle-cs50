@@ -1,4 +1,5 @@
 import os
+from raffles_processor import process_raffles
 from config import Config
 from pathlib import Path
 from datetime import date
@@ -8,7 +9,6 @@ from flask_session import Session
 from sqlalchemy import text
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
-
 from forms.user_form import DeleteSelfAccountForm
 import models  # registers all models with SQLAlchemy metadata
 from models.user_model import User
@@ -20,7 +20,6 @@ from checkout import checkout_bp
 from tickets import tickets_bp
 from utils.helpers import login_required
 from flask_wtf.csrf import CSRFProtect
-from process_raffles import process_raffles
 
 # ----------------------------
 # Config
