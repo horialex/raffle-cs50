@@ -7,6 +7,9 @@ from constants.ticket_status import TicketStatus
 from constants.raffle_status import RaffleStatus
 from models.raffle_model import Raffle
 from models.ticket_model import Ticket
+from models.message_model import Message
+
+RAFFLE_NOT_TRIGGERED_MESSAGE = "The raffle {title} did not take place because the minimum required tickets were not sold!"
 
 
 # Grabs all the active raffles that have the due date in the past
@@ -60,7 +63,7 @@ def process_failed_raffles(raffles: list[Raffle]):
 
 
 def process_failed_raffle(raffle: Raffle) -> bool:
-    raffle_not_triggered_message = f"The raffle {raffle.title} did not take place because the minimum required tickets were not sold!"
+    raffle_not_triggered_message = RAFFLE_NOT_TRIGGERED_MESSAGE.format(title=raffle.title)
     raffle_creator: User = raffle.creator
 
     # 1. Set the status in the db to CANCELLED
@@ -137,9 +140,15 @@ def notify_by_sms(user: User, message: str) -> bool:
 
 
 def notify_by_message(user: User, message: str) -> bool:
-    # TODO: Implement this when the in-app messages panel is built
-    print(f"Sending in-app message to user {user.id}: {message}")
-    return True
+    db.session.add(Message(user_id=user.id, body=message))
+    try:
+        db.session.commit()
+        print(f"Message sent to user {user.id}: {message}")
+        return True
+    except Exception as e:
+        db.session.rollback()
+        print("Unable to save message:", e)
+        return False
 
 
 def notify_user(user: User, message: str) -> bool:
