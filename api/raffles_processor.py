@@ -7,9 +7,10 @@ from constants.ticket_status import TicketStatus
 from constants.raffle_status import RaffleStatus
 from models.raffle_model import Raffle
 from models.ticket_model import Ticket
-from models.message_model import Message
+from notifications import notify_user_for_raffle, notify_user_for_ticket
 
-RAFFLE_NOT_TRIGGERED_MESSAGE = "The raffle {title} did not take place because the minimum required tickets were not sold!"
+RAFFLE_NOT_TRIGGERED_MESSAGE_CREATOR = "The raffle {title} did not take place because the minimum required number of tickets was not sold."
+RAFFLE_NOT_TRIGGERED_MESSAGE_BUYER = "The raffle {title} did not take place because the minimum required number of tickets was not sold. Your tickets have been refunded."
 
 
 # Grabs all the active raffles that have the due date in the past
@@ -63,7 +64,12 @@ def process_failed_raffles(raffles: list[Raffle]):
 
 
 def process_failed_raffle(raffle: Raffle) -> bool:
-    raffle_not_triggered_message = RAFFLE_NOT_TRIGGERED_MESSAGE.format(title=raffle.title)
+    raffle_not_triggered_message_creator = RAFFLE_NOT_TRIGGERED_MESSAGE_CREATOR.format(
+        title=raffle.title
+    )
+    raffle_not_triggered_message_buyer = RAFFLE_NOT_TRIGGERED_MESSAGE_BUYER.format(
+        title=raffle.title
+    )
     raffle_creator: User = raffle.creator
 
     # 1. Set the status in the db to CANCELLED
@@ -79,7 +85,25 @@ def process_failed_raffle(raffle: Raffle) -> bool:
         return False
 
     # 4. Notify the raffle creator that the raffle X did not took place
-    return notify_user(raffle_creator, raffle_not_triggered_message)
+    if not notify_user_for_raffle(
+        raffle_creator, raffle_not_triggered_message_creator, raffle
+    ):
+        return False
+
+    # 5. Notify the ticket buyer that the raffle X did not took place (refund confirmed)
+    # Create a list of all the individual buyers for this raffle - a set or some sort
+    # loop the tickets and add it in the list if it is not already there
+    # than for each user - loop that list and notify the uesr for raffle but with the buyer message
+    buyers = {}
+    for ticket in raffle.tickets:
+        buyers[ticket.user_id] = ticket.user
+
+    for buyer in buyers.values():
+        if not notify_user_for_raffle(
+            buyer, raffle_not_triggered_message_buyer, raffle
+        ):
+            return False
+    return True
 
 
 def process_succesfull_raffles(raffles: list[Raffle]):
@@ -125,37 +149,6 @@ def refund_tickets(tickets: list[Ticket]) -> bool:
         print(f"Refund ticket {ticket.id} for price {ticket.price}.")
     # TODO: Implement this when the payment mechanism will be implemented
     raise NotImplementedError
-
-
-def notify_by_email(user: User, message: str) -> bool:
-    # TODO: Implement this when an email provider is integrated
-    print(f"Sending email to {user.email}: {message}")
-    return True
-
-
-def notify_by_sms(user: User, message: str) -> bool:
-    # TODO: Implement this when an SMS provider is integrated
-    print(f"Sending SMS to {user.phone}: {message}")
-    return True
-
-
-def notify_by_message(user: User, message: str) -> bool:
-    db.session.add(Message(user_id=user.id, body=message))
-    try:
-        db.session.commit()
-        print(f"Message sent to user {user.id}: {message}")
-        return True
-    except Exception as e:
-        db.session.rollback()
-        print("Unable to save message:", e)
-        return False
-
-
-def notify_user(user: User, message: str) -> bool:
-    email_sent = notify_by_email(user, message)
-    sms_sent = notify_by_sms(user, message)
-    message_sent = notify_by_message(user, message)
-    return email_sent and sms_sent and message_sent
 
 
 if __name__ == "__main__":
