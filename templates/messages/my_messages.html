@@ -18,16 +18,16 @@ My Messages
         {% if messages %}
         <div class="d-flex flex-column gap-2">
             {% for message in messages %}
-            <div class="d-flex align-items-start gap-3 p-3 rounded-3 {{ 'bg-light' if not message.is_read }}">
+            <div class="d-flex align-items-start gap-3 p-3 rounded-3 {{ 'bg-light' if message.is_new }}">
                 <div class="rounded-3 p-2" style="background-color: #e8f0fe;">
-                    <i class="bi bi-envelope{{ '' if not message.is_read else '-open' }} fs-5"
+                    <i class="bi bi-envelope{{ '' if message.is_new else '-open' }} fs-5"
                         style="color: #4a6cf7;"></i>
                 </div>
                 <div class="text-start flex-grow-1">
-                    <div class="{{ 'fw-semibold' if not message.is_read }}">{{ message.body }}</div>
+                    <div class="{{ 'fw-semibold' if message.is_new }}">{{ message.body }}</div>
                     <div class="text-muted small">{{ message.created_at.strftime("%b %d, %Y %H:%M") }}</div>
                 </div>
-                {% if not message.is_read %}
+                {% if message.is_new %}
                 <span class="badge text-bg-primary align-self-center">New</span>
                 {% endif %}
             </div>

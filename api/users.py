@@ -119,6 +119,17 @@ def get_messages():
         .all()
     )
 
+    unread = []
+    for message in messages:
+        if not message.is_read:
+            unread.append(message)
+
+    if unread:
+        for message in unread:
+            message.is_new = True
+            message.is_read = True
+        db.session.commit()
+
     return render_template("messages/my_messages.html", messages=messages)
 
 
