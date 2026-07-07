@@ -157,6 +157,11 @@ input[type=number] {
     background: none;
 }
 
+.navbar-badge {
+    font-size: 0.85rem;
+    padding: 0.25em 0.45em;
+}
+
 @media (max-width: 767.98px) {
     .raffle-card {
         border: 3px solid rgba(0, 0, 0, 0.14) !important;

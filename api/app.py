@@ -10,6 +10,7 @@ from sqlalchemy import text
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
 from forms.user_form import DeleteSelfAccountForm
+from models.message_model import Message
 import models  # registers all models with SQLAlchemy metadata
 from models.user_model import User
 from db import db
@@ -113,6 +114,17 @@ def inject_forms():
 @app.context_processor
 def inject_today():
     return {"today": date.today().isoformat()}
+
+
+## Notifications
+@app.context_processor
+def inject_message_notifications():
+    user_id = session.get("user_id")
+    unread_messages_count = Message.query.filter_by(
+        user_id=user_id, is_read=False
+    ).count()
+
+    return {"unread_messages_count": unread_messages_count}
 
 
 # ----------------------------
