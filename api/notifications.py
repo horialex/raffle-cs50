@@ -21,14 +21,8 @@ def notify_by_message(user: User, message: str, raffle_id: int, ticket_id: int) 
     db.session.add(
         Message(user_id=user.id, body=message, raffle_id=raffle_id, ticket_id=ticket_id)
     )
-    try:
-        db.session.commit()
-        print(f"Message sent to user {user.id}: {message}")
-        return True
-    except Exception as e:
-        db.session.rollback()
-        print("Unable to save message:", e)
-        return False
+    print(f"Message queued for user {user.id}: {message}")
+    return True
 
 
 def notify_user(user: User, message: str) -> bool:

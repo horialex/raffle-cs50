@@ -52,15 +52,20 @@ def process_raffles():
     print("\n\nsuccesfull raffles: ", len(succesfull_raffles))
     print("failed raffles: ", len(failed_raffles))
 
+    # Process the failed raffles
+    if not process_failed_raffles(failed_raffles):
+        print("Some failed raffles could not be settled - see errors above")
 
-def process_failed_raffles(raffles: list[Raffle]):
-    # 1. Set the status in the db to CANCELLED
-    # 2. Grab all the tickets for each raffle and set the status to CANCELLED
-    # 3. Send back the money to the ticket buyers
-    # 4. Notify the raffle creator that the raffle X did not took place
-    # 5. Notify the ticket buyer that the raffle X did not took place (refund confirmed)
+    # Process the succesfull raffles
+    if not process_succesfull_raffles(succesfull_raffles):
+        print("Some succesfull raffles could not be settled - see errors above")
 
-    return
+
+def process_failed_raffles(raffles: list[Raffle]) -> bool:
+    for raffle in raffles:
+        if not process_failed_raffle(raffle):
+            return False
+    return True
 
 
 def process_failed_raffle(raffle: Raffle) -> bool:
@@ -74,20 +79,24 @@ def process_failed_raffle(raffle: Raffle) -> bool:
 
     # 1. Set the status in the db to CANCELLED
     if not set_raffle_status(raffle, RaffleStatus.CANCELLED):
+        db.session.rollback()
         return False
 
     # 2. Grab all the tickets for each raffle and set the status to CANCELLED
     if not set_tickets_status(raffle.tickets, TicketStatus.CANCELLED):
+        db.session.rollback()
         return False
 
     # 3. Send back the money to the ticket buyers
     if not refund_tickets(raffle.tickets):
+        db.session.rollback()
         return False
 
     # 4. Notify the raffle creator that the raffle X did not took place
     if not notify_user_for_raffle(
         raffle_creator, raffle_not_triggered_message_creator, raffle
     ):
+        db.session.rollback()
         return False
 
     # 5. Notify the ticket buyer that the raffle X did not took place (refund confirmed)
@@ -102,43 +111,41 @@ def process_failed_raffle(raffle: Raffle) -> bool:
         if not notify_user_for_raffle(
             buyer, raffle_not_triggered_message_buyer, raffle
         ):
+            db.session.rollback()
             return False
+
+    # All steps succeeded - commit the raffle/ticket status changes and messages together.
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print("Unable to settle raffle:", e)
+        return False
+
     return True
 
 
-def process_succesfull_raffles(raffles: list[Raffle]):
+def process_succesfull_raffles(raffles: list[Raffle]) -> bool:
     # 1. Set the status in the db to WON
     # 2. Extract a ticket from the raffle tickets - and set that ticket to status = WINNER
     # 3. Set all the other Raffle's tickets to status = LOST
     # 4. Notify the winner ticket user that he won the raffle and he must insert his Shipping details
     # 5. Notify the Raffle creator that the raffle was won
-    return
+    return True
 
 
 def set_raffle_status(raffle: Raffle, status: RaffleStatus) -> bool:
     raffle.status = status
-    try:
-        db.session.commit()
-        print(f"Raffle status = {status.name}")
-        return True
-    except Exception as e:
-        db.session.rollback()
-        print("Unable to change Raffle status:", e)
-        return False
+    print(f"Raffle status = {status.name}")
+    return True
 
 
 def set_tickets_status(tickets: list[Ticket], status: TicketStatus) -> bool:
     for ticket in tickets:
         ticket.status = status
 
-    try:
-        db.session.commit()
-        print(f"{len(tickets)} ticket(s) status = {status.name}")
-        return True
-    except Exception as e:
-        db.session.rollback()
-        print("Unable to change ticket statuses:", e)
-        return False
+    print(f"{len(tickets)} ticket(s) status = {status.name}")
+    return True
 
 
 def refund_tickets(tickets: list[Ticket]) -> bool:
@@ -148,7 +155,8 @@ def refund_tickets(tickets: list[Ticket]) -> bool:
     for ticket in tickets:
         print(f"Refund ticket {ticket.id} for price {ticket.price}.")
     # TODO: Implement this when the payment mechanism will be implemented
-    raise NotImplementedError
+    print("Unable to refund tickets: payment mechanism not implemented")
+    return False
 
 
 if __name__ == "__main__":
