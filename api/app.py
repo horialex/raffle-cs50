@@ -1,4 +1,5 @@
 import os
+from raffles_processor import process_raffles
 from config import Config
 from pathlib import Path
 from datetime import date
@@ -8,8 +9,8 @@ from flask_session import Session
 from sqlalchemy import text
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
-
 from forms.user_form import DeleteSelfAccountForm
+from models.message_model import Message
 import models  # registers all models with SQLAlchemy metadata
 from models.user_model import User
 from db import db
@@ -75,6 +76,15 @@ app.register_blueprint(tickets_bp)
 
 
 # ----------------------------
+# CLI commands
+# ----------------------------
+@app.cli.command("process-raffles")
+def process_raffles_command():
+    process_raffles()
+    print("Done!")
+
+
+# ----------------------------
 # Request / context hooks
 # ----------------------------
 @app.after_request
@@ -104,6 +114,17 @@ def inject_forms():
 @app.context_processor
 def inject_today():
     return {"today": date.today().isoformat()}
+
+
+## Notifications
+@app.context_processor
+def inject_message_notifications():
+    user_id = session.get("user_id")
+    unread_messages_count = Message.query.filter_by(
+        user_id=user_id, is_read=False
+    ).count()
+
+    return {"unread_messages_count": unread_messages_count}
 
 
 # ----------------------------

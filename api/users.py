@@ -20,6 +20,7 @@ from constants.countries import COUNTRIES
 from forms.user_form import DeleteSelfAccountForm, UserForm, UserSelfUpdateForm
 from db import db
 from models.user_model import User
+from models.message_model import Message
 from utils.helpers import (
     is_safe_url,
     login_required,
@@ -104,6 +105,32 @@ def register():
         return redirect("/")
 
     return render_template("register_user.html", form=form)
+
+
+# ----------------------------
+# List messages
+# ----------------------------
+@users_bp.route("/profile/messages", methods=["GET"])
+@login_required
+def get_messages():
+    messages = (
+        Message.query.filter_by(user_id=session["user_id"])
+        .order_by(Message.created_at.desc())
+        .all()
+    )
+
+    unread = []
+    for message in messages:
+        if not message.is_read:
+            unread.append(message)
+
+    if unread:
+        for message in unread:
+            message.is_new = True
+            message.is_read = True
+        db.session.commit()
+
+    return render_template("messages/my_messages.html", messages=messages)
 
 
 # ----------------------------

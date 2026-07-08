@@ -13,8 +13,15 @@ class Ticket(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     status = db.Column(
-        SqlEnum(TicketStatus), nullable=False, default=TicketStatus.PENDING
+        SqlEnum(
+            TicketStatus,
+            name="ticket_status",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+        default=TicketStatus.PENDING,
     )
+
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
