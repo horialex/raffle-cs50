@@ -59,13 +59,19 @@ def process_raffles():
     print("\n\nsuccesfull raffles: ", len(complete_raffles))
     print("failed raffles: ", len(failed_raffles))
 
+    print("\n\n --- Started Processing failed raffles ---")
     # Process the failed raffles
     if not process_failed_raffles(failed_raffles):
         print("Some failed raffles could not be settled - see errors above")
 
+    print("\n\n --- Finished Processing failed raffles ---")
+
+    print("\n\n --- Started Completed failed raffles ---")
     # Process the succesfull raffles
     if not process_complete_raffles(complete_raffles):
         print("Some succesfull raffles could not be settled - see errors above")
+
+    print("\n\n --- Finished Processing Completed raffles ---")
 
 
 def process_failed_raffles(raffles: list[Raffle]) -> bool:
@@ -186,9 +192,9 @@ def process_complete_raffle(raffle: Raffle) -> bool:
     # 6. Notify the Raffle creator that the raffle was won
     raffle_won_message_creator = RAFFLE_WON_MESSAGE_CREATOR.format(
         raffle_id=raffle.id,
-        title=raffle.title,
-        first_name=winner_user.first_name,
-        last_name=winner_user.last_name,
+        title=raffle.title.upper(),
+        first_name=winner_user.first_name.upper(),
+        last_name=winner_user.last_name.upper(),
         ticket_id=winner_ticket.id,
     )
     if not notify_user_for_raffle(raffle_creator, raffle_won_message_creator, raffle):
