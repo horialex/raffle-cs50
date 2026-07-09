@@ -1,4 +1,5 @@
 from datetime import date
+import secrets
 from flask import current_app
 from sqlalchemy import func
 from db import db
@@ -11,6 +12,12 @@ from notifications import notify_user_for_raffle, notify_user_for_ticket
 
 RAFFLE_NOT_TRIGGERED_MESSAGE_CREATOR = "The raffle {title} did not take place because the minimum required number of tickets was not sold."
 RAFFLE_NOT_TRIGGERED_MESSAGE_BUYER = "The raffle {title} did not take place because the minimum required number of tickets was not sold. Your tickets have been refunded."
+
+RAFFLE_WON_MESSAGE_WINNER = "Your ticket {ticket_id} has won the raffle {raffle_id} - {title} please provide the shipping details for the raffle creator so he can send you the prize."
+RAFFLE_WON_MESSAGE_LOSER = (
+    "The tickets you bought for raffle {raffle_id} - {title} are loser tickets"
+)
+RAFFLE_WON_MESSAGE_CREATOR = "Your raffle {raffle_id} - {title} was won by user {first_name} {last_name} with ticket {ticket_id} please wait for the user to provide the shipping details for the prize"
 
 
 # Grabs all the active raffles that have the due date in the past
@@ -47,18 +54,24 @@ def has_raffle_reached_minimum_tickets_sold(raffle: Raffle) -> bool:
 
 def process_raffles():
     raffles = get_raffles_due_for_settlement()
-    succesfull_raffles, failed_raffles = split_raffles_by_minimum_tickets(raffles)
+    complete_raffles, failed_raffles = split_raffles_by_minimum_tickets(raffles)
 
-    print("\n\nsuccesfull raffles: ", len(succesfull_raffles))
+    print("\n\nsuccesfull raffles: ", len(complete_raffles))
     print("failed raffles: ", len(failed_raffles))
 
+    print("\n\n --- Started Processing failed raffles ---")
     # Process the failed raffles
     if not process_failed_raffles(failed_raffles):
         print("Some failed raffles could not be settled - see errors above")
 
+    print("\n\n --- Finished Processing failed raffles ---")
+
+    print("\n\n --- Started Completed failed raffles ---")
     # Process the succesfull raffles
-    if not process_succesfull_raffles(succesfull_raffles):
+    if not process_complete_raffles(complete_raffles):
         print("Some succesfull raffles could not be settled - see errors above")
+
+    print("\n\n --- Finished Processing Completed raffles ---")
 
 
 def process_failed_raffles(raffles: list[Raffle]) -> bool:
@@ -125,12 +138,77 @@ def process_failed_raffle(raffle: Raffle) -> bool:
     return True
 
 
-def process_succesfull_raffles(raffles: list[Raffle]) -> bool:
+def process_complete_raffles(raffles: list[Raffle]) -> bool:
+    for raffle in raffles:
+        if not process_complete_raffle(raffle):
+            return False
+    return True
+
+
+def process_complete_raffle(raffle: Raffle) -> bool:
+    raffle_creator: User = raffle.creator
+
     # 1. Set the status in the db to WON
-    # 2. Extract a ticket from the raffle tickets - and set that ticket to status = WINNER
-    # 3. Set all the other Raffle's tickets to status = LOST
+    if not set_raffle_status(raffle, RaffleStatus.WON):
+        db.session.rollback()
+        return False
+    # 2. Extract a ticket from the raffle tickets
+    winner_ticket: Ticket = extract_winner_ticket(raffle.tickets)
+    winner_user: User = winner_ticket.user
+
+    lost_tickets = [t for t in raffle.tickets if t.id != winner_ticket.id]
+    # 3. Set all the other Raffle's tickets to status = LOST - and set that ticket to status = WINNER
+    if not set_tickets_status(lost_tickets, TicketStatus.LOST):
+        db.session.rollback()
+        return False
+    winner_ticket.status = TicketStatus.WINNER
+
     # 4. Notify the winner ticket user that he won the raffle and he must insert his Shipping details
-    # 5. Notify the Raffle creator that the raffle was won
+    raffle_won_message_winner = RAFFLE_WON_MESSAGE_WINNER.format(
+        ticket_id=winner_ticket.id, raffle_id=raffle.id, title=raffle.title
+    )
+    if not notify_user_for_ticket(winner_ticket, raffle_won_message_winner):
+        db.session.rollback()
+        return False
+
+    # 5. Notify the loser tickets
+    raffle_won_message_loser = RAFFLE_WON_MESSAGE_LOSER.format(
+        raffle_id=raffle.id, title=raffle.title
+    )
+    loser_users = {}
+
+    for ticket in lost_tickets:
+        loser_users[ticket.user_id] = ticket.user
+
+    loser_users = {
+        uid: user for uid, user in loser_users.items() if uid != winner_user.id
+    }
+
+    for loser in loser_users.values():
+        if not notify_user_for_raffle(loser, raffle_won_message_loser, raffle):
+            db.session.rollback()
+            return False
+
+    # 6. Notify the Raffle creator that the raffle was won
+    raffle_won_message_creator = RAFFLE_WON_MESSAGE_CREATOR.format(
+        raffle_id=raffle.id,
+        title=raffle.title.upper(),
+        first_name=winner_user.first_name.upper(),
+        last_name=winner_user.last_name.upper(),
+        ticket_id=winner_ticket.id,
+    )
+    if not notify_user_for_raffle(raffle_creator, raffle_won_message_creator, raffle):
+        db.session.rollback()
+        return False
+
+    # All steps succeeded - commit the raffle/ticket status changes and messages together.
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print("Unable to settle raffle:", e)
+        return False
+
     return True
 
 
@@ -157,6 +235,11 @@ def refund_tickets(tickets: list[Ticket]) -> bool:
     # TODO: Implement this when the payment mechanism will be implemented
     print("Unable to refund tickets: payment mechanism not implemented")
     return False
+
+
+def extract_winner_ticket(tickets: list[Ticket]) -> Ticket:
+    winner_ticket = secrets.choice(tickets)
+    return winner_ticket
 
 
 if __name__ == "__main__":
