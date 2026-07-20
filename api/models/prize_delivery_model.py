@@ -5,7 +5,7 @@ from sqlalchemy import Enum as SqlEnum
 from constants.delivery_status import PrizeDeliveryStatus
 
 
-class PrizeDeliveryModel(db.Model):
+class PrizeDelivery(db.Model):
     __tablename__ = "prize_deliveries"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -62,9 +62,9 @@ class PrizeDeliveryModel(db.Model):
     )
 
     logs = db.relationship(
-        "PrizeDeliveryLogModel",
+        "PrizeDeliveryLog",
         back_populates="delivery",
         cascade="all, delete-orphan",
-        order_by="PrizeDeliveryLogModel.created_at",
+        order_by="PrizeDeliveryLog.created_at",
         lazy=True,
     )

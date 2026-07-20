@@ -54,7 +54,7 @@ class Raffle(db.Model):
         "Ticket", backref="raffle", cascade="all, delete-orphan", lazy=True
     )
     prize_delivery = db.relationship(
-        "PrizeDeliveryModel",
+        "PrizeDelivery",
         back_populates="raffle",
         uselist=False,
         cascade="all, delete-orphan",

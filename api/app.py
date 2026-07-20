@@ -1,4 +1,5 @@
 import os
+from api import prize_delivery
 from raffles_processor import process_raffles
 from config import Config
 from pathlib import Path
@@ -73,6 +74,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(raffle_bp)
 app.register_blueprint(checkout_bp)
 app.register_blueprint(tickets_bp)
+app.register_blueprint(prize_delivery)
 
 
 # ----------------------------

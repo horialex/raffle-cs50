@@ -5,7 +5,7 @@ from sqlalchemy import Enum as SqlEnum
 from constants.delivery_status import PrizeDeliveryStatus
 
 
-class PrizeDeliveryLogModel(db.Model):
+class PrizeDeliveryLog(db.Model):
     __tablename__ = "prize_delivery_logs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -41,5 +41,5 @@ class PrizeDeliveryLogModel(db.Model):
         nullable=False,
     )
 
-    delivery = db.relationship("PrizeDeliveryModel", back_populates="logs")
+    delivery = db.relationship("PrizeDelivery", back_populates="logs")
     actor = db.relationship("User", foreign_keys=[actor_user_id])

@@ -41,14 +41,14 @@ class User(db.Model):
         "Ticket", backref="user", cascade="all, delete-orphan", lazy=True
     )
     winner_deliveries = db.relationship(
-        "PrizeDeliveryModel",
-        foreign_keys="PrizeDeliveryModel.winner_user_id",
+        "PrizeDelivery",
+        foreign_keys="PrizeDelivery.winner_user_id",
         back_populates="winner",
         lazy=True,
     )
     creator_deliveries = db.relationship(
-        "PrizeDeliveryModel",
-        foreign_keys="PrizeDeliveryModel.creator_user_id",
+        "PrizeDelivery",
+        foreign_keys="PrizeDelivery.creator_user_id",
         back_populates="creator",
         lazy=True,
     )
