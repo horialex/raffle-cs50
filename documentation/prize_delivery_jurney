@@ -1,0 +1,73 @@
+# Prize delivery jurney
+
+
+I will try to conceptualize in this document what happens after the trigger raffle mechanism happens for a succesfull raffle. 
+
+
+## Prerequisites:
+- A raffle was triggered succesfully
+- The winner ticket was selected
+- All the statuses are properly set on raffle and tickets for that raffle
+- The raffle creator is notified that the raffle is succesfull and he has to wait for the ticket winner to priovide it's shipping details
+- The users who have a looser ticket will be notified that the  ticket's they owned lost in that raffle
+- The user how owns the winner ticket (even though he might have other tickets that are lost tickets) will be notified with a message that he has
+won the Raffle and he needs to provide his shipping details for the raffle so the Raffle owner can send him the prize.
+
+## Details
+
+I need to model this situation and I am thinking to create a PrizeDelivery entity and a PrizeDeliveryLog(for better tracing)
+At this point both entities will be created - they need references to the raffle, user and the ticket
+
+I need to map each stage with a PrizeDelivery status
+I need to also set a max_delivery_date a configurable one that needs to be checked on some stages  (TODO: Define this)
+
+
+## Jurneys
+
+1. Happy path
+
+1.1 User receives the message -> The PrizeDelivery entity is created -> status =~ PendingDeliveryAdress
+1.2 User enters the adress and saves the form (I need a form for this) -> status = PendingDelivery or AdressSet
+
+1.3 The Raffle creator will get a message that the winner has sent him the delivery adress and he has to click a button on this message/form/page that will tirgger a curier delivery call  - the status will be: CurierCalled
+The part with the external curier will not be implemented - I need to simmulate this
+1.4 Once the curier arrives the Raffle creator will hand over the delivery prize and will mark the prize as Sent from that - this can be done either from the message details page or from the Raffle details page - I need to impleemnt this on both pages  - the status will be: PrizeSent
+
+1.5 This part will be simmulated - the curier part - and we will simmulate that the curier has delivered the prize to the Winnner user - change status to: "PrizeDelivered"
+1.6 The user has 2 options now - Accept prize - Reject prize and file a complaint 
+For the happy flow he will accept the prize - status = PrizeAccepted
+1.7 The Raffle creator will be notified that the prize was accepted and he will get the money in a short time
+1.8. The money from the escrow acount will be delivered to the Raffle creator and the Raffle will change the status to Completed - The money transfer part will be simmulated
+
+Basically this is the happy flow
+
+
+### Breaking points:
+1. The user won't provide the delivery details in time
+2. The raffle creator will not send the prize in time
+3. The Prize is lost on the way - this is handled by the courier - so will be simmulatd in our app
+4. The Courier can't find the Ticket winner user - simmulted in our app
+5. The Winner user doesn't accept the prize and files a report - this is another path itself - he send's back the prize - The ADMIN need to decide
+6. The Winner user doesn't accept the the prize and files a a report but doesn't send back the prize (This is the biggest problem that we can face) - The ADMIN need to decide
+7. The winner user doesn't accept the prize and files a report - sends the prize back the prize but the prize is lost by the courier - simmulated - The ADMIN need to decide
+8. If we face a situation where the user rejects the prize - the stauts should change to Contested_Prize and the "ball" will be in the Administator's field - He will get a message and need's to decied what to do - in reality the process is much more complex - but in our app we will simmulate that the user can accept the complaint or reject the complaint
+8.1 If the ADMIN accepts the complaint - the courier will be called and will send back the prize to the raffle creator(simmulated) and each person who purchased a ticket for that raffle will get thier money back - the Raffle status will be - Failed/Rejected_prize
+8.2 If the ADMIN reject's the complaint the courier won't be called and the prize will remain at the winner ticket's user - The money will be sent than to the raffle creator that will be notified and the Raffle will change it's status to "Completed"
+
+
+## Summary
+ Happy flow - user accepts prize
+
+
+Negative flows:
+
+1. User rejects prize 
+- outcome 1: ADMIN confirms complaint - REJECTED_PRIZE raffle -> money restored
+- outcome 2: ADMIN rejects complaint - COMPLETED raffle  -> money goes to raffle creator
+2. User does not fill delivery details
+3. Raffle creator does not send the prize
+4. Courier not deliver prize in time - "lost on road" --> Delivery company problem
+5. Courier does not find the ticket winner user at adress / phone number
+6. User rejects prize but does not return the prize
+7. Courier does not return the prize to Raffle creator if user rejection was accepted --> Delivery company problem
+8. Courier returns the prize but does not find the Raffle crator
