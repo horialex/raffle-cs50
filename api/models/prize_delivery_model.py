@@ -60,3 +60,11 @@ class PrizeDeliveryModel(db.Model):
     creator = db.relationship(
         "User", foreign_keys=[creator_user_id], back_populates="creator_deliveries"
     )
+
+    logs = db.relationship(
+        "PrizeDeliveryLogModel",
+        back_populates="delivery",
+        cascade="all, delete-orphan",
+        order_by="PrizeDeliveryLogModel.created_at",
+        lazy=True,
+    )

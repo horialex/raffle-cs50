@@ -40,6 +40,18 @@ class User(db.Model):
     tickets = db.relationship(
         "Ticket", backref="user", cascade="all, delete-orphan", lazy=True
     )
+    winner_deliveries = db.relationship(
+        "PrizeDeliveryModel",
+        foreign_keys="PrizeDeliveryModel.winner_user_id",
+        back_populates="winner",
+        lazy=True,
+    )
+    creator_deliveries = db.relationship(
+        "PrizeDeliveryModel",
+        foreign_keys="PrizeDeliveryModel.creator_user_id",
+        back_populates="creator",
+        lazy=True,
+    )
 
     def __repr__(self):
         return f'<User name: "{self.username}">'

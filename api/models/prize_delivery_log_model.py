@@ -12,3 +12,34 @@ class PrizeDeliveryLogModel(db.Model):
     prize_delivery_id = db.Column(
         db.Integer, db.ForeignKey("prize_deliveries.id"), nullable=False
     )
+
+    # Null actor means the transition was made by the system (e.g. the timeout job)
+    actor_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    from_status = db.Column(
+        SqlEnum(
+            PrizeDeliveryStatus,
+            name="prize_delivery_status",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=True,
+    )
+    to_status = db.Column(
+        SqlEnum(
+            PrizeDeliveryStatus,
+            name="prize_delivery_status",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+    )
+
+    note = db.Column(db.String(255), nullable=True)
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    delivery = db.relationship("PrizeDeliveryModel", back_populates="logs")
+    actor = db.relationship("User", foreign_keys=[actor_user_id])
