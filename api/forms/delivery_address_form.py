@@ -10,6 +10,4 @@ class DeliveryAddressForm(FlaskForm):
     )
     delivery_country = SelectField("Country", choices=[], validators=[DataRequired()])
     delivery_phone = StringField("Phone", validators=[DataRequired(), Length(min=6)])
-
-
-submit = SubmitField("Confirm delivery address")
+    submit = SubmitField("Confirm address")

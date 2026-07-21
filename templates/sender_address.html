@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Delivery address
+Sender address
 {% endblock %}
 
 {% block main %}
@@ -9,12 +9,11 @@ Delivery address
     <div class="container rounded">
         <div class="card shadow-sm rounded">
             <div class="card-body bg-light rounded">
-                <h2 class="card-title text-center mb-2">Delivery Information</h2>
-                <p class="card-title text-center mb-4">Set your delivery address</p>
+                <h2 class="card-title text-center mb-2">Sender Information</h2>
+                <p class="card-title text-center mb-4">Set your prize pickup address</p>
                 <form method="post"
-                    action="{{ url_for('prize_delivery_bp.provide_delivery_address', id=prize_delivery.id) }}">
+                    action="{{ url_for('prize_delivery_bp.provide_pickup_address', id=prize_delivery.id) }}">
                     {{ form.hidden_tag() }}
-
 
                     <!-- Main content area -->
                     <div class="bg-light-subtle px-3 px-md-4 py-4">

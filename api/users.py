@@ -197,11 +197,14 @@ def update(id):
     if not is_self and not is_admin:
         abort(403)
 
-    # Choose the right form
-    if is_self:
-        form = UserSelfUpdateForm(obj=target_user)
+    # Choose the right form. Use obj only to prefill on GET; on POST bind from form
+    # data only, otherwise the stored password hash seeds the password field and trips
+    # the confirm-password validation even when the user leaves the password blank.
+    form_class = UserSelfUpdateForm if is_self else UserForm
+    if request.method == "POST":
+        form = form_class()
     else:
-        form = UserForm(obj=target_user)
+        form = form_class(obj=target_user)
 
     form.country.choices = COUNTRIES
     form.submit.label.text = "Update user"

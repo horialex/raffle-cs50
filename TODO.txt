@@ -1,0 +1,89 @@
+PRIZE DELIVERY - NEXT STEPS
+===========================
+
+Current state:
+- Models (PrizeDelivery + PrizeDeliveryLog), enum, and migration are in place.
+- create_prize_delivery / create_prize_delivery_log helpers exist.
+- ALLOWED_TRANSITIONS map + can_transition() exist.
+- raffles_processor creates the delivery at PENDING_DELIVERY_ADDRESS on a won raffle.
+- First transition route done: winner submits address (PENDING_DELIVERY_ADDRESS -> PENDING_SENDER_ADDRESS).
+
+Step 1 of ~5 transitions is done, plus the timeout job is still outstanding.
+
+
+1. FIX INCONSISTENCY: log the transition (do this first)
+---------------------------------------------------------
+provide_delivery_address sets status + commits but does NOT write a PrizeDeliveryLog,
+even though the create flow does and create_prize_delivery_log has an `actor` param for it.
+The audit trail has a hole at the first transition.
+
+Add one helper in services/prize_delivery_service.py and route all status changes through it:
+
+    def transition(prize_delivery, new_status, actor=None, note=None) -> bool:
+        if not can_transition(prize_delivery, new_status):
+            return False
+        log = create_prize_delivery_log(
+            prize_delivery, from_status=prize_delivery.status,
+            to_status=new_status, actor=actor, note=note,
+        )
+        prize_delivery.status = new_status
+        db.session.add(log)
+        return True
+
+Then update provide_delivery_address to call transition() instead of setting .status directly.
+
+
+2. BUILD REMAINING TRANSITION ROUTES
+------------------------------------
+Each route pattern: authz -> validate -> transition() -> commit -> notify.
+
+- PENDING_SENDER_ADDRESS -> WAITING_FOR_SHIPMENT
+    Creator confirms pickup address. Form exists: forms/pickup_address_form.py. Authz = creator.
+- WAITING_FOR_SHIPMENT -> PRIZE_SENT
+    Creator marks shipped (optionally set/confirm tracking). Authz = creator.
+- PRIZE_SENT -> PRIZE_DELIVERED | DELIVERY_FAILED
+    Mark delivered / failed.
+- PRIZE_DELIVERED -> PRIZE_ACCEPTED | CONTESTED
+    Winner accepts or contests. Authz = winner.
+- CONTESTED -> PRIZE_ACCEPTED | PRIZE_REJECTED
+    Dispute resolution (likely admin).
+
+
+3. TIMEOUT JOB
+--------------
+Add a `process-deliveries` CLI command (mirror process-raffles):
+- Find deliveries stuck past a window and drive the DELIVERY_TIMEOUT transitions.
+- Auto-accept: PRIZE_DELIVERED -> PRIZE_ACCEPTED, note "auto-accepted, no response".
+- Decide the timeout window (probably a Config constant).
+
+
+4. COUPLE TERMINAL DELIVERY STATES BACK TO RaffleStatus
+-------------------------------------------------------
+Implement mapping:
+- PRIZE_ACCEPTED  -> COMPLETED
+- PRIZE_REJECTED  -> REJECTED_PRIZE
+- CONTESTED       -> CONTESTED
+OPEN QUESTION: what raffle status results from DELIVERY_FAILED / DELIVERY_TIMEOUT?
+(No raffle status exists for those yet - needs a decision, maybe a new one.)
+
+
+5. NOTIFICATIONS ON EACH TRANSITION
+-----------------------------------
+Reuse services/notifications_service (same pattern the processor already uses):
+- Notify creator when the winner submits an address.
+- Notify winner when shipped.
+- etc.
+
+
+6. UI / ENTRY POINTS
+--------------------
+- Templates for each step (have delivery_address.html; need pickup/ship/confirm views).
+- Entry points from the raffle detail page and/or a "My deliveries" list.
+  Currently nothing links a user to /prize-deliveries/<id>/address except notification text.
+
+
+RECOMMENDED IMMEDIATE NEXT ACTION
+---------------------------------
+Do #1 (the transition() helper + logging), then build the PENDING_SENDER_ADDRESS
+creator route as the next slice - it continues directly from what was just finished
+and validates the helper against a creator-authz step.

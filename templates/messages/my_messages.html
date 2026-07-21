@@ -23,26 +23,27 @@ My Messages
             {% set kind = None %}
             {% set tint = None %}
             {% if message.ticket %}
-                {% set kind = "ticket" %}
-                {% set tint = "won" %}
+            {% set kind = "ticket" %}
+            {% set tint = "won" %}
             {% elif message.raffle and message.raffle.status.value == "won" %}
-                {% set kind = "raffle" if is_creator else "ticket" %}
-                {% set tint = "won" if is_creator else "lost" %}
+            {% set kind = "raffle" if is_creator else "ticket" %}
+            {% set tint = "won" if is_creator else "lost" %}
             {% elif message.raffle and message.raffle.status.value == "cancelled" %}
-                {% set kind = "raffle" %}
-                {% set tint = "lost" %}
+            {% set kind = "raffle" %}
+            {% set tint = "lost" %}
             {% elif message.raffle %}
-                {% set kind = "raffle" %}
+            {% set kind = "raffle" %}
             {% endif %}
 
-            {% set row_class = "bg-success-subtle" if tint == "won" else ("bg-danger-subtle" if tint == "lost" else ("bg-light" if message.is_new else "")) %}
+            {% set row_class = "bg-success-subtle" if tint == "won" else ("bg-danger-subtle" if tint == "lost" else
+            ("bg-light" if message.is_new else "")) %}
             <div class="d-flex align-items-start gap-3 p-3 rounded-3 {{ row_class }}">
                 <div class="rounded-3 p-2" style="background-color: #e8f0fe;">
-                    <i class="bi bi-envelope{{ '' if message.is_new else '-open' }} fs-5"
-                        style="color: #4a6cf7;"></i>
+                    <i class="bi bi-envelope{{ '' if message.is_new else '-open' }} fs-5" style="color: #4a6cf7;"></i>
                 </div>
                 <div class="text-start flex-grow-1">
                     <div class="{{ 'fw-semibold' if message.is_new }}">{{ message.body }}</div>
+
                     <div class="d-flex align-items-center gap-2 mt-2">
                         {% if kind == "ticket" %}
                         <span class="badge text-bg-secondary">Ticket</span>
@@ -51,10 +52,26 @@ My Messages
                         {% endif %}
                         <span class="text-muted small">{{ message.created_at.strftime("%b %d, %Y %H:%M") }}</span>
                     </div>
+
                 </div>
-                {% if message.is_new %}
-                <span class="badge text-bg-primary align-self-center">New</span>
-                {% endif %}
+                <div class="d-flex flex-column align-items-end gap-2 align-self-center">
+                    {% if message.is_new %}
+                    <span class="badge text-bg-primary">New</span>
+                    {% endif %}
+                    {% if message.prize_delivery and message.prize_delivery.status.value == "pending_delivery_address"
+                    %}
+                    <a href="{{ url_for('prize_delivery_bp.provide_delivery_address', id=message.prize_delivery.id) }}"
+                        class="btn btn-primary text-nowrap fw-semibold shadow-sm px-3">
+                        <i class="bi bi-box-seam me-2"></i>Provide delivery address
+                    </a>
+                    {% else %}
+                    {% if message.raffle %}
+                    <a href="{{ url_for('raffle_bp.get_raffle', id=message.raffle.id) }}"
+                        class="btn btn-outline-primary btn-sm text-nowrap">View raffle</a>
+                    {% endif %}
+                    {% endif %}
+
+                </div>
             </div>
             {% endfor %}
         </div>

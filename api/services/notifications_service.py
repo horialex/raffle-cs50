@@ -17,9 +17,17 @@ def notify_by_sms(user: User, message: str, raffle_id: int, ticket_id: int) -> b
     return True
 
 
-def notify_by_message(user: User, message: str, raffle_id: int, ticket_id: int) -> bool:
+def notify_by_message(
+    user: User, message: str, raffle_id: int, ticket_id: int, prize_delivery=None
+) -> bool:
     db.session.add(
-        Message(user_id=user.id, body=message, raffle_id=raffle_id, ticket_id=ticket_id)
+        Message(
+            user_id=user.id,
+            body=message,
+            raffle_id=raffle_id,
+            ticket_id=ticket_id,
+            prize_delivery=prize_delivery,
+        )
     )
     print(f"Message queued for user {user.id}: {message}")
     return True
@@ -33,12 +41,16 @@ def notify_user_for_raffle(user: User, message: str, raffle: Raffle) -> bool:
     return _notify(user, message, raffle.id, None)
 
 
-def notify_user_for_ticket(ticket: Ticket, message: str) -> bool:
-    return _notify(ticket.user, message, ticket.raffle_id, ticket.id)
+def notify_user_for_ticket(ticket: Ticket, message: str, prize_delivery=None) -> bool:
+    return _notify(ticket.user, message, ticket.raffle_id, ticket.id, prize_delivery)
 
 
-def _notify(user: User, message: str, raffle_id: int, ticket_id: int) -> bool:
+def _notify(
+    user: User, message: str, raffle_id: int, ticket_id: int, prize_delivery=None
+) -> bool:
     email_sent = notify_by_email(user, message, raffle_id, ticket_id)
     sms_sent = notify_by_sms(user, message, raffle_id, ticket_id)
-    message_sent = notify_by_message(user, message, raffle_id, ticket_id)
+    message_sent = notify_by_message(
+        user, message, raffle_id, ticket_id, prize_delivery
+    )
     return email_sent and sms_sent and message_sent

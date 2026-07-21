@@ -8,9 +8,15 @@ from constants.ticket_status import TicketStatus
 from constants.raffle_status import RaffleStatus
 from models.raffle_model import Raffle
 from models.ticket_model import Ticket
-from api.notifications_service import notify_user_for_raffle, notify_user_for_ticket
+from services.notifications_service import (
+    notify_user_for_raffle,
+    notify_user_for_ticket,
+)
 from constants.delivery_status import PrizeDeliveryStatus
-from prize_delivery_service import create_prize_delivery, create_prize_delivery_log
+from services.prize_delivery_service import (
+    create_prize_delivery,
+    create_prize_delivery_log,
+)
 
 RAFFLE_NOT_TRIGGERED_MESSAGE_CREATOR = "The raffle {title} did not take place because the minimum required number of tickets was not sold."
 RAFFLE_NOT_TRIGGERED_MESSAGE_BUYER = "The raffle {title} did not take place because the minimum required number of tickets was not sold. Your tickets have been refunded."
@@ -165,22 +171,24 @@ def process_complete_raffle(raffle: Raffle) -> bool:
         return False
     winner_ticket.status = TicketStatus.WINNER
 
-    # 4.1 Create the PrizeDelivery and PrizeDeliveryLog entities for this raffle and users
+    # 4.0 Create the PrizeDelivery and PrizeDeliveryLog entities for this raffle and users
     prize_delivery = create_prize_delivery(raffle, winner_user)
     prize_delivery_log = create_prize_delivery_log(
         prize_delivery,
         from_status=None,
-        to_status=PrizeDeliveryStatus.PENDING_ADDRESS,
+        to_status=PrizeDeliveryStatus.PENDING_DELIVERY_ADDRESS,
         note="Prize delivery created",
     )
     db.session.add(prize_delivery)
     db.session.add(prize_delivery_log)
 
-    # 4.0 Notify the winner ticket user that he won the raffle and he must insert his Shipping details
+    # 4.1 Notify the winner ticket user that he won the raffle and he must insert his Shipping details
     raffle_won_message_winner = RAFFLE_WON_MESSAGE_WINNER.format(
         ticket_id=winner_ticket.id, raffle_id=raffle.id, title=raffle.title
     )
-    if not notify_user_for_ticket(winner_ticket, raffle_won_message_winner):
+    if not notify_user_for_ticket(
+        winner_ticket, raffle_won_message_winner, prize_delivery
+    ):
         db.session.rollback()
         return False
 

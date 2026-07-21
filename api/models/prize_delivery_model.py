@@ -23,7 +23,7 @@ class PrizeDelivery(db.Model):
             values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
         nullable=False,
-        default=PrizeDeliveryStatus.PENDING_ADDRESS,
+        default=PrizeDeliveryStatus.PENDING_DELIVERY_ADDRESS,
     )
 
     pickup_name = db.Column(db.String(100), nullable=False)
