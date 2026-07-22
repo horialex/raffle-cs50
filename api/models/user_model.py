@@ -34,8 +34,27 @@ class User(db.Model):
     last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     # Relations
-    raffles = db.relationship("Raffle", backref="creator", cascade="all, delete-orphan", lazy=True)
-    tickets = db.relationship("Ticket", backref="user", cascade="all, delete-orphan", lazy=True)
+    raffles = db.relationship(
+        "Raffle", backref="creator", cascade="all, delete-orphan", lazy=True
+    )
+    tickets = db.relationship(
+        "Ticket", backref="user", cascade="all, delete-orphan", lazy=True
+    )
+    messages = db.relationship(
+        "Message", backref="user", cascade="all, delete-orphan", lazy=True
+    )
+    winner_deliveries = db.relationship(
+        "PrizeDelivery",
+        foreign_keys="PrizeDelivery.winner_user_id",
+        back_populates="winner",
+        lazy=True,
+    )
+    creator_deliveries = db.relationship(
+        "PrizeDelivery",
+        foreign_keys="PrizeDelivery.creator_user_id",
+        back_populates="creator",
+        lazy=True,
+    )
 
     def __repr__(self):
         return f'<User name: "{self.username}">'

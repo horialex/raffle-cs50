@@ -7,7 +7,7 @@ from wtforms import (
     SubmitField,
     ValidationError,
 )
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional
+from wtforms.validators import DataRequired, Email, Length, Optional
 from flask_wtf.file import FileAllowed
 
 

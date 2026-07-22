@@ -24,8 +24,12 @@ class Raffle(db.Model):
     )
 
     ticket_price = db.Column(db.Integer, nullable=False)
-    minimum_required_tickets = db.Column(db.Integer, nullable=False, default=Config.MIN_TICKETS_REQUIRED)
-    maximum_tickets_per_user = db.Column(db.Integer, nullable=False, default=Config.MAX_TICKETS_PER_USER)
+    minimum_required_tickets = db.Column(
+        db.Integer, nullable=False, default=Config.MIN_TICKETS_REQUIRED
+    )
+    maximum_tickets_per_user = db.Column(
+        db.Integer, nullable=False, default=Config.MAX_TICKETS_PER_USER
+    )
     due_date = db.Column(db.DateTime(timezone=True), nullable=False)
     created_at = db.Column(
         db.DateTime(timezone=True),
@@ -48,6 +52,12 @@ class Raffle(db.Model):
     )
     tickets = db.relationship(
         "Ticket", backref="raffle", cascade="all, delete-orphan", lazy=True
+    )
+    prize_delivery = db.relationship(
+        "PrizeDelivery",
+        back_populates="raffle",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self):

@@ -8,3 +8,4 @@ class RaffleStatus(Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     CONTESTED = "contested"
+    REJECTED_PRIZE = "rejected_prize"

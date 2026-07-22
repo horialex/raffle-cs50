@@ -22,3 +22,12 @@ flask db migrate -m "initial schema"
 
 flask db upgrade
 ```
+
+
+
+Migrations command:
+```bash
+flask --app ./api/app db migrate -d ./api/migrations -m "added prize delivery id to messages"
+
+flask --app ./api/app db upgrade  -d ./api/migrations
+```

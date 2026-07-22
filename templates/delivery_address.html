@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Delivery address
+{% endblock %}
+
+{% block main %}
+<div id="main">
+    <div class="container rounded">
+        <div class="card shadow-sm rounded">
+            <div class="card-body bg-light rounded">
+                <h2 class="card-title text-center mb-2">Delivery Information</h2>
+                <p class="card-title text-center mb-4">Set your delivery address</p>
+                <form method="post"
+                    action="{{ url_for('prize_delivery_bp.provide_delivery_address', id=prize_delivery.id) }}">
+                    {{ form.hidden_tag() }}
+
+
+                    <!-- Main content area -->
+                    <div class="bg-light-subtle px-3 px-md-4 py-4">
+
+                        <!-- Personal information -->
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-4">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-12">
+                                        {{ form.delivery_name.label(class="form-label fw-semibold") }}
+                                        {{ form.delivery_name(class="form-control") }}
+                                    </div>
+
+                                    <div class="col-12 col-md-12">
+                                        {{ form.delivery_address.label(class="form-label fw-semibold") }}
+                                        {{ form.delivery_address(class="form-control") }}
+                                    </div>
+
+                                    <div class="col-12 col-md-12">
+                                        {{ form.delivery_country.label(class="form-label fw-semibold") }}
+                                        {{ form.delivery_country(class="form-select") }}
+                                    </div>
+
+                                    <div class="col-12 col-md-12">
+                                        {{ form.delivery_phone.label(class="form-label fw-semibold") }}
+                                        {{ form.delivery_phone(class="form-control") }}
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-4 px-md-5 py-4 text-center">
+                            {{ form.submit(class="btn btn-primary btn-lg px-5") }}
+                        </div>
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
