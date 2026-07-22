@@ -412,6 +412,20 @@ Raffle details
                             </a>
                         </div>
 
+                        {% elif current_user.id == pd.winner_user_id and pd.status.value == "prize_delivered" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-trophy-fill text-warning fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Review your prize</h4>
+                        </div>
+                        <p>Congratulations, you got your prize. Please review it and accept or contest it.</p>
+
+                        <div class="d-grid mt-3">
+                            <a href="{{ url_for('prize_delivery_bp.review_prize', id=pd.id) }}"
+                                class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-box-seam me-2"></i>Review prize
+                            </a>
+                        </div>
+
                         {% else %}
                         <div class="d-flex align-items-center mb-3">
                             <i class="bi bi-arrow-right-circle-fill fs-3 me-3"></i>
