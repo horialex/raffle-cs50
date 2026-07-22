@@ -18,25 +18,16 @@ My Messages
         {% if messages %}
         <div class="d-flex flex-column gap-2">
             {% for message in messages %}
-            {% set is_creator = message.raffle and message.user_id == message.raffle.creator_id %}
-
-            {% set kind = None %}
-            {% set tint = None %}
-            {% if message.ticket %}
-            {% set kind = "ticket" %}
-            {% set tint = "won" %}
-            {% elif message.raffle and message.raffle.status.value == "won" %}
-            {% set kind = "raffle" if is_creator else "ticket" %}
-            {% set tint = "won" if is_creator else "lost" %}
-            {% elif message.raffle and message.raffle.status.value == "cancelled" %}
-            {% set kind = "raffle" %}
-            {% set tint = "lost" %}
-            {% elif message.raffle %}
-            {% set kind = "raffle" %}
-            {% endif %}
-
-            {% set row_class = "bg-success-subtle" if tint == "won" else ("bg-danger-subtle" if tint == "lost" else
-            ("bg-light" if message.is_new else "")) %}
+            {# Row tint comes straight from the sender-declared category (no inference). #}
+            {% set kind = "ticket" if message.ticket else ("raffle" if message.raffle else None) %}
+            {% set category = message.category.value if message.category else None %}
+            {% set tint_by_category = {
+            "win": "bg-success-subtle",
+            "loss": "bg-danger-subtle",
+            "info": "bg-info-subtle",
+            } %}
+            {# Uncategorised messages: light highlight while unread, otherwise no tint. #}
+            {% set row_class = tint_by_category.get(category, "bg-light" if message.is_new else "") %}
             <div class="d-flex align-items-start gap-3 p-3 rounded-3 {{ row_class }}">
                 <div class="rounded-3 p-2" style="background-color: #e8f0fe;">
                     <i class="bi bi-envelope{{ '' if message.is_new else '-open' }} fs-5" style="color: #4a6cf7;"></i>
@@ -58,17 +49,23 @@ My Messages
                     {% if message.is_new %}
                     <span class="badge text-bg-primary">New</span>
                     {% endif %}
-                    {% if message.prize_delivery and message.prize_delivery.status.value == "pending_delivery_address"
-                    %}
+                    {% if message.prize_delivery
+                    and message.user_id == message.prize_delivery.winner_user_id
+                    and message.prize_delivery.status.value == "pending_delivery_address" %}
                     <a href="{{ url_for('prize_delivery_bp.provide_delivery_address', id=message.prize_delivery.id) }}"
                         class="btn btn-primary text-nowrap fw-semibold shadow-sm px-3">
                         <i class="bi bi-box-seam me-2"></i>Provide delivery address
                     </a>
-                    {% else %}
-                    {% if message.raffle %}
+                    {% elif message.prize_delivery
+                    and message.user_id == message.prize_delivery.creator_user_id
+                    and message.prize_delivery.status.value == "pending_pickup_address" %}
+                    <a href="{{ url_for('prize_delivery_bp.provide_pickup_address', id=message.prize_delivery.id) }}"
+                        class="btn btn-primary text-nowrap fw-semibold shadow-sm px-3">
+                        <i class="bi bi-box-seam me-2"></i>Provide pickup address
+                    </a>
+                    {% elif message.raffle %}
                     <a href="{{ url_for('raffle_bp.get_raffle', id=message.raffle.id) }}"
                         class="btn btn-outline-primary btn-sm text-nowrap">View raffle</a>
-                    {% endif %}
                     {% endif %}
 
                 </div>

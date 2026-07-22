@@ -6,11 +6,13 @@ from db import db
 from models.user_model import User
 from constants.ticket_status import TicketStatus
 from constants.raffle_status import RaffleStatus
+from constants.message_category import MessageCategory
 from models.raffle_model import Raffle
 from models.ticket_model import Ticket
 from services.notifications_service import (
-    notify_user_for_raffle,
-    notify_user_for_ticket,
+    queue_message_for_raffle,
+    queue_message_for_ticket,
+    send_external_notifications,
 )
 from constants.delivery_status import PrizeDeliveryStatus
 from services.prize_delivery_service import (
@@ -113,27 +115,29 @@ def process_failed_raffle(raffle: Raffle) -> bool:
         db.session.rollback()
         return False
 
-    # 4. Notify the raffle creator that the raffle X did not took place
-    if not notify_user_for_raffle(
-        raffle_creator, raffle_not_triggered_message_creator, raffle
-    ):
-        db.session.rollback()
-        return False
+    # 4. Queue the in-app messages (DB state) inside this transaction, and collect the
+    #    (user, message) pairs so the external channels can be sent after the commit.
+    external_notifications = [(raffle_creator, raffle_not_triggered_message_creator)]
+    queue_message_for_raffle(
+        raffle_creator,
+        raffle_not_triggered_message_creator,
+        raffle,
+        category=MessageCategory.LOSS,
+    )
 
-    # 5. Notify the ticket buyer that the raffle X did not took place (refund confirmed)
-    # Create a list of all the individual buyers for this raffle - a set or some sort
-    # loop the tickets and add it in the list if it is not already there
-    # than for each user - loop that list and notify the uesr for raffle but with the buyer message
+    # 5. Notify each distinct ticket buyer that the raffle did not take place (refund confirmed)
     buyers = {}
     for ticket in raffle.tickets:
         buyers[ticket.user_id] = ticket.user
 
     for buyer in buyers.values():
-        if not notify_user_for_raffle(
-            buyer, raffle_not_triggered_message_buyer, raffle
-        ):
-            db.session.rollback()
-            return False
+        queue_message_for_raffle(
+            buyer,
+            raffle_not_triggered_message_buyer,
+            raffle,
+            category=MessageCategory.LOSS,
+        )
+        external_notifications.append((buyer, raffle_not_triggered_message_buyer))
 
     # All steps succeeded - commit the raffle/ticket status changes and messages together.
     try:
@@ -142,6 +146,10 @@ def process_failed_raffle(raffle: Raffle) -> bool:
         db.session.rollback()
         print("Unable to settle raffle:", e)
         return False
+
+    # External side effects: only after the settlement is durably committed.
+    for user, message in external_notifications:
+        send_external_notifications(user, message)
 
     return True
 
@@ -182,15 +190,20 @@ def process_complete_raffle(raffle: Raffle) -> bool:
     db.session.add(prize_delivery)
     db.session.add(prize_delivery_log)
 
-    # 4.1 Notify the winner ticket user that he won the raffle and he must insert his Shipping details
+    # Collect (user, message) pairs so external channels can be sent after the commit.
+    external_notifications = []
+
+    # 4.1 Notify the winner ticket user that they won and must provide shipping details
     raffle_won_message_winner = RAFFLE_WON_MESSAGE_WINNER.format(
         ticket_id=winner_ticket.id, raffle_id=raffle.id, title=raffle.title
     )
-    if not notify_user_for_ticket(
-        winner_ticket, raffle_won_message_winner, prize_delivery
-    ):
-        db.session.rollback()
-        return False
+    queue_message_for_ticket(
+        winner_ticket,
+        raffle_won_message_winner,
+        prize_delivery,
+        category=MessageCategory.WIN,
+    )
+    external_notifications.append((winner_user, raffle_won_message_winner))
 
     # 5. Notify the loser tickets
     raffle_won_message_loser = RAFFLE_WON_MESSAGE_LOSER.format(
@@ -206,9 +219,10 @@ def process_complete_raffle(raffle: Raffle) -> bool:
     }
 
     for loser in loser_users.values():
-        if not notify_user_for_raffle(loser, raffle_won_message_loser, raffle):
-            db.session.rollback()
-            return False
+        queue_message_for_raffle(
+            loser, raffle_won_message_loser, raffle, category=MessageCategory.LOSS
+        )
+        external_notifications.append((loser, raffle_won_message_loser))
 
     # 6. Notify the Raffle creator that the raffle was won
     raffle_won_message_creator = RAFFLE_WON_MESSAGE_CREATOR.format(
@@ -218,9 +232,10 @@ def process_complete_raffle(raffle: Raffle) -> bool:
         last_name=winner_user.last_name.upper(),
         ticket_id=winner_ticket.id,
     )
-    if not notify_user_for_raffle(raffle_creator, raffle_won_message_creator, raffle):
-        db.session.rollback()
-        return False
+    queue_message_for_raffle(
+        raffle_creator, raffle_won_message_creator, raffle, category=MessageCategory.WIN
+    )
+    external_notifications.append((raffle_creator, raffle_won_message_creator))
 
     # All steps succeeded - commit the raffle/ticket status changes and messages together.
     try:
@@ -229,6 +244,10 @@ def process_complete_raffle(raffle: Raffle) -> bool:
         db.session.rollback()
         print("Unable to settle raffle:", e)
         return False
+
+    # External side effects: only after the settlement is durably committed.
+    for user, message in external_notifications:
+        send_external_notifications(user, message)
 
     return True
 

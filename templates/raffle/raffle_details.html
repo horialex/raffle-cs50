@@ -398,7 +398,7 @@ Raffle details
                             </a>
                         </div>
 
-                        {% elif current_user.id == pd.creator_user_id and pd.status.value == "pending_sender_address" %}
+                        {% elif current_user.id == pd.creator_user_id and pd.status.value == "pending_pickup_address" %}
                         <div class="d-flex align-items-center mb-3">
                             <i class="bi bi-box-seam-fill text-primary fs-3 me-3"></i>
                             <h4 class="fw-bold mb-0">Your raffle was won</h4>

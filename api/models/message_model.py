@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+from sqlalchemy import Enum as SqlEnum
+from constants.message_category import MessageCategory
 from db import db
 
 
@@ -23,6 +25,17 @@ class Message(db.Model):
     )
 
     body = db.Column(db.String(400), nullable=False)
+    # Sentiment of the message, set by the sender at creation (see MessageCategory).
+    # Drives the row tint in the UI so it never has to be inferred from the message's
+    # other fields. NULL renders neutral.
+    category = db.Column(
+        SqlEnum(
+            MessageCategory,
+            name="message_category",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=True,
+    )
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

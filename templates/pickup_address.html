@@ -9,7 +9,7 @@ Sender address
     <div class="container rounded">
         <div class="card shadow-sm rounded">
             <div class="card-body bg-light rounded">
-                <h2 class="card-title text-center mb-2">Sender Information</h2>
+                <h2 class="card-title text-center mb-2">Pickup Information</h2>
                 <p class="card-title text-center mb-4">Set your prize pickup address</p>
                 <form method="post"
                     action="{{ url_for('prize_delivery_bp.provide_pickup_address', id=prize_delivery.id) }}">
@@ -23,23 +23,23 @@ Sender address
                             <div class="card-body p-4">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-12">
-                                        {{ form.delivery_name.label(class="form-label fw-semibold") }}
-                                        {{ form.delivery_name(class="form-control") }}
+                                        {{ form.pickup_name.label(class="form-label fw-semibold") }}
+                                        {{ form.pickup_name(class="form-control") }}
                                     </div>
 
                                     <div class="col-12 col-md-12">
-                                        {{ form.delivery_address.label(class="form-label fw-semibold") }}
-                                        {{ form.delivery_address(class="form-control") }}
+                                        {{ form.pickup_address.label(class="form-label fw-semibold") }}
+                                        {{ form.pickup_address(class="form-control") }}
                                     </div>
 
                                     <div class="col-12 col-md-12">
-                                        {{ form.delivery_country.label(class="form-label fw-semibold") }}
-                                        {{ form.delivery_country(class="form-select") }}
+                                        {{ form.pickup_country.label(class="form-label fw-semibold") }}
+                                        {{ form.pickup_country(class="form-select") }}
                                     </div>
 
                                     <div class="col-12 col-md-12">
-                                        {{ form.delivery_phone.label(class="form-label fw-semibold") }}
-                                        {{ form.delivery_phone(class="form-control") }}
+                                        {{ form.pickup_phone.label(class="form-label fw-semibold") }}
+                                        {{ form.pickup_phone(class="form-control") }}
                                     </div>
 
 

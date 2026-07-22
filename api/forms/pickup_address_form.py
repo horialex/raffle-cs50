@@ -8,5 +8,4 @@ class PickupAddressForm(FlaskForm):
     pickup_address = StringField("Address", validators=[DataRequired(), Length(min=6)])
     pickup_country = SelectField("Country", choices=[], validators=[DataRequired()])
     pickup_phone = StringField("Phone", validators=[DataRequired(), Length(min=6)])
-
     submit = SubmitField("Confirm pickup address")

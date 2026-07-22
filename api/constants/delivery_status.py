@@ -4,7 +4,7 @@ from enum import Enum
 class PrizeDeliveryStatus(Enum):
     # Awaiting input
     PENDING_DELIVERY_ADDRESS = "pending_delivery_address"
-    PENDING_SENDER_ADDRESS = "pending_sender_address"
+    PENDING_PICKUP_ADDRESS = "pending_pickup_address"
 
     # In transit
     WAITING_FOR_SHIPMENT = "waiting_for_shipment"

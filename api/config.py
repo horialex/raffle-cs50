@@ -38,3 +38,6 @@ class Config:
 
     # Payment
     SIMULATE_PAYMENT = True
+
+    # Courier - Shipping
+    SIMULATE_SHIPPING = True

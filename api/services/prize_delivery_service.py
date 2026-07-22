@@ -51,10 +51,10 @@ def create_prize_delivery_log(
 
 ALLOWED_TRANSITIONS = {
     PrizeDeliveryStatus.PENDING_DELIVERY_ADDRESS: {
-        PrizeDeliveryStatus.PENDING_SENDER_ADDRESS,
+        PrizeDeliveryStatus.PENDING_PICKUP_ADDRESS,
         PrizeDeliveryStatus.DELIVERY_TIMEOUT,
     },
-    PrizeDeliveryStatus.PENDING_SENDER_ADDRESS: {
+    PrizeDeliveryStatus.PENDING_PICKUP_ADDRESS: {
         PrizeDeliveryStatus.WAITING_FOR_SHIPMENT,
         PrizeDeliveryStatus.DELIVERY_TIMEOUT,
     },

@@ -4,43 +4,35 @@ PRIZE DELIVERY - NEXT STEPS
 Current state:
 - Models (PrizeDelivery + PrizeDeliveryLog), enum, and migration are in place.
 - create_prize_delivery / create_prize_delivery_log helpers exist.
-- ALLOWED_TRANSITIONS map + can_transition() exist.
+- ALLOWED_TRANSITIONS map + can_transition() + transition() helper exist
+  (transition() checks can_transition, writes a PrizeDeliveryLog, and sets the new status).
 - raffles_processor creates the delivery at PENDING_DELIVERY_ADDRESS on a won raffle.
-- First transition route done: winner submits address (PENDING_DELIVERY_ADDRESS -> PENDING_SENDER_ADDRESS).
+- DONE: winner submits address   (PENDING_DELIVERY_ADDRESS -> PENDING_PICKUP_ADDRESS)
+- DONE: creator submits pickup    (PENDING_PICKUP_ADDRESS   -> WAITING_FOR_SHIPMENT)
+- Both routes log via transition() and are wired to UI buttons (message + raffle details).
 
-Step 1 of ~5 transitions is done, plus the timeout job is still outstanding.
+2 of ~5 transitions done. Remaining: shipment -> delivered/accepted, plus the timeout job.
 
 
-1. FIX INCONSISTENCY: log the transition (do this first)
----------------------------------------------------------
-provide_delivery_address sets status + commits but does NOT write a PrizeDeliveryLog,
-even though the create flow does and create_prize_delivery_log has an `actor` param for it.
-The audit trail has a hole at the first transition.
-
-Add one helper in services/prize_delivery_service.py and route all status changes through it:
-
-    def transition(prize_delivery, new_status, actor=None, note=None) -> bool:
-        if not can_transition(prize_delivery, new_status):
-            return False
-        log = create_prize_delivery_log(
-            prize_delivery, from_status=prize_delivery.status,
-            to_status=new_status, actor=actor, note=note,
-        )
-        prize_delivery.status = new_status
-        db.session.add(log)
-        return True
-
-Then update provide_delivery_address to call transition() instead of setting .status directly.
+1. FIX INCONSISTENCY: log the transition   [DONE]
+--------------------------------------------------
+transition() helper added in services/prize_delivery_service.py; both address routes
+route their status change through it, so every transition writes a PrizeDeliveryLog.
 
 
 2. BUILD REMAINING TRANSITION ROUTES
 ------------------------------------
 Each route pattern: authz -> validate -> transition() -> commit -> notify.
 
-- PENDING_SENDER_ADDRESS -> WAITING_FOR_SHIPMENT
-    Creator confirms pickup address. Form exists: forms/pickup_address_form.py. Authz = creator.
-- WAITING_FOR_SHIPMENT -> PRIZE_SENT
+- [DONE] PENDING_DELIVERY_ADDRESS -> PENDING_PICKUP_ADDRESS
+    Winner submits delivery address. Route provide_delivery_address, authz = winner.
+- [DONE] PENDING_PICKUP_ADDRESS -> WAITING_FOR_SHIPMENT
+    Creator submits pickup address. Route provide_pickup_address, authz = creator,
+    PickupAddressForm -> pickup_* columns, pickup_address.html.
+- [NEXT] WAITING_FOR_SHIPMENT -> PRIZE_SENT
     Creator marks shipped (optionally set/confirm tracking). Authz = creator.
+    Likely a simple POST action (no address form) + a button in the creator branch
+    of raffle_details.html gated on status == "waiting_for_shipment".
 - PRIZE_SENT -> PRIZE_DELIVERED | DELIVERY_FAILED
     Mark delivered / failed.
 - PRIZE_DELIVERED -> PRIZE_ACCEPTED | CONTESTED
@@ -51,7 +43,7 @@ Each route pattern: authz -> validate -> transition() -> commit -> notify.
 
 3. TIMEOUT JOB
 --------------
-Add a `process-deliveries` CLI command (mirror process-raffles):
+Add a `process-deliveries` CLI command (mirror process-raffles), lives in jobs/:
 - Find deliveries stuck past a window and drive the DELIVERY_TIMEOUT transitions.
 - Auto-accept: PRIZE_DELIVERED -> PRIZE_ACCEPTED, note "auto-accepted, no response".
 - Decide the timeout window (probably a Config constant).
@@ -69,21 +61,50 @@ OPEN QUESTION: what raffle status results from DELIVERY_FAILED / DELIVERY_TIMEOU
 
 5. NOTIFICATIONS ON EACH TRANSITION
 -----------------------------------
-Reuse services/notifications_service (same pattern the processor already uses):
-- Notify creator when the winner submits an address.
-- Notify winner when shipped.
-- etc.
+services/notifications_service is now split into two halves around the commit:
+- queue_message* / queue_message_for_raffle / queue_message_for_ticket -> stage the
+  in-app Message INSIDE the transaction (call BEFORE commit).
+- send_external(user, message) -> email/SMS, call AFTER a successful commit.
+Both address routes and the settlement job use this split (external never fires on a
+rolled-back transaction).
+
+[DONE] Notify the CREATOR when the winner submits their delivery address (their turn now).
+[DONE] Notify the WINNER when the creator submits the pickup address.
+Still missing:
+- Notify on the remaining transitions (shipped / delivered / accepted / contested).
+
+NOTE: creator/winner messages currently carry only raffle_id (queue_message_for_raffle),
+so in My Messages they show the generic "View raffle" button. To give a message a direct
+step button (e.g. the creator's "Provide pickup address"), pass prize_delivery= into the
+queue_message_* call so the Message carries prize_delivery_id, then add a matching branch
+in my_messages.html (like the winner's pending_delivery_address button).
 
 
 6. UI / ENTRY POINTS
 --------------------
-- Templates for each step (have delivery_address.html; need pickup/ship/confirm views).
-- Entry points from the raffle detail page and/or a "My deliveries" list.
-  Currently nothing links a user to /prize-deliveries/<id>/address except notification text.
+- [DONE] Winner + creator CTAs in raffle_details.html sidebar (if/elif/else by pd.status,
+  with a neutral "in progress" fallback).
+- [DONE] Message CTAs in my_messages.html: winner "Provide delivery address" and creator
+  "Provide pickup address" (each gated on recipient + delivery status), plus a "View raffle"
+  fallback on any raffle-referencing message.
+- [DONE] Message row tint is now driven by a stored Message.category ("win"/"loss"/"info")
+  set by the sender, instead of being inferred in the template. New message types just set
+  a category; no template heuristics to update.
+- Still need views/actions for the later steps (mark shipped, delivered, accept/contest).
+  When adding their notifications, pass category= (info for progress, etc.).
+- Consider a "My deliveries" list and a delivery status/timeline view that renders the
+  PrizeDeliveryLog audit rows (nothing surfaces the log history yet).
 
 
 RECOMMENDED IMMEDIATE NEXT ACTION
 ---------------------------------
-Do #1 (the transition() helper + logging), then build the PENDING_SENDER_ADDRESS
-creator route as the next slice - it continues directly from what was just finished
-and validates the helper against a creator-authz step.
+Build the WAITING_FOR_SHIPMENT -> PRIZE_SENT step: a creator-only POST route (mark shipped)
+that calls transition(), plus a button in the creator branch of raffle_details.html gated on
+status == "waiting_for_shipment". It's the natural continuation and needs no new form.
+
+
+RELATED WORK ALREADY DONE (not part of the 6 above)
+---------------------------------------------------
+- Message -> PrizeDelivery link (see TODO_messages.txt) is fully implemented.
+- Account-deletion robustness: messages.user_id cascades with the owner; raffle_id/
+  ticket_id/prize_delivery_id are ON DELETE SET NULL so deletes no longer fail on the FK.
