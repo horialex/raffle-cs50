@@ -8,6 +8,8 @@ from flask import (
     url_for,
 )
 
+from models.ticket_model import Ticket
+from models.raffle_model import Raffle
 from services.courier_service import ship_prize
 from forms.pickup_address_form import PickupAddressForm
 from services.prize_delivery_service import transition
@@ -224,9 +226,54 @@ def provide_pickup_address(id):
     )
 
 
-@prize_delivery_bp.route("/<int:id>/review", methods=["GET", "POST"])
+@prize_delivery_bp.route("/<int:id>/review", methods=["GET"])
 @login_required
 def review_prize(id):
+    user_id = get_current_user_id()
+    prize_delivery: PrizeDelivery = PrizeDelivery.query.get_or_404(id)
+
+    raffle: Raffle = prize_delivery.raffle
+    user_ticket_count = Ticket.query.filter_by(raffle_id=id, user_id=user_id).count()
+
+    if user_id != prize_delivery.winner_user_id:
+        flash("You are not allowed to access this delivery.", "error")
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    if prize_delivery.status != PrizeDeliveryStatus.PRIZE_DELIVERED:
+        flash("The pickup address can no longer be changed.", "error")
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    return render_template(
+        "review_prize.html",
+        prize_delivery=prize_delivery,
+        raffle=raffle,
+        user_ticket_count=user_ticket_count,
+    )
+
+
+## TODO: Implement these methods
+
+
+@prize_delivery_bp.route("/<int:id>/accept", methods=["POST"])
+@login_required
+def accept_prize(id):
+    user_id = get_current_user_id()
+    prize_delivery: PrizeDelivery = PrizeDelivery.query.get_or_404(id)
+
+    if user_id != prize_delivery.winner_user_id:
+        flash("You are not allowed to access this delivery.", "error")
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    if prize_delivery.status != PrizeDeliveryStatus.PRIZE_DELIVERED:
+        flash("The pickup address can no longer be changed.", "error")
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    return render_template("review_prize.html", prize_delivery=prize_delivery)
+
+
+@prize_delivery_bp.route("/<int:id>/reject", methods=["POST"])
+@login_required
+def reject_prize(id):
     user_id = get_current_user_id()
     prize_delivery: PrizeDelivery = PrizeDelivery.query.get_or_404(id)
 
