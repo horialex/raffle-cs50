@@ -180,7 +180,7 @@ Review prize
                         </div>
 
                         <div class="card shadow border-0 mb-4">
-                            <div class="card-body p-4">
+                            <div class="card-body p-4 text-start">
 
                                 <!-- Delivery status -->
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -241,10 +241,177 @@ Review prize
                                     </div>
                                     <div>
                                         <div class="small text-muted"><strong>Shipped to</strong></div>
-                                        <div>{{ prize_delivery.delivery_name }}</div>
-                                        <div class="text-muted">{{ prize_delivery.delivery_address }}</div>
-                                        <div class="text-muted">{{ prize_delivery.delivery_country }}</div>
+                                        <div>{{ prize_delivery.delivery_name }}
+                                        </div>
+                                        <div class="text-muted">{{ prize_delivery.delivery_address }}
+                                            - {{ prize_delivery.delivery_country|upper }}</div>
                                         <div class="text-muted">{{ prize_delivery.delivery_phone }}</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Raffle section -->
+                        <div class="d-flex align-items-center mt-5 mb-3">
+                            <i class="bi bi-ticket-perforated-fill text-primary fs-5 me-2"></i>
+                            <h4 class="mb-0 fw-bold">Raffle</h4>
+                        </div>
+
+                        {% set products_total = raffle.products | sum(attribute='estimated_value') %}
+                        {% set prize_pot = sold_tickets * raffle.ticket_price %}
+                        {% set participants = raffle.tickets | map(attribute='user_id') | unique | list | length if
+                        raffle.tickets is defined else 0 %}
+                        {% set winning_ticket = (raffle.tickets | selectattr('status.value', 'equalto', 'winner') | list
+                        | first) if raffle.tickets is defined else None %}
+
+                        <div class="card shadow border-0 mb-4">
+                            <div class="card-body p-4 text-start">
+
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">{{ raffle.title }}</h5>
+                                        <p class="text-muted small mb-0">{{ raffle.description }}</p>
+                                    </div>
+                                    {% set raffle_status = raffle.status.value %}
+                                    <span class="badge rounded-pill px-3 py-2
+                                    {% if raffle_status == 'won' or raffle_status == 'completed' %}bg-success-subtle text-success
+                                    {% elif raffle_status == 'active' %}bg-info-subtle text-primary
+                                    {% elif raffle_status in ['cancelled', 'rejected_prize', 'contested'] %}bg-danger-subtle text-danger
+                                    {% else %}bg-secondary-subtle text-secondary
+                                    {% endif %}">
+                                        ● {{ raffle_status | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </div>
+
+                                <hr>
+
+                                <div class="row g-4">
+
+                                    <!-- Ticket price -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-cash-coin fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Ticket price</strong></div>
+                                                ${{ raffle.ticket_price }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tickets sold -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-people-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Tickets sold</strong></div>
+                                                {{ sold_tickets }} / {{ min_tickets }} required
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Due date -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-calendar-event fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Due date</strong></div>
+                                                {{ raffle.due_date.strftime('%d-%m-%Y %H:%M') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Products total value -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-tags-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Products total value</strong>
+                                                </div>
+                                                ${{ products_total }} across {{ raffle.products | length }} product(s)
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Total prize pot -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-piggy-bank-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Total prize pot</strong></div>
+                                                ${{ prize_pot }} raised
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Participants -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-person-lines-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Participants</strong></div>
+                                                {{ participants }} participant(s) · {{ sold_tickets }} ticket(s) sold
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <hr>
+
+                                <!-- Winning ticket -->
+                                <div class="d-flex align-items-start mb-4">
+                                    <div
+                                        class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                        <i class="bi bi-trophy-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted"><strong>Winning ticket</strong></div>
+                                        {% if winning_ticket %}
+                                        <div>Ticket #{{ winning_ticket.id }} — ${{ winning_ticket.price }}</div>
+                                        <div class="text-muted">Purchased on {{
+                                            winning_ticket.created_at.strftime('%d-%m-%Y %H:%M') }}</div>
+                                        {% else %}
+                                        <div class="text-muted">No winner has been drawn yet.</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Seller / creator contact -->
+                                <div class="d-flex align-items-start">
+                                    <div
+                                        class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                        <i class="bi bi-person-badge-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted"><strong>Organised by</strong></div>
+                                        <div>{{ raffle.creator.first_name }} {{ raffle.creator.last_name }}</div>
+                                        <div class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>{{ raffle.creator.email }}
+                                        </div>
+                                        {% if raffle.creator.phone %}
+                                        <div class="text-muted">
+                                            <i class="bi bi-telephone me-1"></i>{{ raffle.creator.phone }}
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
 
