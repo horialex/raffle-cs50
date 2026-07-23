@@ -8,6 +8,8 @@ from flask import (
     url_for,
 )
 
+from constants.raffle_status import RaffleStatus
+from jobs.raffles_processor import transfer_moeny
 from models.ticket_model import Ticket
 from models.raffle_model import Raffle
 from services.courier_service import ship_prize
@@ -251,27 +253,75 @@ def review_prize(id):
     )
 
 
-## TODO: Implement these methods
-
-
 @prize_delivery_bp.route("/<int:id>/accept", methods=["POST"])
 @login_required
 def accept_prize(id):
     user_id = get_current_user_id()
     prize_delivery: PrizeDelivery = PrizeDelivery.query.get_or_404(id)
+    raffle: Raffle = prize_delivery.raffle
 
     if user_id != prize_delivery.winner_user_id:
         flash("You are not allowed to access this delivery.", "error")
         return redirect(url_for("raffle_bp.get_raffles"))
 
     if prize_delivery.status != PrizeDeliveryStatus.PRIZE_DELIVERED:
-        flash("The pickup address can no longer be changed.", "error")
+        flash("This prize can no longer be accepted.", "error")
         return redirect(url_for("raffle_bp.get_raffles"))
 
-    return render_template("review_prize.html", prize_delivery=prize_delivery)
+    # 1. Change status of PrizeDelivery to: PRIZE_ACCEPTED
+    if not transition(
+        prize_delivery=prize_delivery,
+        new_status=PrizeDeliveryStatus.PRIZE_ACCEPTED,
+        actor_id=user_id,
+        note="Prize accepted",
+    ):
+        flash(
+            "You could not accept the prize - there was a problem while changing the status",
+            "error",
+        )
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    # 2. Message the raffle creator
+    creator_message = (
+        f"The winner accepted the delivery for raffle "
+        f"'{prize_delivery.raffle.title}'. Please send us your bank account id at "
+        f"raffle.winners@raffle.com so we can send you the prize."
+    )
+    queue_message_for_raffle(
+        prize_delivery.creator,
+        creator_message,
+        prize_delivery.raffle,
+        prize_delivery,
+        category=MessageCategory.INFO,
+    )
+
+    # 3. Change status of Raffle to: COMPLETED
+    raffle.status = RaffleStatus.COMPLETED
+
+    # 4. Save the data
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print("Error: ", e)
+        flash("Unable to accept the raffle prize", "error")
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    # 5. External side effects: only after the state is durably committed. The payout
+    if not transfer_moeny(prize_delivery.creator):
+        flash(
+            "Prize accepted, but the payout could not be arranged yet.",
+            "warning",
+        )
+    send_external_notifications(prize_delivery.creator, creator_message)
+
+    # 6. Flash message and redirect
+    flash("Prize accepted", "success")
+
+    return redirect(url_for("raffle_bp.get_raffles"))
 
 
-@prize_delivery_bp.route("/<int:id>/reject", methods=["POST"])
+@prize_delivery_bp.route("/<int:id>/contest", methods=["POST"])
 @login_required
 def contest_prize(id):
     user_id = get_current_user_id()
@@ -285,7 +335,7 @@ def contest_prize(id):
         flash("The pickup address can no longer be changed.", "error")
         return redirect(url_for("raffle_bp.get_raffles"))
 
-    return render_template("review_prize.html", prize_delivery=prize_delivery)
+    return render_template("contest_prize.html", prize_delivery=prize_delivery)
 
 
 def get_current_user_id() -> int:

@@ -426,6 +426,20 @@ Raffle details
                             </a>
                         </div>
 
+                        {% elif current_user.id == pd.winner_user_id and pd.status.value == "prize_accepted" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-check-square-fill text-warning fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Raffle completed</h4>
+                        </div>
+                        <p>Congratulations, the raffle is completed, you accepted the prize </p>
+
+                        {% elif current_user.id == pd.creator_user_id and pd.status.value == "prize_accepted" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-check-square-fill text-warning fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Raffle completed</h4>
+                        </div>
+                        <p>Congratulations, the raffle is completed, the winner accepted the raffle prize</p>
+
                         {% else %}
                         <div class="d-flex align-items-center mb-3">
                             <i class="bi bi-arrow-right-circle-fill fs-3 me-3"></i>

@@ -268,12 +268,23 @@ def set_tickets_status(tickets: list[Ticket], status: TicketStatus) -> bool:
 
 def refund_tickets(tickets: list[Ticket]) -> bool:
     if current_app.config["SIMULATE_PAYMENT"]:
+        print("[Simulated] Money Refound")
+        for ticket in tickets:
+            print(f"[SIMMULATED] Refund ticket {ticket.id} for price {ticket.price}.")
         return True
 
-    for ticket in tickets:
-        print(f"Refund ticket {ticket.id} for price {ticket.price}.")
     # TODO: Implement this when the payment mechanism will be implemented
     print("Unable to refund tickets: payment mechanism not implemented")
+    return False
+
+
+def transfer_moeny(user: User) -> bool:
+    if current_app.config["SIMULATE_PAYMENT"]:
+        print(f"[Simulated] Money Transfer to Raffle winner {user.id}")
+        return True
+
+    # TODO: Implement this when the payment mechanism will be implemented
+    print("Unable to transfer the money to the user that created the raffle")
     return False
 
 
