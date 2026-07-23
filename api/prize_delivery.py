@@ -273,7 +273,7 @@ def accept_prize(id):
 
 @prize_delivery_bp.route("/<int:id>/reject", methods=["POST"])
 @login_required
-def reject_prize(id):
+def contest_prize(id):
     user_id = get_current_user_id()
     prize_delivery: PrizeDelivery = PrizeDelivery.query.get_or_404(id)
 

@@ -28,42 +28,86 @@ Review prize
                                 <div class="row g-4">
 
                                     <!-- Main image -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         <img src="{{ url_for('static', filename='images/win.png') }}"
                                             class="img-fluid rounded"
-                                            style="height: 260px; width: 100%; object-fit: cover;" alt="Raffle product">
+                                            style="height: 300px; width: 100%; object-fit: cover;" alt="Raffle product">
                                     </div>
 
-                                    <!-- Details -->
-                                    <div class="col-md-8">
+                                    <!-- Prize delivery -->
+                                    <div class="col-md-7 text-start">
 
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h4 class="fw-bold mb-0">{{ raffle.title | truncate(30, True, '…') }}</h4>
+                                        <div class="d-flex align-items-center mb-3">
+                                            <i class="bi bi-truck text-primary fs-5 me-2"></i>
+                                            <h4 class="mb-0 fw-bold">Prize delivery</h4>
                                         </div>
 
-                                        <p class="text-start text-muted">
-                                            {{ raffle.description | truncate(100, True, '…') or "The raffle you have
-                                            won" }}
-                                        </p>
+                                        <!-- Delivery status -->
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-muted small">Delivery status</span>
+                                            {% set delivery_status = prize_delivery.status.value %}
+                                            <span class="badge rounded-pill px-3 py-2
+                                            {% if delivery_status == 'prize_delivered' %}bg-success-subtle text-success
+                                            {% elif delivery_status == 'prize_sent' or delivery_status == 'waiting_for_shipment' %}bg-info-subtle text-primary
+                                            {% elif delivery_status in ['prize_rejected', 'delivery_failed', 'delivery_timeout', 'contested'] %}bg-danger-subtle text-danger
+                                            {% elif delivery_status == 'prize_accepted' %}bg-primary-subtle text-primary
+                                            {% else %}bg-secondary-subtle text-secondary
+                                            {% endif %}">
+                                                ● {{ delivery_status | replace('_', ' ') | capitalize }}
+                                            </span>
+                                        </div>
 
-                                        <div class="d-flex align-items-center gap-3 small text-muted mb-3">
-                                            {% if raffle.creator.profile_picture %}
-                                            <span>
-                                                <img src="{{ url_for('static', filename='uploads/images/profile_pictures/' + raffle.creator.profile_picture) }}"
-                                                    alt="Profile Picture" class="rounded-circle img-thumbnail shadow-sm"
-                                                    style="width: 50px; height: 50px; object-fit: cover;" />
+                                        <hr>
 
-                                            </span>
-                                            {% endif%}
-                                            <span>
-                                                Created by
-                                                <strong class="text-primary">{{ raffle.creator.first_name }} {{
-                                                    raffle.creator.last_name }}</strong>
-                                            </span>
-                                            <span> - </span>
-                                            <span>
-                                                Created on {{ raffle.created_at.strftime('%b %d, %Y') }}
-                                            </span>
+                                        <div class="row g-4">
+
+                                            <!-- Tracking code -->
+                                            <div class="col-sm-6">
+                                                <div class="d-flex align-items-center">
+                                                    <div
+                                                        class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                        <i class="bi bi-upc-scan fs-5"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="small text-muted"><strong>Tracking code</strong>
+                                                        </div>
+                                                        {{ prize_delivery.tracking_code or "Not available yet" }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Last updated -->
+                                            <div class="col-sm-6">
+                                                <div class="d-flex align-items-center">
+                                                    <div
+                                                        class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                        <i class="bi bi-calendar-check fs-5"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="small text-muted"><strong>Last updated</strong>
+                                                        </div>
+                                                        {{ prize_delivery.updated_at.strftime('%d-%m-%Y %H:%M') }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <hr>
+
+                                        <!-- Shipping address -->
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-geo-alt-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Shipped to</strong></div>
+                                                <div>{{ prize_delivery.delivery_name }}</div>
+                                                <div class="text-muted">{{ prize_delivery.delivery_address }}
+                                                    - {{ prize_delivery.delivery_country|upper }}</div>
+                                                <div class="text-muted">{{ prize_delivery.delivery_phone }}</div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -73,14 +117,13 @@ Review prize
                         </div>
 
                         <!-- Products section -->
-                        <!-- Products title -->
                         <div class="d-flex align-items-center mb-3">
                             <i class="bi bi-gift-fill text-primary fs-5 me-2"></i>
                             <h4 class="mb-0 fw-bold">Products in this raffle</h4>
                         </div>
 
                         <!-- Products grid -->
-                        <div class="row g-3">
+                        <div class="row g-3 mb-4">
                             {% for product in raffle.products %}
                             <div class="col-md-4">
                                 <div class="card product-card shadow-lg border h-100">
@@ -106,13 +149,13 @@ Review prize
                                             <div class="carousel-item {% if loop.first %}active{% endif %}">
                                                 <img src="{{ url_for('static', filename='uploads/images/products/' + image.image_url) }}"
                                                     class="d-block w-100 rounded"
-                                                    style="height: 220px; object-fit: cover;" alt="{{ product.name }}">
+                                                    style="height: 200px; object-fit: cover;" alt="{{ product.name }}">
                                             </div>
                                             {% endfor %}
                                             {% else %}
                                             <div class="carousel-item active">
                                                 <div class="bg-light d-flex align-items-center justify-content-center"
-                                                    style="height: 220px;">
+                                                    style="height: 200px;">
                                                     <span class="text-muted">No image</span>
                                                 </div>
                                             </div>
@@ -171,85 +214,6 @@ Review prize
                                 </div>
                             </div>
                             {% endfor %}
-                        </div>
-
-                        <!-- Prize delivery section -->
-                        <div class="d-flex align-items-center mt-5 mb-3">
-                            <i class="bi bi-truck text-primary fs-5 me-2"></i>
-                            <h4 class="mb-0 fw-bold">Prize delivery</h4>
-                        </div>
-
-                        <div class="card shadow border-0 mb-4">
-                            <div class="card-body p-4 text-start">
-
-                                <!-- Delivery status -->
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="text-muted small">Delivery status</span>
-                                    {% set delivery_status = prize_delivery.status.value %}
-                                    <span class="badge rounded-pill px-3 py-2
-                                    {% if delivery_status == 'prize_delivered' %}bg-success-subtle text-success
-                                    {% elif delivery_status == 'prize_sent' or delivery_status == 'waiting_for_shipment' %}bg-info-subtle text-primary
-                                    {% elif delivery_status in ['prize_rejected', 'delivery_failed', 'delivery_timeout', 'contested'] %}bg-danger-subtle text-danger
-                                    {% elif delivery_status == 'prize_accepted' %}bg-primary-subtle text-primary
-                                    {% else %}bg-secondary-subtle text-secondary
-                                    {% endif %}">
-                                        ● {{ delivery_status | replace('_', ' ') | capitalize }}
-                                    </span>
-                                </div>
-
-                                <hr>
-
-                                <div class="row g-4">
-
-                                    <!-- Tracking code -->
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-center">
-                                            <div
-                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
-                                                <i class="bi bi-upc-scan fs-5"></i>
-                                            </div>
-                                            <div>
-                                                <div class="small text-muted"><strong>Tracking code</strong></div>
-                                                {{ prize_delivery.tracking_code or "Not available yet" }}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Shipped on -->
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-center">
-                                            <div
-                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
-                                                <i class="bi bi-calendar-check fs-5"></i>
-                                            </div>
-                                            <div>
-                                                <div class="small text-muted"><strong>Last updated</strong></div>
-                                                {{ prize_delivery.updated_at.strftime('%d-%m-%Y %H:%M') }}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <hr>
-
-                                <!-- Shipping address -->
-                                <div class="d-flex align-items-start">
-                                    <div
-                                        class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
-                                        <i class="bi bi-geo-alt-fill fs-5"></i>
-                                    </div>
-                                    <div>
-                                        <div class="small text-muted"><strong>Shipped to</strong></div>
-                                        <div>{{ prize_delivery.delivery_name }}
-                                        </div>
-                                        <div class="text-muted">{{ prize_delivery.delivery_address }}
-                                            - {{ prize_delivery.delivery_country|upper }}</div>
-                                        <div class="text-muted">{{ prize_delivery.delivery_phone }}</div>
-                                    </div>
-                                </div>
-
-                            </div>
                         </div>
 
                         <!-- Raffle section -->
@@ -416,6 +380,26 @@ Review prize
                                 </div>
 
                             </div>
+                        </div>
+
+                        <!-- CTA Buttons section -->
+                        <div class="d-flex flex-wrap gap-3 mt-3">
+                            <form method="post"
+                                action="{{ url_for('prize_delivery_bp.accept_prize', id=prize_delivery.id) }}"
+                                class="flex-fill d-grid">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success btn-lg fw-semibold shadow-sm">
+                                    <i class="bi bi-box-seam me-2"></i>Accept prize
+                                </button>
+                            </form>
+                            <form method="post"
+                                action="{{ url_for('prize_delivery_bp.contest_prize', id=prize_delivery.id) }}"
+                                class="flex-fill d-grid">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-lg fw-semibold shadow-sm">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>Contest prize
+                                </button>
+                            </form>
                         </div>
 
                     </div>
