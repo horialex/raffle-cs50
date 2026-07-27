@@ -148,35 +148,37 @@ def get_users():
     per_page = request.args.get("per_page", 20, type=int)
     per_page = min(max(per_page, 1), 20)
 
+    # Sorting
+    sort_columns = {
+        "id": User.id,
+        "username": User.username,
+        "email": User.email,
+        "created": User.created_at,
+        "last_login": User.last_login_at,
+    }
+    sort = request.args.get("sort", "id")
+    if sort not in sort_columns:
+        sort = "id"
+    direction = request.args.get("dir", "asc")
+    if direction not in ("asc", "desc"):
+        direction = "asc"
+
+    sort_column = sort_columns[sort]
+    order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
+
     pagination = (
         User.query.filter(User.role != "admin")
-        .order_by(User.id)
+        .order_by(order_by)
         .paginate(page=page, per_page=per_page, error_out=False)
     )
 
-    users: User = [
-        {
-            "id": u.id,
-            "firstName": u.first_name,
-            "lastName": u.last_name,
-            "username": u.username,
-            "email": u.email,
-            "phone": u.phone,
-            "country": u.country,
-            "address": u.address,
-            "profilePicture": u.profile_picture,
-            "createdAt": u.created_at,
-            "lastLogin": u.last_login_at,
-        }
-        for u in pagination.items
-    ]
-
     return render_template(
         "users.html",
-        users=users,
-        total=pagination.total,
-        page=page,
+        users=pagination.items,
+        pagination=pagination,
         per_page=per_page,
+        sort=sort,
+        direction=direction,
     )
 
 

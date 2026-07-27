@@ -440,6 +440,42 @@ Raffle details
                         </div>
                         <p>Congratulations, the raffle is completed, the winner accepted the raffle prize</p>
 
+                        {% elif current_user.id == pd.winner_user_id and pd.status.value == "contested" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Prize contested</h4>
+                        </div>
+                        <p>You have contested this prize.
+                            {% if pd.contestation %}
+                            Your contestation
+                            (<strong>{{ pd.contestation.reason.value|replace('_', ' ')|capitalize }}</strong>)
+                            is now under review by an administrator.
+                            {% else %}
+                            It is now under review by an administrator.
+                            {% endif %}
+                            You will be notified once a decision has been made.
+                        </p>
+
+                        {% elif current_user.id == pd.creator_user_id and pd.status.value == "contested" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill text-danger fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Prize contested</h4>
+                        </div>
+                        <p>The winner has contested the prize for this raffle.
+                            {% if pd.contestation %}
+                            Reason:
+                            <strong>{{ pd.contestation.reason.value|replace('_', ' ')|capitalize }}</strong>.
+                            {% endif %}
+                            An administrator is reviewing the contestation. Please wait for the outcome.
+                        </p>
+
+                        {% elif pd.status.value == "contested" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill text-secondary fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Prize contested</h4>
+                        </div>
+                        <p>The prize for this raffle is currently being contested and is under review.</p>
+
                         {% else %}
                         <div class="d-flex align-items-center mb-3">
                             <i class="bi bi-arrow-right-circle-fill fs-3 me-3"></i>

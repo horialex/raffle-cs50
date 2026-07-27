@@ -66,6 +66,16 @@ class Raffle(db.Model):
         )
 
     @property
+    def creator_full_name(self):
+        if not self.creator:
+            return None
+        return f"{self.creator.first_name} {self.creator.last_name}"
+
+    @property
+    def products_count(self):
+        return len(self.products)
+
+    @property
     def is_draft(self):
         return self.status == RaffleStatus.DRAFT
 

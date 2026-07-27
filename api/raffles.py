@@ -765,6 +765,53 @@ def get_raffles():
 
 
 # ----------------------------
+# All raffles (admin)
+# ----------------------------
+@raffle_bp.route("/all", methods=["GET"])
+@login_required
+def all_raffles_admin():
+    user: User = User.query.get_or_404(get_current_user_id())
+    if not user.is_admin:
+        abort(403)
+
+    page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
+    per_page = request.args.get("per_page", 20, type=int)
+    per_page = min(max(per_page, 1), 20)
+
+    # Sorting
+    sort_columns = {
+        "status": Raffle.status,
+        "ticket_price": Raffle.ticket_price,
+        "created": Raffle.created_at,
+        "due_date": Raffle.due_date,
+    }
+    sort = request.args.get("sort", "created")
+    if sort not in sort_columns:
+        sort = "created"
+    direction = request.args.get("dir", "desc")
+    if direction not in ("asc", "desc"):
+        direction = "desc"
+
+    sort_column = sort_columns[sort]
+    order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
+
+    pagination = (
+        Raffle.query.order_by(order_by)
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
+
+    return render_template(
+        "/raffle/all_raffles_admin.html",
+        raffles=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        sort=sort,
+        direction=direction,
+    )
+
+
+# ----------------------------
 # Helpers
 # ----------------------------
 def build_due_date(form):

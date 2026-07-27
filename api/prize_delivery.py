@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    abort,
     flash,
     redirect,
     render_template,
@@ -439,6 +440,117 @@ def contest_prize(id):
 
     return render_template(
         "contest_prize.html", form=form, prize_delivery=prize_delivery
+    )
+
+
+# ----------------------------
+# All prize deliveries (admin) - tracking view
+# ----------------------------
+@prize_delivery_bp.route("/all", methods=["GET"])
+@login_required
+def all_deliveries_admin():
+    user: User = User.query.get_or_404(get_current_user_id())
+    if not user.is_admin:
+        abort(403)
+
+    page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
+    per_page = request.args.get("per_page", 20, type=int)
+    per_page = min(max(per_page, 1), 20)
+
+    # Sorting
+    sort_columns = {
+        "status": PrizeDelivery.status,
+        "created": PrizeDelivery.created_at,
+        "updated": PrizeDelivery.updated_at,
+    }
+    sort = request.args.get("sort", "updated")
+    if sort not in sort_columns:
+        sort = "updated"
+    direction = request.args.get("dir", "desc")
+    if direction not in ("asc", "desc"):
+        direction = "desc"
+
+    sort_column = sort_columns[sort]
+    order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
+
+    pagination = (
+        PrizeDelivery.query.order_by(order_by)
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
+
+    return render_template(
+        "prize_delivery/all_deliveries_admin.html",
+        deliveries=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        sort=sort,
+        direction=direction,
+    )
+
+
+# ----------------------------
+# All prize contestations (admin) - tracking view
+# ----------------------------
+@prize_delivery_bp.route("/contestations", methods=["GET"])
+@login_required
+def all_contestations_admin():
+    user: User = User.query.get_or_404(get_current_user_id())
+    if not user.is_admin:
+        abort(403)
+
+    page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
+    per_page = request.args.get("per_page", 20, type=int)
+    per_page = min(max(per_page, 1), 20)
+
+    # Sorting
+    sort_columns = {
+        "status": PrizeContestation.status,
+        "reason": PrizeContestation.reason,
+        "created": PrizeContestation.created_at,
+        "updated": PrizeContestation.updated_at,
+    }
+    sort = request.args.get("sort", "created")
+    if sort not in sort_columns:
+        sort = "created"
+    direction = request.args.get("dir", "desc")
+    if direction not in ("asc", "desc"):
+        direction = "desc"
+
+    sort_column = sort_columns[sort]
+    order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
+
+    pagination = (
+        PrizeContestation.query.order_by(order_by)
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
+
+    return render_template(
+        "prize_delivery/all_contestations_admin.html",
+        contestations=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        sort=sort,
+        direction=direction,
+    )
+
+
+# ----------------------------
+# Contestation details (admin) - TODO: implement full review page
+# ----------------------------
+@prize_delivery_bp.route("/contestations/<int:id>", methods=["GET"])
+@login_required
+def contestation_details(id):
+    user: User = User.query.get_or_404(get_current_user_id())
+    if not user.is_admin:
+        abort(403)
+
+    contestation: PrizeContestation = PrizeContestation.query.get_or_404(id)
+
+    return render_template(
+        "prize_delivery/contestation_details.html",
+        contestation=contestation,
     )
 
 

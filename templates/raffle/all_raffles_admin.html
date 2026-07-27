@@ -6,74 +6,168 @@ Raffles
 
 {% block main %}
 
-{% if current_user.is_admin %}
-<h1 class="mb-4">Raffles List</h1>
-{% else %}
-<h1 class="mb-4">My Raffles List</h1>
-{% endif %}
+{% macro sort_header(label, key) %}
+{% set next_dir = 'desc' if (sort == key and direction == 'asc') else 'asc' %}
+<a href="{{ url_for('raffle_bp.all_raffles_admin', sort=key, dir=next_dir, per_page=per_page) }}"
+    class="text-decoration-none text-reset d-inline-flex align-items-center gap-1">
+    {{ label }}
+    {% if sort == key %}
+    <i class="bi bi-chevron-{{ 'up' if direction == 'asc' else 'down' }} small"></i>
+    {% else %}
+    <i class="bi bi-chevron-expand small text-muted opacity-25"></i>
+    {% endif %}
+</a>
+{% endmacro %}
 
-<table id="raffles_table" class="table table-bordered table-hover table-sm">
-    <thead>
-        <tr>
-            <th>ID</th>
+<div class="container-fluid text-start py-3 px-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
             {% if current_user.is_admin %}
-            <th>Creator ID</th>
-            <th>Creator full name</th>
+            <h1 class="h3 mb-1">Raffles</h1>
+            <p class="text-muted mb-0">All raffles in the system, regardless of status.</p>
+            {% else %}
+            <h1 class="h3 mb-1">My Raffles</h1>
             {% endif %}
+        </div>
+        <span class="badge text-bg-secondary rounded-pill fs-6 px-3 py-2">
+            {{ pagination.total }} total
+        </span>
+    </div>
 
-            <th>Title</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Ticket Price</th>
-            <th>Created Date</th>
-            <th>Due Date</th>
-            <th>Products count</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for raffle in raffles %}
-        <tr>
-            <td>{{ raffle.id }}</td>
-            {% if current_user.is_admin %}
-            <td>{{ raffle.creator_id }}</td>
-            <td>{{ raffle.creator_full_name }}</td>
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table id="raffles_table" class="table table-hover align-middle mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th class="text-nowrap">ID</th>
+                        {% if current_user.is_admin %}
+                        <th class="text-nowrap">Creator</th>
+                        {% endif %}
+                        <th class="text-nowrap">Title</th>
+                        <th>Description</th>
+                        <th class="text-nowrap">{{ sort_header('Status', 'status') }}</th>
+                        <th class="text-nowrap">{{ sort_header('Ticket Price', 'ticket_price') }}</th>
+                        <th class="text-nowrap">{{ sort_header('Created', 'created') }}</th>
+                        <th class="text-nowrap">{{ sort_header('Due Date', 'due_date') }}</th>
+                        <th class="text-nowrap">Products</th>
+                        <th class="text-nowrap">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for raffle in raffles %}
+                    {% set status = raffle.status.value %}
+                    {% if status == 'active' %}{% set badge_color = 'text-bg-success' %}
+                    {% elif status == 'completed' %}{% set badge_color = 'text-bg-primary' %}
+                    {% elif status == 'won' %}{% set badge_color = 'text-bg-info' %}
+                    {% elif status == 'cancelled' %}{% set badge_color = 'text-bg-danger' %}
+                    {% elif status == 'rejected_prize' %}{% set badge_color = 'text-bg-danger' %}
+                    {% elif status == 'contested' %}{% set badge_color = 'text-bg-warning' %}
+                    {% else %}{% set badge_color = 'text-bg-secondary' %}{% endif %}
+                    <tr>
+                        <td class="text-muted">{{ raffle.id }}</td>
+                        {% if current_user.is_admin %}
+                        <td class="text-center text-nowrap">
+                            <div>{{ raffle.creator_full_name }}</div>
+                            <small class="text-muted">ID: {{ raffle.creator_id }}</small>
+                        </td>
+                        {% endif %}
+                        <td class="fw-semibold" style="max-width: 170px;">
+                            <span class="d-inline-block text-truncate" style="max-width: 170px;"
+                                title="{{ raffle.title }}">{{ raffle.title }}</span>
+                        </td>
+                        <td class="text-muted" style="max-width: 240px;">
+                            <span class="d-inline-block text-truncate" style="max-width: 240px;"
+                                title="{{ raffle.description }}">{{ raffle.description }}</span>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill {{ badge_color }}">{{ status|replace('_', ' ')|capitalize
+                                }}</span>
+                        </td>
+                        <td class="text-center text-nowrap">{{ raffle.ticket_price }}</td>
+                        <td class="text-nowrap">{{ raffle.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-nowrap">{{ raffle.due_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-center">{{ raffle.products_count }}</td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle border-0"
+                                    data-bs-toggle="dropdown">
+                                    Action
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" style="min-width: auto;">
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}">
+                                            <i class="bi bi-eye me-2"></i>View
+                                        </a>
+                                    </li>
+                                    {% if raffle.is_draft %}
+                                    <li>
+                                        <hr class="dropdown-divider mx-1">
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteRaffleModal" data-raffle-id="{{ raffle.id }}"
+                                            data-raffle-title="{{ raffle.title }}">
+                                            <i class="bi bi-trash me-2"></i>Delete
+                                        </button>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-5">No raffles found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav aria-label="All raffles pagination" class="mt-4">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('raffle_bp.all_raffles_admin', page=pagination.prev_num, per_page=per_page, sort=sort, dir=direction) }}">Previous</a>
+            </li>
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('raffle_bp.all_raffles_admin', page=page_num, per_page=per_page, sort=sort, dir=direction) }}">{{
+                    page_num
+                    }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
             {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('raffle_bp.all_raffles_admin', page=pagination.next_num, per_page=per_page, sort=sort, dir=direction) }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
 
-            <td>{{ raffle.title }}</td>
-            <td>{{ raffle.description }}</td>
-            <td>{{ raffle.status }}</td>
-            <td>{{ raffle.ticket_price }}</td>
-            <td>{{ raffle.created_date }}</td>
-            <td>{{ raffle.due_date }}</td>
-            <td>{{ raffle.products_count }}</td>
-            <td>
-                <div class="btn-group">
-                    <button type="button" class="btn dropdown-toggle p-0 border-0 bg-transparent shadow-none"
-                        data-bs-toggle="dropdown">
-                        Action
-                    </button>
-                    <ul class="dropdown-menu" style="min-width: auto;">
-                    </ul>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+</div>
 
 <!--Confirm delete raffle modal-->
-<!-- <div class="modal fade" id="deleteUserModal" tabindex="-1">
+<div class="modal fade" id="deleteRaffleModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Confirm delete user</h5>
+                <h5 class="modal-title">Confirm delete raffle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <div class="modal-body">
-                Are you sure you want to delete user <strong id="modalUsername"></strong>?
+            <div class="modal-body text-start">
+                Are you sure you want to delete raffle <strong id="modalRaffleTitle"></strong>?
             </div>
 
             <div class="modal-footer">
@@ -81,7 +175,7 @@ Raffles
                     Cancel
                 </button>
 
-                <form id="deleteUserForm" method="POST">
+                <form id="deleteRaffleForm" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <button type="submit" class="btn btn-danger">
@@ -92,6 +186,6 @@ Raffles
 
         </div>
     </div>
-</div> -->
+</div>
 
 {% endblock %}

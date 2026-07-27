@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Contestation Details
+{% endblock %}
+
+{% block main %}
+<div class="container-fluid text-start py-3 px-lg-4">
+
+    <div class="d-flex align-items-center mb-4 gap-2">
+        <a href="{{ url_for('prize_delivery_bp.all_contestations_admin') }}"
+            class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+        <h1 class="h3 mb-0">Contestation #{{ contestation.id }}</h1>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        This page is not implemented yet. TODO: build the full contestation review page here.
+    </div>
+
+</div>
+{% endblock %}
