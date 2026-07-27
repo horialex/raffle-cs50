@@ -46,6 +46,31 @@ def save_product_image(product_image_form_data) -> str:
     return pic_name
 
 
+def save_contestation_image(contestation_image_form_data) -> str:
+    contestation_images_folder = current_app.config["PRIZE_CONTESTATION_IMAGES_FOLDER"]
+
+    filename = secure_filename(contestation_image_form_data.filename)
+    pic_name = f"contestation_image_{uuid.uuid1()}_{filename}"
+    contestation_image_form_data.save(os.path.join(contestation_images_folder, pic_name))
+
+    return pic_name
+
+
+def delete_contestation_image(filename):
+    if not filename:
+        return
+
+    folder = current_app.config["PRIZE_CONTESTATION_IMAGES_FOLDER"]
+    file_path = os.path.abspath(os.path.join(folder, filename))
+
+    # ensure file is inside the intended folder
+    if not file_path.startswith(os.path.abspath(folder)):
+        return
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
 def get_valid_images(images):
     valid_images = []
     for img in images:

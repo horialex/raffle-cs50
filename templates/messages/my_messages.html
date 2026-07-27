@@ -63,6 +63,13 @@ My Messages
                         class="btn btn-primary text-nowrap fw-semibold shadow-sm px-3">
                         <i class="bi bi-box-seam me-2"></i>Provide pickup address
                     </a>
+                    {% elif kind == "raffle" and message.prize_delivery and message.user_id ==
+                    message.prize_delivery.winner_user_id and
+                    message.prize_delivery.status.value == "prize_delivered" %}
+                    <a href="{{ url_for('prize_delivery_bp.review_prize', id=message.prize_delivery.id) }}"
+                        class="btn btn-primary text-nowrap fw-semibold shadow-sm px-3">
+                        <i class="bi bi-check2-square me-2"></i>Review your prize
+                    </a>
                     {% elif message.raffle %}
                     <a href="{{ url_for('raffle_bp.get_raffle', id=message.raffle.id) }}"
                         class="btn btn-outline-primary btn-sm text-nowrap">View raffle</a>

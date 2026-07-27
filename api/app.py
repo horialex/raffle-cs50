@@ -59,6 +59,7 @@ migrate = Migrate(app, db)
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 os.makedirs(app.config["PROFILE_PICS_FOLDER"], exist_ok=True)
 os.makedirs(app.config["PRODUCT_IMAGES_FOLDER"], exist_ok=True)
+os.makedirs(app.config["PRIZE_CONTESTATION_IMAGES_FOLDER"], exist_ok=True)
 
 
 # ----------------------------
