@@ -24,6 +24,9 @@ class Config:
         BASE_DIR / "static" / "uploads" / "images" / "profile_pictures"
     )
     PRODUCT_IMAGES_FOLDER = str(BASE_DIR / "static" / "uploads" / "images" / "products")
+    PRIZE_CONTESTATION_IMAGES_FOLDER = str(
+        BASE_DIR / "static" / "uploads" / "images" / "prize_contestation_images"
+    )
 
     # Session
     SESSION_PERMANENT = False
@@ -33,6 +36,8 @@ class Config:
     MIN_PRODUCTS_PER_RAFFLE = 1
     MAX_PRODUCTS_PER_RAFFLE = 3
     MAX_IMAGES_PER_PRODUCT = 3
+    MIN_CONTESTATION_IMAGES = 3
+    MAX_CONTESTATION_IMAGES = 3
     MIN_TICKETS_REQUIRED = 100
     MAX_TICKETS_PER_USER = 1
 

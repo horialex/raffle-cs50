@@ -6,3 +6,5 @@ from models.ticket_model import Ticket
 from models.message_model import Message
 from models.prize_delivery_model import PrizeDelivery
 from models.prize_delivery_log_model import PrizeDeliveryLog
+from models.prize_contestation_model import PrizeContestation
+from models.prize_contestation_image_model import PrizeContestationImage

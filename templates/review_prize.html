@@ -392,14 +392,12 @@ Review prize
                                     <i class="bi bi-box-seam me-2"></i>Accept prize
                                 </button>
                             </form>
-                            <form method="post"
-                                action="{{ url_for('prize_delivery_bp.contest_prize', id=prize_delivery.id) }}"
+                            <a href="{{ url_for('prize_delivery_bp.contest_prize', id=prize_delivery.id) }}"
                                 class="flex-fill d-grid">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-danger btn-lg fw-semibold shadow-sm">
+                                <button type="button" class="btn btn-danger btn-lg fw-semibold shadow-sm w-100">
                                     <i class="bi bi-exclamation-triangle me-2"></i>Contest prize
                                 </button>
-                            </form>
+                            </a>
                         </div>
 
                     </div>

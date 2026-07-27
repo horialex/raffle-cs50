@@ -8,6 +8,11 @@ from flask import (
     url_for,
 )
 
+from models.user_model import User
+from constants.contestation_status import ContestationStatus
+from constants.contestation_reason import ContestationReason
+from models.prize_contestation_model import PrizeContestation
+from models.prize_contestation_image_model import PrizeContestationImage
 from constants.raffle_status import RaffleStatus
 from jobs.raffles_processor import transfer_moeny
 from models.ticket_model import Ticket
@@ -23,8 +28,14 @@ from constants.countries import COUNTRIES
 from constants.delivery_status import PrizeDeliveryStatus
 from constants.message_category import MessageCategory
 from forms.delivery_address_form import DeliveryAddressForm
+from forms.prize_contestation_form import PrizeContestationForm
 from models.prize_delivery_model import PrizeDelivery
 from db import db
+from utils.file_helpers import (
+    get_valid_images,
+    save_contestation_image,
+    delete_contestation_image,
+)
 from utils.helpers import is_valid_phone_number, login_required
 
 prize_delivery_bp = Blueprint(
@@ -321,7 +332,7 @@ def accept_prize(id):
     return redirect(url_for("raffle_bp.get_raffles"))
 
 
-@prize_delivery_bp.route("/<int:id>/contest", methods=["POST"])
+@prize_delivery_bp.route("/<int:id>/contest", methods=["GET", "POST"])
 @login_required
 def contest_prize(id):
     user_id = get_current_user_id()
@@ -332,10 +343,103 @@ def contest_prize(id):
         return redirect(url_for("raffle_bp.get_raffles"))
 
     if prize_delivery.status != PrizeDeliveryStatus.PRIZE_DELIVERED:
-        flash("The pickup address can no longer be changed.", "error")
+        flash("This prize can no longer be contested.", "error")
         return redirect(url_for("raffle_bp.get_raffles"))
 
-    return render_template("contest_prize.html", prize_delivery=prize_delivery)
+    form = PrizeContestationForm()
+    if form.validate_on_submit():
+
+        # 1. Transition the PrizeDelivery to status CONTESTED
+        if not transition(
+            prize_delivery=prize_delivery,
+            new_status=PrizeDeliveryStatus.CONTESTED,
+            actor_id=user_id,
+            note="The winner user has contested the prize",
+        ):
+            flash(
+                "Unable to create the complaint. Unable to change the status.", "error"
+            )
+            return redirect(url_for("raffle_bp.get_raffles"))
+
+        # 2. Transition the Raffle to status = CONTESTED
+        prize_delivery.raffle.status = RaffleStatus.CONTESTED
+
+        # 3. Create the PrizeContestation and persist its evidence images to disk
+        prize_contestation: PrizeContestation = PrizeContestation(
+            prize_delivery_id=prize_delivery.id,
+            reason=ContestationReason[form.reason.data],
+            description=form.description.data,
+            status=ContestationStatus.PENDING,
+        )
+
+        valid_images = get_valid_images(form.images.data)
+
+        saved_image_names = []
+        for image_file in valid_images:
+            image_url = save_contestation_image(image_file)
+            saved_image_names.append(image_url)
+            prize_contestation.images.append(
+                PrizeContestationImage(image_url=image_url)
+            )
+
+        db.session.add(prize_contestation)
+
+        # 4. Message the raffle creator
+        creator_message = (
+            f"The winner has contested the prize for raffle "
+            f"'{prize_delivery.raffle.title}'. We are reviewing the situation "
+            f"and we will provide a response"
+        )
+        queue_message_for_raffle(
+            prize_delivery.creator,
+            creator_message,
+            prize_delivery.raffle,
+            prize_delivery,
+            category=MessageCategory.INFO,
+        )
+
+        # 5. Message the admin
+        admin_user: User = User.query.filter(User.role == "admin").first()
+        admin_message = (
+            f"The winner has contested the prize for raffle "
+            f"'{prize_delivery.raffle.title}'. Please review the situation "
+            f"and solve the contestation"
+        )
+        queue_message_for_raffle(
+            admin_user,
+            admin_message,
+            prize_delivery.raffle,
+            prize_delivery,
+            category=MessageCategory.INFO,
+        )
+
+        # 6. Save the changes to the db
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            for image_name in saved_image_names:
+                delete_contestation_image(image_name)
+            print("Error: ", e)
+            flash("Unable to contest the raffle prize", "error")
+            return redirect(url_for("raffle_bp.get_raffles"))
+
+        # 7. External notifications
+        send_external_notifications(prize_delivery.creator, creator_message)
+
+        # 8. Flash message and redirect
+        flash("Prize contested", "warning")
+
+        return redirect(url_for("raffle_bp.get_raffles"))
+
+    if form.is_submitted():
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", "error")
+
+    return render_template(
+        "contest_prize.html", form=form, prize_delivery=prize_delivery
+    )
 
 
 def get_current_user_id() -> int:
