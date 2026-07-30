@@ -488,6 +488,20 @@ Raffle details
                         {% endif %}
                     </div>
                     {% endif %}
+
+                    <!-- Admin: review the contestation filed for this raffle -->
+                    {% if current_user.is_admin and raffle.prize_delivery and raffle.prize_delivery.contestation %}
+                    {% set contestation = raffle.prize_delivery.contestation %}
+
+                    <hr class="my-3">
+
+                    <div class="d-grid">
+                        <a href="{{ url_for('prize_contestation_bp.contestation_details', id=contestation.id) }}"
+                            class="btn btn-danger fw-semibold shadow-sm">
+                            <i class="bi bi-eye-fill me-2"></i>View contestation details
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -8,7 +8,7 @@ Prize Contestations
 
 {% macro sort_header(label, key) %}
 {% set next_dir = 'desc' if (sort == key and direction == 'asc') else 'asc' %}
-<a href="{{ url_for('prize_delivery_bp.all_contestations_admin', sort=key, dir=next_dir, per_page=per_page) }}"
+<a href="{{ url_for('prize_contestation_bp.all_contestations_admin', sort=key, dir=next_dir, per_page=per_page) }}"
     class="text-decoration-none text-reset d-inline-flex align-items-center gap-1">
     {{ label }}
     {% if sort == key %}
@@ -92,7 +92,7 @@ Prize Contestations
                         <td class="text-nowrap">{{ contestation.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
                         <td class="text-center">
                             <a class="btn btn-sm btn-outline-secondary border-0"
-                                href="{{ url_for('prize_delivery_bp.contestation_details', id=contestation.id) }}">
+                                href="{{ url_for('prize_contestation_bp.contestation_details', id=contestation.id) }}">
                                 <i class="bi bi-eye me-1"></i>Details
                             </a>
                         </td>
@@ -112,13 +112,13 @@ Prize Contestations
         <ul class="pagination justify-content-center mb-0">
             <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
                 <a class="page-link"
-                    href="{{ url_for('prize_delivery_bp.all_contestations_admin', page=pagination.prev_num, per_page=per_page, sort=sort, dir=direction) }}">Previous</a>
+                    href="{{ url_for('prize_contestation_bp.all_contestations_admin', page=pagination.prev_num, per_page=per_page, sort=sort, dir=direction) }}">Previous</a>
             </li>
             {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
             {% if page_num %}
             <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
                 <a class="page-link"
-                    href="{{ url_for('prize_delivery_bp.all_contestations_admin', page=page_num, per_page=per_page, sort=sort, dir=direction) }}">{{
+                    href="{{ url_for('prize_contestation_bp.all_contestations_admin', page=page_num, per_page=per_page, sort=sort, dir=direction) }}">{{
                     page_num }}</a>
             </li>
             {% else %}
@@ -127,7 +127,7 @@ Prize Contestations
             {% endfor %}
             <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
                 <a class="page-link"
-                    href="{{ url_for('prize_delivery_bp.all_contestations_admin', page=pagination.next_num, per_page=per_page, sort=sort, dir=direction) }}">Next</a>
+                    href="{{ url_for('prize_contestation_bp.all_contestations_admin', page=pagination.next_num, per_page=per_page, sort=sort, dir=direction) }}">Next</a>
             </li>
         </ul>
     </nav>
