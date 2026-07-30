@@ -474,13 +474,12 @@ def all_deliveries_admin():
     sort_column = sort_columns[sort]
     order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
 
-    pagination = (
-        PrizeDelivery.query.order_by(order_by)
-        .paginate(page=page, per_page=per_page, error_out=False)
+    pagination = PrizeDelivery.query.order_by(order_by).paginate(
+        page=page, per_page=per_page, error_out=False
     )
 
     return render_template(
-        "prize_delivery/all_deliveries_admin.html",
+        "admin/all_deliveries_admin.html",
         deliveries=pagination.items,
         pagination=pagination,
         per_page=per_page,
@@ -521,13 +520,12 @@ def all_contestations_admin():
     sort_column = sort_columns[sort]
     order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
 
-    pagination = (
-        PrizeContestation.query.order_by(order_by)
-        .paginate(page=page, per_page=per_page, error_out=False)
+    pagination = PrizeContestation.query.order_by(order_by).paginate(
+        page=page, per_page=per_page, error_out=False
     )
 
     return render_template(
-        "prize_delivery/all_contestations_admin.html",
+        "admin/all_contestations_admin.html",
         contestations=pagination.items,
         pagination=pagination,
         per_page=per_page,
@@ -549,7 +547,7 @@ def contestation_details(id):
     contestation: PrizeContestation = PrizeContestation.query.get_or_404(id)
 
     return render_template(
-        "prize_delivery/contestation_details.html",
+        "admin/admin_contestation_details.html",
         contestation=contestation,
     )
 

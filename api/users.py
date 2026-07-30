@@ -173,7 +173,7 @@ def get_users():
     )
 
     return render_template(
-        "users.html",
+        "admin/all_users_admin.html",
         users=pagination.items,
         pagination=pagination,
         per_page=per_page,

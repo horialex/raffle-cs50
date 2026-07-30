@@ -802,7 +802,7 @@ def all_raffles_admin():
     )
 
     return render_template(
-        "/raffle/all_raffles_admin.html",
+        "/admin/all_raffles_admin.html",
         raffles=pagination.items,
         pagination=pagination,
         per_page=per_page,
