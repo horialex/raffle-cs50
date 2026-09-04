@@ -76,7 +76,7 @@ def process_raffles():
 
     print("\n\n --- Finished Processing failed raffles ---")
 
-    print("\n\n --- Started Completed failed raffles ---")
+    print("\n\n --- Started Completed raffles ---")
     # Process the succesfull raffles
     if not process_complete_raffles(complete_raffles):
         print("Some succesfull raffles could not be settled - see errors above")
@@ -278,13 +278,13 @@ def refund_tickets(tickets: list[Ticket]) -> bool:
     return False
 
 
-def transfer_moeny(user: User) -> bool:
+def transfer_money(user: User) -> bool:
     if current_app.config["SIMULATE_PAYMENT"]:
-        print(f"[Simulated] Money Transfer to Raffle winner {user.id}")
+        print(f"[Simulated] Money Transfer to user: {user.id}")
         return True
 
     # TODO: Implement this when the payment mechanism will be implemented
-    print("Unable to transfer the money to the user that created the raffle")
+    print("Unable to transfer the money")
     return False
 
 

@@ -53,8 +53,8 @@ Prize Deliveries
                     {% if status in ['pending_delivery_address', 'pending_pickup_address', 'contested'] %}
                     {% set badge_color = 'text-bg-warning' %}
                     {% elif status == 'waiting_for_shipment' %}{% set badge_color = 'text-bg-secondary' %}
-                    {% elif status == 'prize_sent' %}{% set badge_color = 'text-bg-info' %}
-                    {% elif status == 'prize_delivered' %}{% set badge_color = 'text-bg-primary' %}
+                    {% elif status in ['prize_sent', 'prize_return_sent'] %}{% set badge_color = 'text-bg-info' %}
+                    {% elif status in ['prize_delivered', 'prize_returned'] %}{% set badge_color = 'text-bg-primary' %}
                     {% elif status == 'prize_accepted' %}{% set badge_color = 'text-bg-success' %}
                     {% elif status in ['delivery_failed', 'delivery_timeout', 'prize_rejected'] %}
                     {% set badge_color = 'text-bg-danger' %}

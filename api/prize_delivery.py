@@ -15,7 +15,7 @@ from constants.contestation_reason import ContestationReason
 from models.prize_contestation_model import PrizeContestation
 from models.prize_contestation_image_model import PrizeContestationImage
 from constants.raffle_status import RaffleStatus
-from jobs.raffles_processor import transfer_moeny
+from jobs.raffles_processor import transfer_money
 from models.ticket_model import Ticket
 from models.raffle_model import Raffle
 from services.courier_service import ship_prize
@@ -287,6 +287,7 @@ def accept_prize(id):
         actor_id=user_id,
         note="Prize accepted",
     ):
+        db.session.rollback()
         flash(
             "You could not accept the prize - there was a problem while changing the status",
             "error",
@@ -320,7 +321,7 @@ def accept_prize(id):
         return redirect(url_for("raffle_bp.get_raffles"))
 
     # 5. External side effects: only after the state is durably committed. The payout
-    if not transfer_moeny(prize_delivery.creator):
+    if not transfer_money(prize_delivery.creator):
         flash(
             "Prize accepted, but the payout could not be arranged yet.",
             "warning",
