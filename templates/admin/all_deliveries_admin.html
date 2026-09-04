@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Prize Deliveries
+{% endblock %}
+
+{% block main %}
+
+{% macro sort_header(label, key) %}
+{% set next_dir = 'desc' if (sort == key and direction == 'asc') else 'asc' %}
+<a href="{{ url_for('prize_delivery_bp.all_deliveries_admin', sort=key, dir=next_dir, per_page=per_page) }}"
+    class="text-decoration-none text-reset d-inline-flex align-items-center gap-1">
+    {{ label }}
+    {% if sort == key %}
+    <i class="bi bi-chevron-{{ 'up' if direction == 'asc' else 'down' }} small"></i>
+    {% else %}
+    <i class="bi bi-chevron-expand small text-muted opacity-25"></i>
+    {% endif %}
+</a>
+{% endmacro %}
+
+<div class="container-fluid text-start py-3 px-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h1 class="h3 mb-1">Prize Deliveries</h1>
+            <p class="text-muted mb-0">Track the delivery of prizes for won raffles.</p>
+        </div>
+        <span class="badge text-bg-secondary rounded-pill fs-6 px-3 py-2">
+            {{ pagination.total }} total
+        </span>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table id="deliveries_table" class="table table-hover align-middle mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th class="text-nowrap">ID</th>
+                        <th class="text-nowrap">Raffle</th>
+                        <th class="text-nowrap">Winner</th>
+                        <th class="text-nowrap">Creator</th>
+                        <th class="text-nowrap">{{ sort_header('Status', 'status') }}</th>
+                        <th class="text-nowrap">Tracking Code</th>
+                        <th class="text-nowrap">{{ sort_header('Created', 'created') }}</th>
+                        <th class="text-nowrap">{{ sort_header('Updated', 'updated') }}</th>
+                        <th class="text-nowrap">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for delivery in deliveries %}
+                    {% set status = delivery.status.value %}
+                    {% if status in ['pending_delivery_address', 'pending_pickup_address', 'contested'] %}
+                    {% set badge_color = 'text-bg-warning' %}
+                    {% elif status == 'waiting_for_shipment' %}{% set badge_color = 'text-bg-secondary' %}
+                    {% elif status in ['prize_sent', 'prize_return_sent'] %}{% set badge_color = 'text-bg-info' %}
+                    {% elif status in ['prize_delivered', 'prize_returned'] %}{% set badge_color = 'text-bg-primary' %}
+                    {% elif status == 'prize_accepted' %}{% set badge_color = 'text-bg-success' %}
+                    {% elif status in ['delivery_failed', 'delivery_timeout', 'prize_rejected'] %}
+                    {% set badge_color = 'text-bg-danger' %}
+                    {% else %}{% set badge_color = 'text-bg-secondary' %}{% endif %}
+                    <tr>
+                        <td class="text-muted">{{ delivery.id }}</td>
+                        <td style="max-width: 200px;">
+                            <span class="d-inline-block text-truncate fw-semibold" style="max-width: 200px;"
+                                title="{{ delivery.raffle.title if delivery.raffle else '' }}">
+                                {{ delivery.raffle.title if delivery.raffle else '—' }}
+                            </span>
+                            <div><small class="text-muted">Raffle #{{ delivery.raffle_id }}</small></div>
+                        </td>
+                        <td class="text-nowrap">
+                            {% if delivery.winner %}
+                            <div>{{ delivery.winner.first_name }} {{ delivery.winner.last_name }}</div>
+                            <small class="text-muted">ID: {{ delivery.winner_user_id }}</small>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            {% if delivery.creator %}
+                            <div>{{ delivery.creator.first_name }} {{ delivery.creator.last_name }}</div>
+                            <small class="text-muted">ID: {{ delivery.creator_user_id }}</small>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill fs-6 fw-normal px-3 py-2 {{ badge_color }}">{{
+                                status|replace('_', ' ')|capitalize }}</span>
+                        </td>
+                        <td class="text-nowrap">
+                            {% if delivery.tracking_code %}
+                            <code>{{ delivery.tracking_code }}</code>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">{{ delivery.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-nowrap">{{ delivery.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-outline-secondary border-0"
+                                href="{{ url_for('raffle_bp.get_raffle', id=delivery.raffle_id) }}">
+                                <i class="bi bi-eye me-1"></i>Raffle
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">No prize deliveries yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Prize deliveries pagination" class="mt-4">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('prize_delivery_bp.all_deliveries_admin', page=pagination.prev_num, per_page=per_page, sort=sort, dir=direction) }}">Previous</a>
+            </li>
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('prize_delivery_bp.all_deliveries_admin', page=page_num, per_page=per_page, sort=sort, dir=direction) }}">{{
+                    page_num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('prize_delivery_bp.all_deliveries_admin', page=pagination.next_num, per_page=per_page, sort=sort, dir=direction) }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+
+{% endblock %}

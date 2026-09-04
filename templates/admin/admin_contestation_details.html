@@ -1,0 +1,616 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Contestation Details
+{% endblock %}
+
+{% block main %}
+
+<div id="main">
+    <div class="container-fluid text-start py-3 px-lg-4">
+        <div class="card shadow-sm rounded">
+            <div class="card-body bg-light rounded">
+                {% set prize_delivery = contestation.prize_delivery %}
+                {% set raffle = prize_delivery.raffle %}
+                {% set contestation_status = contestation.status.value %}
+
+                <h2 class="card-title text-center mb-3">Review the contestation</h2>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <h4 class="h4 mb-0">Contestation #{{ contestation.id }}</h4>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('prize_contestation_bp.all_contestations_admin') }}"
+                            class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </a>
+
+                        <a href="{{ url_for('raffle_bp.get_raffle', id=raffle.id) }}"
+                            class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-ticket-perforated me-1"></i>View raffle details
+                        </a>
+                    </div>
+                </div>
+
+                <p class="text-muted mb-4">Please review the contestation the user filed - you need to decide if this is
+                    a real problem or if
+                    the prize is the expected one. Rejecting the contesatation means that the prize will remain at the
+                    Winner and the Raffle creator will get the money.
+                    Accepting the contesation will tirgger a courier call that will take the prize back from the Winner
+                    to the Raffle creator. The money will be returned to the ticket buyers and a tax will be
+                    collected from the Raffle creator</p>
+
+                <div class="row g-4">
+                    <div class="col-lg-12">
+                        <!-- Prize Contestation -->
+                        <div class="card shadow border-0 mb-5">
+                            <div class="card-body p-4 text-start">
+                                <div class="d-flex align-items-center mb-1">
+                                    <i class="bi text-primary bi-exclamation-diamond fs-5 me-2"></i>
+                                    <h4 class="mb-0 fw-bold">Contestation</h4>
+                                </div>
+
+                                <!-- Contestation status -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted small">Contestation status</span>
+                                    <span class="badge rounded-pill px-3 py-2
+                                    {% if contestation_status == 'accepted' %}bg-success-subtle text-success
+                                    {% elif contestation_status == 'dismissed' %}bg-danger-subtle text-danger
+                                    {% elif contestation_status == 'pending' %}bg-warning-subtle text-warning-emphasis
+                                    {% else %}bg-secondary-subtle text-secondary
+                                    {% endif %}">
+                                        ● {{ contestation_status | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </div>
+
+                                <hr>
+
+                                <div class="row g-4">
+
+                                    <!-- Reason -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-flag-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Reason</strong></div>
+                                                {{ contestation.reason.value | replace('_', ' ') | capitalize }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filed on -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-calendar-x fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Filed on</strong></div>
+                                                {{ contestation.created_at.strftime('%d-%m-%Y %H:%M') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resolution -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-shield-check fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Resolution</strong></div>
+                                                {% if contestation.resolved_by %}
+                                                <div>{{ contestation.resolved_by.first_name }}
+                                                    {{ contestation.resolved_by.last_name }}</div>
+                                                <div class="text-muted">
+                                                    {{ contestation.resolved_at.strftime('%d-%m-%Y %H:%M') if
+                                                    contestation.resolved_at }}
+                                                </div>
+                                                <div class="text-muted">{{ contestation.resolution_note or "No
+                                                    note left." }}</div>
+                                                {% else %}
+                                                <div class="text-muted">Not reviewed yet.</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-chat-left-text-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>What the winner reported</strong>
+                                                </div>
+                                                <div class="text-muted">{{ contestation.description }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+
+                                <hr>
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-chat-left-text-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Contestation status</strong>
+                                                </div>
+                                                <div class="text-muted">{{ contestation.status.value }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resolved by -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-person-check-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Resolved by</strong></div>
+                                                <div class="text-muted">
+                                                    {% if contestation.resolved_by %}
+                                                    {{ contestation.resolved_by.first_name }}
+                                                    {{ contestation.resolved_by.last_name }}
+                                                    (#{{ contestation.resolved_by_user_id }})
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resolved at -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-calendar-check fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Resolved at</strong></div>
+                                                <div class="text-muted">
+                                                    {{ contestation.resolved_at.strftime('%d-%m-%Y %H:%M') if
+                                                    contestation.resolved_at else "-" }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resolution note -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-journal-text fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Resolution note</strong></div>
+                                                <div class="text-muted">{{ contestation.resolution_note or "-" }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <hr>
+
+                                <!-- Evidence images -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <div
+                                        class="rounded-circle bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center me-3 icon-circle">
+                                        <i class="bi bi-images fs-5"></i>
+                                    </div>
+                                    <div class="small text-muted"><strong>Evidence
+                                            ({{ contestation.images | length }})</strong></div>
+                                </div>
+
+                                {% if contestation.images %}
+                                <div class="row g-3">
+                                    {% for image in contestation.images %}
+                                    {% set image_src = url_for('static',
+                                    filename='uploads/images/prize_contestation_images/' + image.image_url) %}
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <a href="{{ image_src }}" target="_blank" rel="noopener noreferrer">
+                                            <img src="{{ image_src }}" class="img-fluid rounded border"
+                                                style="height: 320px; width: 100%; object-fit: cover;"
+                                                alt="Contestation evidence {{ loop.index }}">
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-muted">No images were attached.</div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        <div class="card shadow border-0 mb-5">
+                            <div class="card-body p-4 text-start">
+                                <!-- Prize Delivery details -->
+                                <div class="d-flex align-items-center mb-1">
+                                    <i class="bi bi-truck text-primary fs-5 me-2"></i>
+                                    <h4 class="mb-0 fw-bold">Prize delivery</h4>
+                                </div>
+
+                                <!-- Delivery status -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted small">Delivery status</span>
+                                    {% set delivery_status = prize_delivery.status.value %}
+                                    <span class="badge rounded-pill px-3 py-2
+                                    {% if delivery_status in ['prize_delivered', 'prize_returned'] %}bg-success-subtle text-success
+                                    {% elif delivery_status in ['prize_sent', 'waiting_for_shipment', 'prize_return_sent'] %}bg-info-subtle text-primary
+                                    {% elif delivery_status in ['prize_rejected', 'delivery_failed', 'delivery_timeout', 'contested'] %}bg-danger-subtle text-danger
+                                    {% elif delivery_status == 'prize_accepted' %}bg-primary-subtle text-primary
+                                    {% else %}bg-secondary-subtle text-secondary
+                                    {% endif %}">
+                                        ● {{ delivery_status | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </div>
+
+                                <hr>
+
+                                <div class="row g-4">
+
+                                    <!-- Tracking code -->
+                                    <div class="col-sm-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-upc-scan fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Tracking code</strong>
+                                                </div>
+                                                {{ prize_delivery.tracking_code or "Not available yet" }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Last updated -->
+                                    <div class="col-sm-6">
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-calendar-check fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Last updated</strong>
+                                                </div>
+                                                {{ prize_delivery.updated_at.strftime('%d-%m-%Y %H:%M') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <hr>
+
+                                <!-- Shipping address -->
+                                <div class="d-flex align-items-start">
+                                    <div
+                                        class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                        <i class="bi bi-geo-alt-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted"><strong>Shipped to</strong></div>
+                                        <div>{{ prize_delivery.delivery_name }}</div>
+                                        <div class="text-muted">{{ prize_delivery.delivery_address }}
+                                            {% if prize_delivery.delivery_country %}
+                                            - {{ prize_delivery.delivery_country|upper }}
+                                            {% endif %}</div>
+                                        <div class="text-muted">{{ prize_delivery.delivery_phone }}</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {% set creator = prize_delivery.creator %}
+                        {% set winner = prize_delivery.winner %}
+                        {% set winner_tickets = raffle.tickets | selectattr('user_id', 'equalto', winner.id) | list %}
+
+                        <!-- Raffle creator card -->
+                        <div class="card shadow border-0 mb-5">
+                            <div class="card-body p-4 text-start">
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-person-badge-fill text-primary fs-5 me-2"></i>
+                                    <h4 class="mb-0 fw-bold">Raffle creator</h4>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <img src="{{ url_for('static', filename='uploads/images/profile_pictures/' + creator.profile_picture) if creator.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
+                                        alt="Profile picture" class="rounded-circle img-thumbnail shadow-sm"
+                                        style="width: 70px; height: 70px; object-fit: cover;">
+                                    <div>
+                                        <h5 class="fw-bold mb-0">{{ creator.first_name }} {{ creator.last_name }}</h5>
+                                        <span class="text-muted small">@{{ creator.username }}</span>
+                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary ms-1">
+                                            {{ creator.role | capitalize }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="row g-4">
+
+                                    <!-- Email -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-envelope-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Email</strong></div>
+                                                {{ creator.email }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Phone -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-telephone-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Phone</strong></div>
+                                                {{ creator.phone or "Not provided" }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Address -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-geo-alt-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Address</strong></div>
+                                                <div>{{ creator.address or "Not provided" }}</div>
+                                                <div class="text-muted">{{ creator.country|upper if creator.country }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Raffles created -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-ticket-perforated-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Raffles created</strong></div>
+                                                {{ creator.raffles | length }} raffle(s)
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Member since -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-person-plus-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Member since</strong></div>
+                                                {{ creator.created_at.strftime('%d-%m-%Y %H:%M') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Last login -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-box-arrow-in-right fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Last login</strong></div>
+                                                {{ creator.last_login_at.strftime('%d-%m-%Y %H:%M') if
+                                                creator.last_login_at else "Never" }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Ticket winner card -->
+                        <div class="card shadow border-0 mb-5">
+                            <div class="card-body p-4 text-start">
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-trophy-fill text-primary fs-5 me-2"></i>
+                                    <h4 class="mb-0 fw-bold">Ticket winner</h4>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <img src="{{ url_for('static', filename='uploads/images/profile_pictures/' + winner.profile_picture) if winner.profile_picture else url_for('static', filename='images/avatar-default.svg') }}"
+                                        alt="Profile picture" class="rounded-circle img-thumbnail shadow-sm"
+                                        style="width: 70px; height: 70px; object-fit: cover;">
+                                    <div>
+                                        <h5 class="fw-bold mb-0">{{ winner.first_name }} {{ winner.last_name }}</h5>
+                                        <span class="text-muted small">@{{ winner.username }}</span>
+                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary ms-1">
+                                            {{ winner.role | capitalize }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="row g-4">
+
+                                    <!-- Email -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-envelope-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Email</strong></div>
+                                                {{ winner.email }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Phone -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-telephone-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Phone</strong></div>
+                                                {{ winner.phone or "Not provided" }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Address -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-geo-alt-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Address</strong></div>
+                                                <div>{{ winner.address or "Not provided" }}</div>
+                                                <div class="text-muted">{{ winner.country|upper if winner.country }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Winning ticket -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-ticket-detailed-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Tickets in this raffle</strong>
+                                                </div>
+                                                {% for ticket in winner_tickets %}
+                                                <div>Ticket #{{ ticket.id }} — ${{ ticket.price }}
+                                                    <span class="text-muted">({{ ticket.status.value | replace('_', ' ')
+                                                        }})</span>
+                                                </div>
+                                                {% else %}
+                                                <div class="text-muted">No tickets found for this user.</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Member since -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-person-plus-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Member since</strong></div>
+                                                {{ winner.created_at.strftime('%d-%m-%Y %H:%M') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Last login -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <div
+                                                class="rounded-circle bg-info-subtle text-primary d-flex align-items-center justify-content-center me-3 icon-circle">
+                                                <i class="bi bi-box-arrow-in-right fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="small text-muted"><strong>Last login</strong></div>
+                                                {{ winner.last_login_at.strftime('%d-%m-%Y %H:%M') if
+                                                winner.last_login_at else "Never" }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- CTA Buttons section -->
+                        {% if contestation_status == 'pending' %}
+                        <div class="d-flex flex-wrap gap-3 mt-3">
+                            <form method="post"
+                                action="{{ url_for('prize_contestation_bp.accept_contestation', id=contestation.id) }}"
+                                class="flex-fill d-grid">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success btn-lg fw-semibold shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-2"></i>Accept contestation
+                                </button>
+                            </form>
+                            <form method="post"
+                                action="{{ url_for('prize_contestation_bp.reject_contestation', id=contestation.id) }}"
+                                class="flex-fill d-grid">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-lg fw-semibold shadow-sm">
+                                    <i class="bi bi-x-square me-2"></i>Reject contestation
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            This contestation was already
+                            <strong>{{ contestation_status | replace('_', ' ') }}</strong>{% if
+                            contestation.resolved_at %} on
+                            {{ contestation.resolved_at.strftime('%d-%m-%Y %H:%M') }}{% endif %}, so it can no longer be
+                            reviewed.
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

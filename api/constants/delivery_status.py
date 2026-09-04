@@ -17,3 +17,7 @@ class PrizeDeliveryStatus(Enum):
     DELIVERY_FAILED = "delivery_failed"
     DELIVERY_TIMEOUT = "delivery_timeout"
     PRIZE_REJECTED = "prize_rejected"
+
+    # Return leg (winner ships the prize back to the raffle creator)
+    PRIZE_RETURN_SENT = "prize_return_sent"
+    PRIZE_RETURNED = "prize_returned"

@@ -62,6 +62,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
+    const deleteRaffleModal = document.getElementById('deleteRaffleModal');
+
+    deleteRaffleModal?.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        const raffleId = button.getAttribute('data-raffle-id');
+        const raffleTitle = button.getAttribute('data-raffle-title');
+
+        const form = document.getElementById('deleteRaffleForm');
+        form.action = `/raffles/delete/${raffleId}`;
+
+        document.getElementById('modalRaffleTitle').textContent = raffleTitle;
+    });
+
+
     const addProductBtn = document.getElementById('add-product-btn');
     const container = document.getElementById("products-container");
     const template = document.getElementById("product-template");

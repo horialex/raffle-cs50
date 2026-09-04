@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Prize Contestations
+{% endblock %}
+
+{% block main %}
+
+{% macro sort_header(label, key) %}
+{% set next_dir = 'desc' if (sort == key and direction == 'asc') else 'asc' %}
+<a href="{{ url_for('prize_contestation_bp.all_contestations_admin', sort=key, dir=next_dir, per_page=per_page) }}"
+    class="text-decoration-none text-reset d-inline-flex align-items-center gap-1">
+    {{ label }}
+    {% if sort == key %}
+    <i class="bi bi-chevron-{{ 'up' if direction == 'asc' else 'down' }} small"></i>
+    {% else %}
+    <i class="bi bi-chevron-expand small text-muted opacity-25"></i>
+    {% endif %}
+</a>
+{% endmacro %}
+
+<div class="container-fluid text-start py-3 px-lg-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h1 class="h3 mb-1">Prize Contestations</h1>
+            <p class="text-muted mb-0">Track contestations raised by winners on delivered prizes.</p>
+        </div>
+        <span class="badge text-bg-secondary rounded-pill fs-6 px-3 py-2">
+            {{ pagination.total }} total
+        </span>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table id="contestations_table" class="table table-hover align-middle mb-0">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th class="text-nowrap">ID</th>
+                        <th class="text-nowrap">Raffle</th>
+                        <th class="text-nowrap">{{ sort_header('Reason', 'reason') }}</th>
+                        <th class="text-nowrap">Description</th>
+                        <th class="text-nowrap">{{ sort_header('Status', 'status') }}</th>
+                        <th class="text-nowrap">Resolved By</th>
+                        <th class="text-nowrap">{{ sort_header('Created', 'created') }}</th>
+                        <th class="text-nowrap">{{ sort_header('Updated', 'updated') }}</th>
+                        <th class="text-nowrap">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contestation in contestations %}
+                    {% set status = contestation.status.value %}
+                    {% if status == 'pending' %}{% set badge_color = 'text-bg-warning' %}
+                    {% elif status == 'accepted' %}{% set badge_color = 'text-bg-success' %}
+                    {% elif status == 'dismissed' %}{% set badge_color = 'text-bg-secondary' %}
+                    {% else %}{% set badge_color = 'text-bg-secondary' %}{% endif %}
+                    {% set delivery = contestation.prize_delivery %}
+                    <tr>
+                        <td class="text-muted">{{ contestation.id }}</td>
+                        <td style="max-width: 200px;">
+                            {% if delivery and delivery.raffle %}
+                            <span class="d-inline-block text-truncate fw-semibold" style="max-width: 200px;"
+                                title="{{ delivery.raffle.title }}">{{ delivery.raffle.title }}</span>
+                            <div><small class="text-muted">Delivery #{{ contestation.prize_delivery_id }}</small></div>
+                            {% else %}
+                            <small class="text-muted">Delivery #{{ contestation.prize_delivery_id }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            <span class="badge rounded-pill text-bg-light border">{{
+                                contestation.reason.value|replace('_', ' ')|capitalize }}</span>
+                        </td>
+                        <td class="text-muted" style="max-width: 280px;">
+                            <span class="d-inline-block text-truncate" style="max-width: 280px;"
+                                title="{{ contestation.description }}">{{ contestation.description }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill fs-6 fw-normal px-3 py-2 {{ badge_color }}">{{
+                                status|capitalize }}</span>
+                        </td>
+                        <td class="text-center text-nowrap">
+                            {% if contestation.resolved_by %}
+                            <div>{{ contestation.resolved_by.first_name }} {{ contestation.resolved_by.last_name }}
+                            </div>
+                            <small class="text-muted">{{ contestation.resolved_at.strftime('%Y-%m-%d %H:%M') if
+                                contestation.resolved_at }}</small>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">{{ contestation.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-nowrap">{{ contestation.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-outline-secondary border-0"
+                                href="{{ url_for('prize_contestation_bp.contestation_details', id=contestation.id) }}">
+                                <i class="bi bi-eye me-1"></i>Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">No prize contestations yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Prize contestations pagination" class="mt-4">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('prize_contestation_bp.all_contestations_admin', page=pagination.prev_num, per_page=per_page, sort=sort, dir=direction) }}">Previous</a>
+            </li>
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('prize_contestation_bp.all_contestations_admin', page=page_num, per_page=per_page, sort=sort, dir=direction) }}">{{
+                    page_num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('prize_contestation_bp.all_contestations_admin', page=pagination.next_num, per_page=per_page, sort=sort, dir=direction) }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+
+{% endblock %}

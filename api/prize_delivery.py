@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    abort,
     flash,
     redirect,
     render_template,
@@ -14,7 +15,7 @@ from constants.contestation_reason import ContestationReason
 from models.prize_contestation_model import PrizeContestation
 from models.prize_contestation_image_model import PrizeContestationImage
 from constants.raffle_status import RaffleStatus
-from jobs.raffles_processor import transfer_moeny
+from jobs.raffles_processor import transfer_money
 from models.ticket_model import Ticket
 from models.raffle_model import Raffle
 from services.courier_service import ship_prize
@@ -286,6 +287,7 @@ def accept_prize(id):
         actor_id=user_id,
         note="Prize accepted",
     ):
+        db.session.rollback()
         flash(
             "You could not accept the prize - there was a problem while changing the status",
             "error",
@@ -319,7 +321,7 @@ def accept_prize(id):
         return redirect(url_for("raffle_bp.get_raffles"))
 
     # 5. External side effects: only after the state is durably committed. The payout
-    if not transfer_moeny(prize_delivery.creator):
+    if not transfer_money(prize_delivery.creator):
         flash(
             "Prize accepted, but the payout could not be arranged yet.",
             "warning",
@@ -439,6 +441,51 @@ def contest_prize(id):
 
     return render_template(
         "contest_prize.html", form=form, prize_delivery=prize_delivery
+    )
+
+
+# ----------------------------
+# All prize deliveries (admin) - tracking view
+# ----------------------------
+@prize_delivery_bp.route("/all", methods=["GET"])
+@login_required
+def all_deliveries_admin():
+    user: User = User.query.get_or_404(get_current_user_id())
+    if not user.is_admin:
+        abort(403)
+
+    page = request.args.get("page", 1, type=int)
+    page = max(page, 1)
+    per_page = request.args.get("per_page", 20, type=int)
+    per_page = min(max(per_page, 1), 20)
+
+    # Sorting
+    sort_columns = {
+        "status": PrizeDelivery.status,
+        "created": PrizeDelivery.created_at,
+        "updated": PrizeDelivery.updated_at,
+    }
+    sort = request.args.get("sort", "updated")
+    if sort not in sort_columns:
+        sort = "updated"
+    direction = request.args.get("dir", "desc")
+    if direction not in ("asc", "desc"):
+        direction = "desc"
+
+    sort_column = sort_columns[sort]
+    order_by = sort_column.asc() if direction == "asc" else sort_column.desc()
+
+    pagination = PrizeDelivery.query.order_by(order_by).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return render_template(
+        "admin/all_deliveries_admin.html",
+        deliveries=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        sort=sort,
+        direction=direction,
     )
 
 

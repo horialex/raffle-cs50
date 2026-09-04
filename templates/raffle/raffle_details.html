@@ -440,6 +440,82 @@ Raffle details
                         </div>
                         <p>Congratulations, the raffle is completed, the winner accepted the raffle prize</p>
 
+                        {% elif current_user.id == pd.winner_user_id and pd.status.value == "contested" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Prize contested</h4>
+                        </div>
+                        <p>You have contested this prize.
+                            {% if pd.contestation %}
+                            Your contestation
+                            (<strong>{{ pd.contestation.reason.value|replace('_', ' ')|capitalize }}</strong>)
+                            is now under review by an administrator.
+                            {% else %}
+                            It is now under review by an administrator.
+                            {% endif %}
+                            You will be notified once a decision has been made.
+                        </p>
+
+                        {% elif current_user.id == pd.creator_user_id and pd.status.value == "contested" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill text-danger fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Prize contested</h4>
+                        </div>
+                        <p>The winner has contested the prize for this raffle.
+                            {% if pd.contestation %}
+                            Reason:
+                            <strong>{{ pd.contestation.reason.value|replace('_', ' ')|capitalize }}</strong>.
+                            {% endif %}
+                            An administrator is reviewing the contestation. Please wait for the outcome.
+                        </p>
+
+                        {% elif pd.status.value == "contested" %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill text-secondary fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Prize contested</h4>
+                        </div>
+                        <p>The prize for this raffle is currently being contested and is under review.</p>
+
+                        {% elif current_user.id == pd.winner_user_id and pd.status.value in ["prize_rejected", "prize_return_sent", "prize_returned"] %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-x-circle-fill text-danger fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Raffle cancelled</h4>
+                        </div>
+                        <p>Your contestation was accepted and the raffle has been cancelled.
+                            {% if pd.status.value == "prize_rejected" %}
+                            A courier will be arranged to collect the prize from you and return it to the raffle
+                            creator.
+                            {% elif pd.status.value == "prize_return_sent" %}
+                            The prize is on its way back to the raffle creator.
+                            {% else %}
+                            The prize has been returned to the raffle creator.
+                            {% endif %}
+                        </p>
+
+                        {% elif current_user.id == pd.creator_user_id and pd.status.value in ["prize_rejected", "prize_return_sent", "prize_returned"] %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-x-circle-fill text-danger fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Raffle cancelled</h4>
+                        </div>
+                        <p>The winner's contestation was accepted and this raffle has been cancelled. Ticket buyers
+                            have been refunded.
+                            {% if pd.status.value == "prize_rejected" %}
+                            A courier will be arranged to bring the prize back to you.
+                            {% elif pd.status.value == "prize_return_sent" %}
+                            The prize is on its way back to you.
+                            {% else %}
+                            The prize has been returned to you.
+                            {% endif %}
+                        </p>
+
+                        {% elif pd.status.value in ["prize_rejected", "prize_return_sent", "prize_returned"] %}
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-x-circle-fill text-secondary fs-3 me-3"></i>
+                            <h4 class="fw-bold mb-0">Raffle cancelled</h4>
+                        </div>
+                        <p>This raffle was cancelled after the winner's contestation was accepted; the prize is being
+                            returned to the raffle creator.</p>
+
                         {% else %}
                         <div class="d-flex align-items-center mb-3">
                             <i class="bi bi-arrow-right-circle-fill fs-3 me-3"></i>
@@ -450,6 +526,20 @@ Raffle details
                         {% else %}
                         No actions available for this raffle.
                         {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Admin: review the contestation filed for this raffle -->
+                    {% if current_user.is_admin and raffle.prize_delivery and raffle.prize_delivery.contestation %}
+                    {% set contestation = raffle.prize_delivery.contestation %}
+
+                    <hr class="my-3">
+
+                    <div class="d-grid">
+                        <a href="{{ url_for('prize_contestation_bp.contestation_details', id=contestation.id) }}"
+                            class="btn btn-danger fw-semibold shadow-sm">
+                            <i class="bi bi-eye-fill me-2"></i>View contestation details
+                        </a>
                     </div>
                     {% endif %}
                 </div>

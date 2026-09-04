@@ -75,6 +75,13 @@ ALLOWED_TRANSITIONS = {
         PrizeDeliveryStatus.PRIZE_REJECTED,
         PrizeDeliveryStatus.DELIVERY_TIMEOUT,
     },
+    PrizeDeliveryStatus.PRIZE_REJECTED: {
+        PrizeDeliveryStatus.PRIZE_RETURN_SENT,
+    },
+    PrizeDeliveryStatus.PRIZE_RETURN_SENT: {
+        PrizeDeliveryStatus.PRIZE_RETURNED,
+        PrizeDeliveryStatus.DELIVERY_FAILED,
+    },
 }
 
 
