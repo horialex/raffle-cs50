@@ -31,3 +31,18 @@ flask --app ./api/app db migrate -d ./api/migrations -m "added prize delivery id
 
 flask --app ./api/app db upgrade  -d ./api/migrations
 ```
+
+
+
+Process raffles command:
+```bash
+# Directly 
+flask process-raffles
+# From the docker compose setup
+docker-compose exec web flask --app ./api/app process-raffles.
+```
+
+Start app server:
+```bash
+flask run --debug
+```
