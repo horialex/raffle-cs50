@@ -340,10 +340,6 @@ def accept_contestation(id):
     # 7. Flash message and redirect
     flash("Contestation accepted successfully", "success")
     return redirect(details_url)
-    # return render_template(
-    #     "admin/admin_contestation_details.html",
-    #     contestation=contestation,
-    # )
 
 
 def get_current_user_id() -> int:
