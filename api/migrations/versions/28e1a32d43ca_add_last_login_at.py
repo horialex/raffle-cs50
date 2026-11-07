@@ -1,7 +1,7 @@
 """add last_login_at
 
 Revision ID: 28e1a32d43ca
-Revises:
+Revises: 7c1e9a4b2d30
 Create Date: 2026-03-03 09:34:13.460958
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "28e1a32d43ca"
-down_revision = None
+down_revision = "7c1e9a4b2d30"
 branch_labels = None
 depends_on = None
 
