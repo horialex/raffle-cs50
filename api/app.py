@@ -9,6 +9,7 @@ from flask_session import Session
 from sqlalchemy import text
 from flask_migrate import Migrate
 from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.security import generate_password_hash
 from forms.user_form import DeleteSelfAccountForm
 from models.message_model import Message
 import models  # registers all models with SQLAlchemy metadata
@@ -87,6 +88,34 @@ app.register_blueprint(prize_contestation_bp)
 def process_raffles_command():
     process_raffles()
     print("Done!")
+
+
+@app.cli.command("create-admin")
+def create_admin_command():
+    """Create the admin user from ADMIN_* env vars, if it doesn't exist yet."""
+    username = os.getenv("ADMIN_USERNAME")
+    email = os.getenv("ADMIN_EMAIL")
+    password = os.getenv("ADMIN_PASSWORD")
+
+    if not (username and email and password):
+        print("ADMIN_USERNAME, ADMIN_EMAIL or ADMIN_PASSWORD not set, skipping admin creation")
+        return
+
+    if User.query.filter((User.username == username) | (User.email == email)).first():
+        print(f"User '{username}' or email '{email}' already exists, skipping admin creation")
+        return
+
+    admin = User(
+        first_name="Admin",
+        last_name="Admin",
+        username=username,
+        email=email,
+        password=generate_password_hash(password),
+        role="admin",
+    )
+    db.session.add(admin)
+    db.session.commit()
+    print(f"Admin user '{username}' created")
 
 
 # ----------------------------

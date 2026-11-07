@@ -31,8 +31,9 @@ services:
       - '5000:5000'
     volumes:
       - .:/app
-    # apply pending migrations on every start, so a fresh clone gets its schema automatically
-    command: sh -c "flask db upgrade -d ./api/migrations && flask run --debug --host=0.0.0.0"
+    # apply pending migrations and create the admin user (if missing) on every start,
+    # so a fresh clone is ready to use
+    command: sh -c "flask db upgrade -d ./api/migrations && flask create-admin && flask run --debug --host=0.0.0.0"
 
 volumes:
   mysql-data:
